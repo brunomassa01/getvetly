@@ -1,0 +1,137 @@
+import "server-only";
+import { withUser } from "@/lib/db/client";
+import { salvarArquivo } from "./storage";
+import type { PropostaInput } from "./schema";
+
+export interface PropostaListaItem {
+  id: string;
+  titulo: string;
+  categoria: string;
+  status: string;
+  valor_negociado: string | null;
+  fornecedor_nome: string | null;
+  created_at: string;
+}
+
+export interface PropostaArquivo {
+  id: string;
+  nome_original: string;
+  mime_type: string;
+  tamanho_bytes: number;
+}
+
+export interface PropostaDetalhe {
+  id: string;
+  titulo: string;
+  categoria: string;
+  escopo: string | null;
+  aprovador_email: string | null;
+  valor_tabela: string | null;
+  valor_negociado: string | null;
+  status: string;
+  fornecedor_nome: string | null;
+  created_at: string;
+  arquivos: PropostaArquivo[];
+}
+
+/** Lista as propostas do workspace (mais recentes primeiro). */
+export async function listarPropostas(
+  userId: string,
+): Promise<PropostaListaItem[]> {
+  return withUser(userId, (sql) =>
+    sql<PropostaListaItem[]>`
+      select
+        p.id, p.titulo, p.categoria, p.status, p.valor_negociado,
+        p.created_at, f.nome as fornecedor_nome
+      from propostas p
+      left join fornecedores f on f.id = p.fornecedor_id
+      where p.status <> 'archived'
+      order by p.created_at desc
+    `,
+  );
+}
+
+/** Detalhe de uma proposta com seus arquivos. */
+export async function buscarProposta(
+  userId: string,
+  id: string,
+): Promise<PropostaDetalhe | null> {
+  return withUser(userId, async (sql) => {
+    const [proposta] = await sql<Omit<PropostaDetalhe, "arquivos">[]>`
+      select
+        p.id, p.titulo, p.categoria, p.escopo, p.aprovador_email,
+        p.valor_tabela, p.valor_negociado, p.status, p.created_at,
+        f.nome as fornecedor_nome
+      from propostas p
+      left join fornecedores f on f.id = p.fornecedor_id
+      where p.id = ${id}
+    `;
+    if (!proposta) return null;
+
+    const arquivos = await sql<PropostaArquivo[]>`
+      select id, nome_original, mime_type, tamanho_bytes
+      from proposta_arquivos
+      where proposta_id = ${id}
+      order by created_at asc
+    `;
+    return { ...proposta, arquivos: [...arquivos] };
+  });
+}
+
+/**
+ * Cria uma proposta (status draft) e salva os arquivos enviados.
+ * A proposta é criada numa transação; os arquivos são salvos em disco e
+ * registrados depois (fora da transação) para não segurá-la durante o I/O.
+ */
+export async function criarProposta(
+  userId: string,
+  dados: PropostaInput,
+  arquivos: File[],
+): Promise<{ id: string }> {
+  const { id, workspaceId } = await withUser(userId, async (sql) => {
+    const [membro] = await sql<{ workspace_id: string }[]>`
+      select workspace_id from workspace_members
+      where user_id = ${userId} and ativo = true
+      limit 1
+    `;
+    if (!membro) throw new Error("Usuário sem workspace ativo.");
+
+    const [proposta] = await sql<{ id: string }[]>`
+      insert into propostas
+        (workspace_id, fornecedor_id, criado_por, titulo, categoria,
+         escopo, aprovador_email, valor_tabela, valor_negociado, status)
+      values (
+        ${membro.workspace_id},
+        ${dados.fornecedor_id ?? null},
+        ${userId},
+        ${dados.titulo},
+        ${dados.categoria},
+        ${dados.escopo ?? null},
+        ${dados.aprovador_email ?? null},
+        ${dados.valor_tabela ?? null},
+        ${dados.valor_negociado ?? null},
+        'draft'
+      )
+      returning id
+    `;
+    return { id: proposta.id, workspaceId: membro.workspace_id };
+  });
+
+  for (const arquivo of arquivos) {
+    if (arquivo.size === 0) continue;
+    const meta = await salvarArquivo({ workspaceId, propostaId: id, arquivo });
+    await withUser(userId, (sql) =>
+      sql`
+        insert into proposta_arquivos
+          (proposta_id, workspace_id, nome_original, nome_storage,
+           mime_type, tamanho_bytes)
+        values (
+          ${id}, ${workspaceId}, ${arquivo.name}, ${meta.nomeStorage},
+          ${meta.mime}, ${meta.tamanho}
+        )
+      `,
+    );
+  }
+
+  return { id };
+}

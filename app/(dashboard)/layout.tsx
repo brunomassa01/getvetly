@@ -20,6 +20,12 @@ export default function DashboardLayout({
                 Painel
               </Link>
               <Link
+                href="/propostas"
+                className="text-texto-2 hover:text-ink transition-colors"
+              >
+                Propostas
+              </Link>
+              <Link
                 href="/fornecedores"
                 className="text-texto-2 hover:text-ink transition-colors"
               >

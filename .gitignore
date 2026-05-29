@@ -64,3 +64,9 @@ saas-procurement.zip
 *secrets*
 *.pem
 *.key
+
+# Anotações pessoais do Bruno (contêm chaves/segredos — NUNCA versionar)
+BRUNO/
+
+# Storage local de arquivos de propostas (gerado em runtime)
+storage/

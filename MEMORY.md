@@ -90,8 +90,10 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - ✅ **Autenticação completa** (Auth.js v5): cadastro/login e-mail+senha, **login Google OAuth ATIVO**, recuperação de senha, painel protegido, middleware. Cadastro cria usuário + workspace + admin.
 - ✅ Google OAuth ativo: credenciais no `.env` do VPS; projeto "GetVetly" no Google Cloud (modo teste — publicar antes de abrir ao público geral). Verificar em https://app.getvetly.com/api/auth/providers
 - **Pendente p/ ativar**: conta Resend (e-mail de recuperação — hoje cai no log do servidor via `pm2 logs getvetly`)
-- **Pendente futuro**: contas de IA (criar quando o código usar), Stripe (produtos/webhook quando o checkout for construído), primeiras telas de propostas/fornecedores
-- **Sem testes automatizados ainda** — pendente: Vitest (CLAUDE.md pede teste de happy path por feature)
+- ✅ **CRUD de fornecedores** (US-030): /fornecedores (lista + busca debounce + filtro categoria), /novo, /[id] (editar + arquivar). Isolado por workspace via `withUser`. Padrão de telas estabelecido.
+- ✅ **Vitest configurado** + passo de testes no CI (lint → type-check → testes → build). 5 testes do schema de fornecedor.
+- **Pendente futuro**: módulo de propostas (upload + análise IA — coração do produto, usa Claude API já pronta), checkout Stripe, conta Resend, publicar app Google
+- **Stripe**: Bruno já tem chave publicável + secret em mãos (2026-05-29). Configurar quando construir o checkout/assinaturas.
 
 ## Como trabalhar
 1. Bruno escolhe uma user story de `docs/01-product/user-stories.md`
@@ -122,3 +124,6 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
   - Credenciais criadas no Google Cloud (projeto "GetVetly"), redirect `https://app.getvetly.com/api/auth/callback/google`
   - `/api/auth/providers` confirma google + credentials; login Google testado OK
   - Lição operacional: NUNCA usar `read` dentro de bloco colado no terminal — ele consome as próximas linhas do script como input. Para segredos no servidor, editar via `nano` direto no `.env`.
+- **2026-05-29 — CRUD de fornecedores no ar** ✅
+  - US-030: lista com busca/filtro, cadastro, edição, arquivar. Tudo isolado por workspace (RLS via `withUser`).
+  - Vitest entrou no projeto + passo de testes no CI. Padrão de tela (data layer → schema Zod → server actions → form client → páginas) estabelecido para reusar nas próximas features.
