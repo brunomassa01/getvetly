@@ -44,6 +44,7 @@ export async function executarAnaliseProposta(
   } catch (erro) {
     const mensagem =
       erro instanceof Error ? erro.message : "Falha na análise.";
+    console.error(`[analise] proposta ${propostaId} falhou:`, erro);
     await atualizarStatusProposta(userId, propostaId, "failed", mensagem);
     return { ok: false, erro: mensagem };
   }

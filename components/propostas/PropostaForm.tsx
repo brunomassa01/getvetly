@@ -1,11 +1,50 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { useFormState, useFormStatus } from "react-dom";
 import { Campo, Aviso } from "@/components/auth/Campos";
 import { ESTADO_INICIAL } from "@/lib/auth/tipos";
 import { criarEAnalisarPropostaAction } from "@/app/(dashboard)/propostas/actions";
+
+const MENSAGENS_ANALISE = [
+  "Lendo o documento da proposta...",
+  "Extraindo fornecedor, contato e valores...",
+  "Avaliando pontos fortes e riscos...",
+  "Montando o relatório com leitura crítica...",
+];
+
+// Cobre a tela enquanto a análise roda, com spinner e mensagens rotativas.
+function OverlayAnalisando() {
+  const { pending } = useFormStatus();
+  const [i, setI] = useState(0);
+
+  useEffect(() => {
+    if (!pending) {
+      setI(0);
+      return;
+    }
+    const t = setInterval(
+      () => setI((x) => (x + 1) % MENSAGENS_ANALISE.length),
+      2500,
+    );
+    return () => clearInterval(t);
+  }, [pending]);
+
+  if (!pending) return null;
+  return (
+    <div className="fixed inset-0 z-50 bg-paper/95 backdrop-blur-sm flex flex-col items-center justify-center px-6 text-center">
+      <div className="w-12 h-12 rounded-full border-4 border-lime-soft border-t-lime-deep animate-spin" />
+      <p className="mt-6 font-display font-extrabold text-xl text-ink tracking-tighter">
+        Analisando sua proposta
+      </p>
+      <p className="mt-2 text-sm text-texto-2 min-h-5">{MENSAGENS_ANALISE[i]}</p>
+      <p className="mt-1 text-xs text-texto-3">
+        Pode levar até 1 minuto. Não feche a página.
+      </p>
+    </div>
+  );
+}
 
 function BotaoAnalisar() {
   const { pending } = useFormStatus();
@@ -47,6 +86,7 @@ export function PropostaForm() {
 
   return (
     <form action={action} className="space-y-5">
+      <OverlayAnalisando />
       {/* Input real (escondido), preenchido por clique ou drag-and-drop */}
       <input
         ref={inputRef}

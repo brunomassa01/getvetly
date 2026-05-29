@@ -122,10 +122,17 @@ export default async function PropostaDetalhePage({
         ) : (
           <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-6 text-center">
             {proposta.status === "failed" ? (
-              <p className="text-sm text-danger">
-                A última análise falhou. Verifique se o PDF tem texto (não é só
-                imagem) e tente novamente.
-              </p>
+              <div className="text-sm text-danger">
+                <p className="font-medium">A última análise falhou.</p>
+                {proposta.status_message && (
+                  <p className="mt-1 text-texto-2">
+                    Motivo: {proposta.status_message}
+                  </p>
+                )}
+                <p className="mt-1 text-texto-3 text-xs">
+                  Clique em &quot;Refazer análise&quot; para tentar de novo.
+                </p>
+              </div>
             ) : proposta.arquivos.length === 0 ? (
               <p className="text-sm text-texto-2">
                 Anexe ao menos um arquivo (PDF com texto) para analisar.

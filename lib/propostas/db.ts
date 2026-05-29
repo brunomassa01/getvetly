@@ -32,6 +32,7 @@ export interface PropostaDetalhe {
   valor_tabela: string | null;
   valor_negociado: string | null;
   status: string;
+  status_message: string | null;
   fornecedor_nome: string | null;
   created_at: string;
   arquivos: PropostaArquivo[];
@@ -63,8 +64,8 @@ export async function buscarProposta(
     const [proposta] = await sql<Omit<PropostaDetalhe, "arquivos">[]>`
       select
         p.id, p.titulo, p.categoria, p.escopo, p.aprovador_email,
-        p.valor_tabela, p.valor_negociado, p.status, p.created_at,
-        f.nome as fornecedor_nome
+        p.valor_tabela, p.valor_negociado, p.status, p.status_message,
+        p.created_at, f.nome as fornecedor_nome
       from propostas p
       left join fornecedores f on f.id = p.fornecedor_id
       where p.id = ${id}
