@@ -320,11 +320,21 @@ export async function buscarAnalise(
   propostaId: string,
 ): Promise<Analise | null> {
   return withUser(userId, async (sql) => {
-    const [linha] = await sql<{ payload: Analise }[]>`
+    const [linha] = await sql<{ payload: unknown }[]>`
       select payload from analises
       where proposta_id = ${propostaId}
       order by versao desc limit 1
     `;
-    return linha?.payload ?? null;
+    const payload = linha?.payload;
+    if (!payload) return null;
+    // Garante objeto: se o driver devolver o jsonb como texto, faz o parse.
+    if (typeof payload === "string") {
+      try {
+        return JSON.parse(payload) as Analise;
+      } catch {
+        return null;
+      }
+    }
+    return payload as Analise;
   });
 }

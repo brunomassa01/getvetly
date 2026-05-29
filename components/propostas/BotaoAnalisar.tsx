@@ -2,6 +2,7 @@
 
 import { useFormStatus } from "react-dom";
 import { analisarPropostaAction } from "@/app/(dashboard)/propostas/actions";
+import { OverlayAnalisando } from "./OverlayAnalisando";
 
 function Botao({ rotular }: { rotular: string }) {
   const { pending } = useFormStatus();
@@ -27,6 +28,7 @@ export function BotaoAnalisar({
     <form action={analisarPropostaAction}>
       <input type="hidden" name="id" value={propostaId} />
       <Botao rotular={rotular} />
+      <OverlayAnalisando />
     </form>
   );
 }

@@ -11,6 +11,7 @@ export interface Fornecedor {
   segmento: string | null;
   observacoes: string | null;
   created_at: string;
+  cotacoes?: number;
 }
 
 export interface FiltrosFornecedor {
@@ -28,12 +29,18 @@ export async function listarFornecedores(
 
   return withUser(userId, (sql) =>
     sql<Fornecedor[]>`
-      select id, nome, cnpj, email, telefone, segmento, observacoes, created_at
-      from fornecedores
-      where ativo = true
-        ${busca ? sql`and nome ilike ${"%" + busca + "%"}` : sql``}
-        ${categoria ? sql`and segmento = ${categoria}` : sql``}
-      order by nome asc
+      select
+        f.id, f.nome, f.cnpj, f.email, f.telefone, f.segmento,
+        f.observacoes, f.created_at,
+        (
+          select count(*)::int from propostas p
+          where p.fornecedor_id = f.id and p.status <> 'archived'
+        ) as cotacoes
+      from fornecedores f
+      where f.ativo = true
+        ${busca ? sql`and f.nome ilike ${"%" + busca + "%"}` : sql``}
+        ${categoria ? sql`and f.segmento = ${categoria}` : sql``}
+      order by f.nome asc
     `,
   );
 }

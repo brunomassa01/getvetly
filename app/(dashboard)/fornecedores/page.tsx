@@ -98,7 +98,7 @@ export default async function FornecedoresPage({
                   <td className="px-4 py-3 text-texto-2">
                     {f.email ?? f.telefone ?? "—"}
                   </td>
-                  <td className="px-4 py-3 text-texto-3">—</td>
+                  <td className="px-4 py-3 text-texto-2">{f.cotacoes ?? 0}</td>
                 </tr>
               ))}
             </tbody>

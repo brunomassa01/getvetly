@@ -25,7 +25,7 @@ const CONFIANCA: Record<string, string> = {
 export function RelatorioAnalise({ analise }: { analise: Analise }) {
   const { fornecedor, valores, analise: critica, itens, metricas, metadata } =
     analise;
-  const contato = fornecedor.contato;
+  const contato = fornecedor?.contato ?? null;
 
   return (
     <div className="space-y-6">
@@ -42,13 +42,13 @@ export function RelatorioAnalise({ analise }: { analise: Analise }) {
           <div className="flex justify-between gap-4 border-b border-[color:var(--border-subtle)] pb-2">
             <span className="text-sm text-texto-3">Nome</span>
             <span className="text-sm text-ink font-medium text-right">
-              {fornecedor.nome}
+              {fornecedor?.nome ?? "—"}
             </span>
           </div>
           <div className="flex justify-between gap-4 border-b border-[color:var(--border-subtle)] pb-2">
             <span className="text-sm text-texto-3">CNPJ</span>
             <span className="text-sm text-ink font-medium text-right">
-              {fornecedor.cnpj ?? "—"}
+              {fornecedor?.cnpj ?? "—"}
             </span>
           </div>
           <div className="flex justify-between gap-4 border-b border-[color:var(--border-subtle)] pb-2">
