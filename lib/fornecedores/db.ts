@@ -84,6 +84,48 @@ export async function criarFornecedor(
   });
 }
 
+/**
+ * Encontra um fornecedor pelo nome (case-insensitive) no workspace, ou cria
+ * um novo com os dados extraídos pela IA. Retorna o id. Usado no fluxo
+ * "subir proposta → IA extrai fornecedor → vincula automaticamente".
+ */
+export async function encontrarOuCriarFornecedorPorNome(
+  userId: string,
+  dados: {
+    nome: string;
+    cnpj?: string | null;
+    email?: string | null;
+    telefone?: string | null;
+    segmento?: string | null;
+  },
+): Promise<string> {
+  return withUser(userId, async (sql) => {
+    const [existente] = await sql<{ id: string }[]>`
+      select id from fornecedores
+      where ativo = true and lower(nome) = lower(${dados.nome})
+      limit 1
+    `;
+    if (existente) return existente.id;
+
+    const [membro] = await sql<{ workspace_id: string }[]>`
+      select workspace_id from workspace_members
+      where user_id = ${userId} and ativo = true
+      limit 1
+    `;
+    if (!membro) throw new Error("Usuário sem workspace ativo.");
+
+    const [novo] = await sql<{ id: string }[]>`
+      insert into fornecedores (workspace_id, nome, cnpj, email, telefone, segmento)
+      values (
+        ${membro.workspace_id}, ${dados.nome}, ${dados.cnpj ?? null},
+        ${dados.email ?? null}, ${dados.telefone ?? null}, ${dados.segmento ?? null}
+      )
+      returning id
+    `;
+    return novo.id;
+  });
+}
+
 /** Atualiza um fornecedor existente. */
 export async function atualizarFornecedor(
   userId: string,

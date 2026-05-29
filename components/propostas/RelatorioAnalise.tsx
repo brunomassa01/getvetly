@@ -23,7 +23,9 @@ const CONFIANCA: Record<string, string> = {
 };
 
 export function RelatorioAnalise({ analise }: { analise: Analise }) {
-  const { valores, analise: critica, itens, metricas, metadata } = analise;
+  const { fornecedor, valores, analise: critica, itens, metricas, metadata } =
+    analise;
+  const contato = fornecedor.contato;
 
   return (
     <div className="space-y-6">
@@ -31,6 +33,46 @@ export function RelatorioAnalise({ analise }: { analise: Analise }) {
       <Secao titulo="Resumo executivo">
         <p className="text-sm text-texto-1 leading-relaxed">
           {critica.resumo_executivo}
+        </p>
+      </Secao>
+
+      {/* Fornecedor */}
+      <Secao titulo="Fornecedor">
+        <div className="grid sm:grid-cols-2 gap-x-6 gap-y-2.5">
+          <div className="flex justify-between gap-4 border-b border-[color:var(--border-subtle)] pb-2">
+            <span className="text-sm text-texto-3">Nome</span>
+            <span className="text-sm text-ink font-medium text-right">
+              {fornecedor.nome}
+            </span>
+          </div>
+          <div className="flex justify-between gap-4 border-b border-[color:var(--border-subtle)] pb-2">
+            <span className="text-sm text-texto-3">CNPJ</span>
+            <span className="text-sm text-ink font-medium text-right">
+              {fornecedor.cnpj ?? "—"}
+            </span>
+          </div>
+          <div className="flex justify-between gap-4 border-b border-[color:var(--border-subtle)] pb-2">
+            <span className="text-sm text-texto-3">Contato</span>
+            <span className="text-sm text-ink font-medium text-right">
+              {contato?.nome ?? "—"}
+            </span>
+          </div>
+          <div className="flex justify-between gap-4 border-b border-[color:var(--border-subtle)] pb-2">
+            <span className="text-sm text-texto-3">E-mail</span>
+            <span className="text-sm text-ink font-medium text-right">
+              {contato?.email ?? "—"}
+            </span>
+          </div>
+          <div className="flex justify-between gap-4">
+            <span className="text-sm text-texto-3">Telefone</span>
+            <span className="text-sm text-ink font-medium text-right">
+              {contato?.telefone ?? "—"}
+            </span>
+          </div>
+        </div>
+        <p className="text-xs text-texto-3 mt-3">
+          Este fornecedor foi cadastrado/vinculado automaticamente ao seu
+          histórico.
         </p>
       </Secao>
 

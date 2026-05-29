@@ -1,5 +1,6 @@
 import "server-only";
 import { withUser, getSqlService } from "@/lib/db/client";
+import { encontrarOuCriarFornecedorPorNome } from "@/lib/fornecedores/db";
 import { salvarArquivo } from "./storage";
 import type { PropostaInput } from "./schema";
 import type { Analise } from "@/lib/ai/schema";
@@ -136,6 +137,86 @@ export async function criarProposta(
   }
 
   return { id };
+}
+
+/**
+ * Cria uma proposta a partir SÓ dos arquivos (fluxo upload-first).
+ * Categoria nasce 'outro' e status 'processing' — a IA preenche o resto.
+ */
+export async function criarPropostaComArquivos(
+  userId: string,
+  titulo: string,
+  arquivos: File[],
+): Promise<{ id: string }> {
+  const { id, workspaceId } = await withUser(userId, async (sql) => {
+    const [membro] = await sql<{ workspace_id: string }[]>`
+      select workspace_id from workspace_members
+      where user_id = ${userId} and ativo = true
+      limit 1
+    `;
+    if (!membro) throw new Error("Usuário sem workspace ativo.");
+
+    const [proposta] = await sql<{ id: string }[]>`
+      insert into propostas
+        (workspace_id, criado_por, titulo, categoria, status)
+      values (${membro.workspace_id}, ${userId}, ${titulo}, 'outro', 'processing')
+      returning id
+    `;
+    return { id: proposta.id, workspaceId: membro.workspace_id };
+  });
+
+  for (const arquivo of arquivos) {
+    if (arquivo.size === 0) continue;
+    const meta = await salvarArquivo({ workspaceId, propostaId: id, arquivo });
+    await withUser(userId, (sql) =>
+      sql`
+        insert into proposta_arquivos
+          (proposta_id, workspace_id, nome_original, nome_storage,
+           mime_type, tamanho_bytes)
+        values (
+          ${id}, ${workspaceId}, ${arquivo.name}, ${meta.nomeStorage},
+          ${meta.mime}, ${meta.tamanho}
+        )
+      `,
+    );
+  }
+  return { id };
+}
+
+/**
+ * Aplica o resultado da IA na proposta: atualiza categoria/escopo/valores e
+ * vincula (cria se preciso) o fornecedor extraído, com contato.
+ */
+export async function aplicarAnaliseNaProposta(
+  userId: string,
+  propostaId: string,
+  analise: Analise,
+): Promise<void> {
+  let fornecedorId: string | null = null;
+  if (analise.fornecedor?.nome) {
+    fornecedorId = await encontrarOuCriarFornecedorPorNome(userId, {
+      nome: analise.fornecedor.nome,
+      cnpj: analise.fornecedor.cnpj,
+      email: analise.fornecedor.contato?.email ?? null,
+      telefone: analise.fornecedor.contato?.telefone ?? null,
+      segmento: analise.proposta.categoria,
+    });
+  }
+
+  const v = analise.valores;
+  await withUser(userId, (sql) =>
+    sql`
+      update propostas set
+        categoria = ${analise.proposta.categoria},
+        escopo = coalesce(${analise.proposta.escopo}, escopo),
+        valor_tabela = coalesce(${v.tabela_total}, valor_tabela),
+        valor_negociado = coalesce(${v.negociado_total}, valor_negociado),
+        desconto_pct = ${v.desconto_pct},
+        economia = ${v.economia},
+        fornecedor_id = coalesce(fornecedor_id, ${fornecedorId})
+      where id = ${propostaId}
+    `,
+  );
 }
 
 // ===================== Análise por IA =====================
