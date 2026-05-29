@@ -95,7 +95,15 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - ✅ **Propostas — fluxo UPLOAD-FIRST** (feedback do Bruno, "subir e pronto estilo Claude"): /propostas/nova é só upload + título opcional → cria proposta → roda análise → relatório pronto. A IA preenche fornecedor/categoria/valores/escopo. **Fornecedor é cadastrado/vinculado automaticamente** (com contato) → constrói histórico. `criarPropostaComArquivos` + `aplicarAnaliseNaProposta` + `executarAnaliseProposta` (orquestrador reusado). Arquivos no disco do VPS.
 - ✅ **Análise por IA** (US-012): botão "Analisar com IA" → extrai texto do PDF (unpdf, local) → Claude (`lib/ai/`) → relatório (resumo executivo, prós, pontos a questionar, valores, itens, métricas). `ANTHROPIC_API_KEY` no `.env` do VPS. Nginx com `proxy_read_timeout 300s`. análises gravadas via service (BYPASSRLS), prompt v1.0.0.
   - MVP só lê PDF com texto (unpdf). PDF escaneado/imagem + XLSX/DOCX = evolução (Mistral OCR + libs). Análise é SÍNCRONA (server action); migrar p/ Inngest async se ficar lenta.
-- **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, comparativo de propostas (US-021), histórico/detalhe fornecedor (US-031)
+- **Detalhe do modelo**: `claude-sonnet-4-6` NÃO suporta prefill de mensagem do assistente (erro 400 "does not support assistant message prefill"). Forçar JSON via system prompt + extração robusta (1º { ao último }), nunca por prefill.
+
+## 📋 Backlog priorizado pelo Bruno (2026-05-29)
+1. **Whitelabel** — empresa cliente aplica o próprio logotipo no relatório/análise (campos `whitelabel_*` já existem em workspaces). 
+2. **Envio/exportação em PDF** — gerar PDF do relatório da análise para compartilhar.
+3. **Preparar apresentação** — montar uma apresentação a partir da análise (possível usar Gamma/Adobe MCP no futuro).
+4. **Comparação de múltiplas propostas** — US-021 (matriz comparativa com vencedor por critério + recomendação).
+
+- **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, histórico/detalhe fornecedor (US-031), Mistral OCR (PDF escaneado), XLSX/DOCX
 
 ## ⚠️ Segurança — segredos
 - `BRUNO/getvetly.txt` no disco contém as chaves do Bruno (Anthropic, Google, Stripe). Pasta `BRUNO/` está no `.gitignore` — NUNCA versionar.
