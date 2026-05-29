@@ -87,7 +87,11 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - ✅ App Next.js 14 + design system Vetly no ar em https://app.getvetly.com
 - ✅ Auto-deploy ativo (push na main → produção)
 - ✅ App conectado ao banco com helper de RLS (`lib/db/client.ts`: `getSqlApp`, `getSqlService`, `withUser`); validado em /api/health/db
-- **Pendente**: Auth.js (login/signup + 1º workspace), contas de IA (criar quando o código usar), Stripe (produtos/webhook quando o checkout for construído)
+- ✅ **Autenticação completa** (Auth.js v5): cadastro/login e-mail+senha, **login Google OAuth ATIVO**, recuperação de senha, painel protegido, middleware. Cadastro cria usuário + workspace + admin.
+- ✅ Google OAuth ativo: credenciais no `.env` do VPS; projeto "GetVetly" no Google Cloud (modo teste — publicar antes de abrir ao público geral). Verificar em https://app.getvetly.com/api/auth/providers
+- **Pendente p/ ativar**: conta Resend (e-mail de recuperação — hoje cai no log do servidor via `pm2 logs getvetly`)
+- **Pendente futuro**: contas de IA (criar quando o código usar), Stripe (produtos/webhook quando o checkout for construído), primeiras telas de propostas/fornecedores
+- **Sem testes automatizados ainda** — pendente: Vitest (CLAUDE.md pede teste de happy path por feature)
 
 ## Como trabalhar
 1. Bruno escolhe uma user story de `docs/01-product/user-stories.md`
@@ -109,3 +113,12 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
   - App conectado ao PostgreSQL self-hosted; `/api/health/db` retorna `{"ok":true,"banco":"conectado","workspaces":0}`
   - `lib/db/client.ts`: conexão lazy (não quebra build no CI) + `withUser` aplicando RLS por transação
   - Lição: nunca criar conexão de banco no top-level do módulo (quebra `next build` sem env) — sempre lazy
+- **2026-05-29 — autenticação no ar** ✅
+  - Auth.js v5: cadastro/login e-mail+senha, recuperação de senha, OAuth Google (condicional), painel protegido
+  - Testado em produção: cadastro de "Bruno Massa" → redirecionou para /painel; `/api/health/db` agora `workspaces: 1`
+  - VPS: adicionado `AUTH_TRUST_HOST=true` ao .env; migration 0003 (auth.password_reset_tokens) aplicada + grants
+  - Detalhe: provedor Google só ativa se `AUTH_GOOGLE_ID/SECRET` existirem (não quebra login enquanto Google não está configurado)
+- **2026-05-29 — login Google OAuth ATIVO** ✅
+  - Credenciais criadas no Google Cloud (projeto "GetVetly"), redirect `https://app.getvetly.com/api/auth/callback/google`
+  - `/api/auth/providers` confirma google + credentials; login Google testado OK
+  - Lição operacional: NUNCA usar `read` dentro de bloco colado no terminal — ele consome as próximas linhas do script como input. Para segredos no servidor, editar via `nano` direto no `.env`.

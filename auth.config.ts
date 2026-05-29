@@ -9,12 +9,25 @@ export const authConfig = {
   },
   session: { strategy: "jwt" },
   callbacks: {
-    // Protege as rotas do painel: só entra quem está logado.
+    // Tudo é protegido por padrão, exceto rotas públicas explícitas.
     authorized({ auth, request: { nextUrl } }) {
       const logado = !!auth?.user;
-      const rotaProtegida = nextUrl.pathname.startsWith("/painel");
-      if (rotaProtegida) return logado;
-      return true;
+      const path = nextUrl.pathname;
+
+      const rotasPublicas = [
+        "/",
+        "/login",
+        "/cadastro",
+        "/esqueci-senha",
+        "/redefinir-senha",
+      ];
+      const ehPublica =
+        rotasPublicas.includes(path) ||
+        path.startsWith("/r/") || // páginas públicas de revisão (link compartilhável)
+        path.startsWith("/api"); // APIs cuidam da própria autenticação
+
+      if (ehPublica) return true;
+      return logado;
     },
     // Propaga o id do usuário para o token e para a sessão.
     jwt({ token, user }) {

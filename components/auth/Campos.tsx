@@ -25,6 +25,54 @@ export function Campo({
   );
 }
 
+export function CampoSelect({
+  label,
+  name,
+  opcoes,
+  defaultValue,
+  placeholder = "Selecione...",
+}: {
+  label: string;
+  name: string;
+  opcoes: { valor: string; rotulo: string }[];
+  defaultValue?: string;
+  placeholder?: string;
+}) {
+  return (
+    <label className="block">
+      <span className="block text-sm font-medium text-texto-2 mb-1.5">
+        {label}
+      </span>
+      <select name={name} defaultValue={defaultValue ?? ""} className={baseInput}>
+        <option value="">{placeholder}</option>
+        {opcoes.map((o) => (
+          <option key={o.valor} value={o.valor}>
+            {o.rotulo}
+          </option>
+        ))}
+      </select>
+    </label>
+  );
+}
+
+export function CampoArea({
+  label,
+  name,
+  ...props
+}: {
+  label: string;
+  name: string;
+} & React.TextareaHTMLAttributes<HTMLTextAreaElement>) {
+  return (
+    <label className="block">
+      <span className="block text-sm font-medium text-texto-2 mb-1.5">
+        {label}
+      </span>
+      <textarea name={name} rows={3} className={baseInput} {...props} />
+    </label>
+  );
+}
+
 export function BotaoEnviar({ children }: { children: React.ReactNode }) {
   const { pending } = useFormStatus();
   return (

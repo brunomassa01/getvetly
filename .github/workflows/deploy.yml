@@ -31,6 +31,9 @@ jobs:
       - name: Checagem de tipos
         run: pnpm type-check
 
+      - name: Testes
+        run: pnpm test
+
       - name: Build
         run: pnpm build
 
