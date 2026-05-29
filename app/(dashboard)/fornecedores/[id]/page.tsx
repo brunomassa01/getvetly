@@ -19,7 +19,7 @@ export default async function EditarFornecedorPage({
   if (!fornecedor) notFound();
 
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl mx-auto">
       <Link href="/fornecedores" className="text-sm text-texto-2 hover:text-ink">
         ← Voltar
       </Link>

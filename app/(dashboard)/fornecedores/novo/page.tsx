@@ -7,7 +7,7 @@ export const metadata: Metadata = { title: "Novo fornecedor — Vetly" };
 
 export default function NovoFornecedorPage() {
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl mx-auto">
       <Link
         href="/fornecedores"
         className="text-sm text-texto-2 hover:text-ink"

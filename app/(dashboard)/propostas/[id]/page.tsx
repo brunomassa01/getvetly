@@ -32,7 +32,7 @@ export default async function PropostaDetalhePage({
   const analise = await buscarAnalise(userId, params.id);
 
   return (
-    <div className="max-w-3xl space-y-8">
+    <div className="max-w-3xl mx-auto space-y-8">
       <div>
         <Link href="/propostas" className="text-sm text-texto-2 hover:text-ink">
           ← Voltar

@@ -6,7 +6,7 @@ export const metadata: Metadata = { title: "Nova proposta — Vetly" };
 
 export default function NovaPropostaPage() {
   return (
-    <div className="max-w-xl">
+    <div className="max-w-xl mx-auto">
       <Link href="/propostas" className="text-sm text-texto-2 hover:text-ink">
         ← Voltar
       </Link>

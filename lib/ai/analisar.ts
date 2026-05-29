@@ -5,11 +5,18 @@ import { analiseSchema, type Analise } from "./schema";
 
 const MODELO = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 
-// Remove cercas de markdown (```json ... ```) caso a IA as inclua.
-function limparJson(texto: string): string {
-  const t = texto.trim();
-  const m = t.match(/```(?:json)?\s*([\s\S]*?)```/);
-  return (m ? m[1] : t).trim();
+// Extrai o objeto JSON da resposta: remove cercas de markdown e recorta do
+// primeiro "{" ao último "}". Robusto contra texto antes/depois do JSON.
+function extrairJson(texto: string): string {
+  let t = texto.trim();
+  const fence = t.match(/```(?:json)?\s*([\s\S]*?)```/);
+  if (fence) t = fence[1].trim();
+  const ini = t.indexOf("{");
+  const fim = t.lastIndexOf("}");
+  if (ini !== -1 && fim !== -1 && fim > ini) {
+    return t.slice(ini, fim + 1);
+  }
+  return t;
 }
 
 export interface ResultadoAnalise {
@@ -44,7 +51,7 @@ ${input.contexto}`;
   const inicio = Date.now();
   const resposta = await client.messages.create({
     model: MODELO,
-    max_tokens: 4096,
+    max_tokens: 8192,
     // O prompt de sistema é reaproveitado em toda análise → cacheado.
     system: [
       {
@@ -53,20 +60,34 @@ ${input.contexto}`;
         cache_control: { type: "ephemeral" },
       },
     ],
-    messages: [{ role: "user", content: mensagemUsuario }],
+    messages: [
+      { role: "user", content: mensagemUsuario },
+      // Prefill: força a resposta a começar já no JSON, sem texto antes.
+      { role: "assistant", content: "{" },
+    ],
   });
   const latenciaMs = Date.now() - inicio;
 
-  const texto = resposta.content
+  const continuacao = resposta.content
     .filter((bloco): bloco is Anthropic.TextBlock => bloco.type === "text")
     .map((bloco) => bloco.text)
     .join("");
+  // Reanexa o "{" do prefill e recorta o objeto JSON.
+  const textoCompleto = "{" + continuacao;
 
   let json: unknown;
   try {
-    json = JSON.parse(limparJson(texto));
+    json = JSON.parse(extrairJson(textoCompleto));
   } catch {
-    throw new Error("A IA retornou um JSON inválido.");
+    console.error(
+      `[analise] JSON inválido. stop_reason=${resposta.stop_reason}. Prévia:`,
+      textoCompleto.slice(0, 300),
+    );
+    throw new Error(
+      resposta.stop_reason === "max_tokens"
+        ? "A resposta da IA foi cortada (proposta muito longa)."
+        : "A IA retornou um JSON inválido.",
+    );
   }
 
   const parsed = analiseSchema.safeParse(json);
