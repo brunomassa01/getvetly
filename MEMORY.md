@@ -100,14 +100,15 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 ## 📋 Backlog priorizado pelo Bruno (2026-05-29)
 1. **Whitelabel** — empresa cliente aplica o próprio logotipo no relatório/análise (campos `whitelabel_*` já existem em workspaces). 
 2. **Envio/exportação em PDF** — gerar PDF do relatório da análise para compartilhar.
-3. **Preparar apresentação** — montar uma apresentação a partir da análise (possível usar Gamma/Adobe MCP no futuro).
-4. **Comparação de múltiplas propostas** — US-021 (matriz comparativa com vencedor por critério + recomendação).
+3. **Preparar apresentação** — montar uma apresentação a partir da análise/comparação (já vai com a recomendação do comparativo). Possível Gamma/Adobe MCP.
+4. ✅ **Comparação de propostas** (US-021) — FEITO: `/comparativos`, seleciona 2+ propostas prontas + critério → IA gera matriz + recomendação + cenários. Salvo em `comparativos`.
+5. **Edição manual da proposta** — deixar o usuário completar campos que a IA não achou (período, validade, condição pagamento, etc.). Mensagem de "não encontrado" deve ser mais clara/acionável.
 
 - **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, histórico/detalhe fornecedor (US-031), Mistral OCR (PDF escaneado), XLSX/DOCX
 
 ## ⚠️ Segurança — segredos e pasta pessoal
 - **Pasta `BRUNO/` = espaço pessoal do Bruno. NADA dela sobe para o Git.** Já está no `.gitignore`. Ele move para lá tudo que for pessoal/segredo (ex: chaves em `BRUNO/getvetly.txt`, e moveu a antiga pasta `marketing/` para `BRUNO/marketing/`).
-- **PENDENTE para o próximo deploy**: remover do Git (mantendo no disco) o arquivo `marketing/vetly-campaign-plan-v1.md` que foi commitado por engano antes da mudança — rodar `git rm --cached -r marketing` (a pasta marketing antiga já foi movida para BRUNO/ pelo Bruno).
+- ✅ RESOLVIDO (deploy 34b5152): `marketing/vetly-campaign-plan-v1.md` saiu do Git (Bruno moveu a pasta para BRUNO/, git registrou a remoção). Preservado no disco.
 - 2026-05-29: GitHub Push Protection bloqueou um commit que continha `BRUNO/getvetly.txt` (segredos não vazaram). Lição: evitar `git add .` cego; conferir `git status` antes de commitar. Segredos vão sempre via `.env` no servidor, nunca no repo.
 
 ## Como trabalhar
