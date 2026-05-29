@@ -8,7 +8,7 @@
 ## O Projeto
 **Nome**: getvetly  
 **Domínio**: getvetly.com (comprado na Hostinger)  
-**Versão atual**: 0.1.0 preview (documentação + migrations, sem código ainda)  
+**Versão atual**: 0.1.0 — landing page no ar em https://app.getvetly.com  
 **Dono**: Bruno Romualdo Marinho — brunobrm@gmail.com
 
 **O que é**: SaaS B2B para gestores de compras/supply chain analisarem propostas comerciais de fornecedores com IA, gerar relatórios padronizados, compartilhar link com diretoria para aprovação e manter histórico de fornecedores.
@@ -64,14 +64,28 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - **Backup**: cron diário 3h (`/usr/local/bin/getvetly-backup.sh`), retém 7 dias em `/var/backups/getvetly`
 - **Auth (a construir no código)**: Auth.js v5, tabelas `auth.users`/`auth.sessions` já existem
 
+## Infraestrutura — App / Deploy (configurado 2026-05-29)
+- **Repositório**: `git@github.com:brunomassa01/getvetly.git` (privado)
+- **Next.js 14.2** scaffold no ar; design system Vetly embutido (Tailwind + globals + componente Logo)
+- **Deploy Key** (VPS→GitHub, leitura): `/home/deploy/.ssh/github_deploy` (pública adicionada nos Deploy Keys do repo)
+- **App no servidor**: clonado em `/var/www/getvetly`, rodando via PM2 (processo `getvetly`, porta 3000), Nginx faz proxy + SSL
+- **CI/CD**: ✅ ATIVO — push na `main` → GitHub Actions roda lint/type-check/build → SSH no VPS → git pull + build + pm2 restart (`.github/workflows/deploy.yml`)
+  - GitHub Secrets configurados: `SERVER_HOST`, `SSH_PRIVATE_KEY`
+  - PM2 persiste no boot (systemd `pm2-deploy`)
+  - ⚠️ Aviso futuro: actions em Node 20 serão forçadas a Node 24 a partir de 16/jun/2026 (não-bloqueante; atualizar versões das actions depois)
+
+## ⚠️ Ambiente de desenvolvimento — Google Drive
+- O projeto vive em `G:\Meu Drive\...` (Google Drive), que **não suporta symlinks** → `.npmrc` com `node-linker=hoisted` é obrigatório para o pnpm funcionar.
+- **`pnpm build` NÃO funciona de forma confiável localmente** (Google Drive rejeita escritas do cache `.next` com EINVAL; e a busca de fontes do `next/font/google` depende de rede). 
+- **Validação local**: rodar só `pnpm lint` e `pnpm type-check` (não dependem de rede/escrita pesada).
+- **O build de produção real roda no VPS** (Linux, FS normal, rede estável) via a esteira de deploy. Lá funciona perfeitamente.
+
 ## Estado atual
 - Documentação completa em `docs/`
-- Migrations SQL prontas em `db/migrations/`
-- Skills do Claude Code em `.claude/skills/`
-- Design tokens e logos em `design/`
 - ✅ Servidor de produção configurado e com HTTPS
-- ✅ Banco: PostgreSQL self-hosted no VPS, schema + RLS + backup configurados — ver ADR-007
-- **Código ainda não iniciado** — próximo passo: scaffold do Next.js
+- ✅ Banco: PostgreSQL self-hosted no VPS, schema + RLS + backup
+- ✅ App Next.js 14 + design system Vetly no ar em https://app.getvetly.com
+- **Pendente**: GitHub Secrets (auto-deploy), contas de IA (Claude + Mistral), produtos/webhook Stripe, depois primeiras user stories
 
 ## Como trabalhar
 1. Bruno escolhe uma user story de `docs/01-product/user-stories.md`
@@ -81,4 +95,11 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 5. Commit em português: `feat:`, `fix:`, `refactor:`, etc.
 
 ## Histórico de Deploys
-_(nenhum deploy ainda — projeto em fase de setup)_
+- **2026-05-29 — v0.1.0 — primeiro deploy** 🎉
+  - Landing page de preview da Vetly no ar em https://app.getvetly.com
+  - Stack: Next.js 14.2 + design system Vetly (logo oficial, lime #C8FF02, Manrope)
+  - Servidor: VPS Hostinger KVM1, PostgreSQL self-hosted, Nginx + SSL, PM2
+  - Deploy manual (clone + build + pm2 no VPS). Auto-deploy via GitHub Actions pendente de Secrets.
+- **2026-05-29 — auto-deploy ATIVADO** ✅
+  - Pipeline GitHub Actions validado de ponta a ponta (lint → type-check → build → SSH → pm2 restart) em ~1m7s
+  - A partir de agora: push na `main` = deploy automático em produção
