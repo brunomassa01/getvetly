@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { sqlService } from "@/lib/db/client";
+import { getSqlService } from "@/lib/db/client";
 
 // Sempre executa no servidor a cada requisição (não cacheia).
 export const dynamic = "force-dynamic";
@@ -12,7 +12,8 @@ export const dynamic = "force-dynamic";
  */
 export async function GET() {
   try {
-    const [linha] = await sqlService<{ workspaces: number }[]>`
+    const sql = getSqlService();
+    const [linha] = await sql<{ workspaces: number }[]>`
       select count(*)::int as workspaces from workspaces
     `;
     return NextResponse.json({

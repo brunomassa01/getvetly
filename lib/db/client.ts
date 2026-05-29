@@ -22,23 +22,31 @@ function criarConexao(url: string | undefined, nome: string): Sql {
 
 /**
  * Conexão da APLICAÇÃO — respeita o Row-Level Security (role getvetly_app).
- * Use sempre dentro de `withUser` para que o RLS saiba quem é o usuário.
+ * Criada de forma preguiçosa (lazy): a conexão só é construída na primeira
+ * vez que é usada, em tempo de requisição. Isso evita quebrar o `next build`
+ * (no CI não há variáveis de ambiente do banco). Use sempre via `withUser`.
  */
-export const sqlApp: Sql =
-  globalForDb.sqlApp ?? criarConexao(process.env.DATABASE_URL, "DATABASE_URL");
+export function getSqlApp(): Sql {
+  if (!globalForDb.sqlApp) {
+    globalForDb.sqlApp = criarConexao(process.env.DATABASE_URL, "DATABASE_URL");
+  }
+  return globalForDb.sqlApp;
+}
 
 /**
  * Conexão de SERVIÇO — ignora o RLS (role getvetly_service, BYPASSRLS).
- * Use APENAS no servidor: worker de IA, telemetria e rotas públicas
- * validadas por token (ex: /r/[token]). Nunca para dados do usuário comum.
+ * Lazy, mesmo motivo acima. Use APENAS no servidor: worker de IA, telemetria
+ * e rotas públicas validadas por token (ex: /r/[token]). Nunca para dados do
+ * usuário comum.
  */
-export const sqlService: Sql =
-  globalForDb.sqlService ??
-  criarConexao(process.env.DATABASE_URL_SERVICE, "DATABASE_URL_SERVICE");
-
-if (process.env.NODE_ENV !== "production") {
-  globalForDb.sqlApp = sqlApp;
-  globalForDb.sqlService = sqlService;
+export function getSqlService(): Sql {
+  if (!globalForDb.sqlService) {
+    globalForDb.sqlService = criarConexao(
+      process.env.DATABASE_URL_SERVICE,
+      "DATABASE_URL_SERVICE",
+    );
+  }
+  return globalForDb.sqlService;
 }
 
 /**
@@ -58,7 +66,7 @@ export async function withUser<T>(
   userId: string,
   fn: (sql: TransactionSql) => Promise<T>,
 ): Promise<T> {
-  const resultado = await sqlApp.begin(async (sql) => {
+  const resultado = await getSqlApp().begin(async (sql) => {
     await sql`select set_config('app.current_user_id', ${userId}, true)`;
     return fn(sql);
   });
