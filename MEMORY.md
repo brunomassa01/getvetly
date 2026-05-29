@@ -85,7 +85,9 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - ✅ Servidor de produção configurado e com HTTPS
 - ✅ Banco: PostgreSQL self-hosted no VPS, schema + RLS + backup
 - ✅ App Next.js 14 + design system Vetly no ar em https://app.getvetly.com
-- **Pendente**: GitHub Secrets (auto-deploy), contas de IA (Claude + Mistral), produtos/webhook Stripe, depois primeiras user stories
+- ✅ Auto-deploy ativo (push na main → produção)
+- ✅ App conectado ao banco com helper de RLS (`lib/db/client.ts`: `getSqlApp`, `getSqlService`, `withUser`); validado em /api/health/db
+- **Pendente**: Auth.js (login/signup + 1º workspace), contas de IA (criar quando o código usar), Stripe (produtos/webhook quando o checkout for construído)
 
 ## Como trabalhar
 1. Bruno escolhe uma user story de `docs/01-product/user-stories.md`
@@ -103,3 +105,7 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - **2026-05-29 — auto-deploy ATIVADO** ✅
   - Pipeline GitHub Actions validado de ponta a ponta (lint → type-check → build → SSH → pm2 restart) em ~1m7s
   - A partir de agora: push na `main` = deploy automático em produção
+- **2026-05-29 — fundação banco no ar** ✅
+  - App conectado ao PostgreSQL self-hosted; `/api/health/db` retorna `{"ok":true,"banco":"conectado","workspaces":0}`
+  - `lib/db/client.ts`: conexão lazy (não quebra build no CI) + `withUser` aplicando RLS por transação
+  - Lição: nunca criar conexão de banco no top-level do módulo (quebra `next build` sem env) — sempre lazy
