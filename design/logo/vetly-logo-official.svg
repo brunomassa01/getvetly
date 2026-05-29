@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!--
+  Vetly · Logo Oficial · SVG web
+  ============================================
+  Gerado a partir de logo.ai (Adobe Illustrator)
+
+  Cores oficiais extraídas:
+    Lime:  #ADDA1A  (RGB 173, 218, 26)  → checkmark
+    Ink:   #181819  (RGB 24, 24, 25)    → wordmark ETLY
+
+  Geometria oficial (canvas 1000×1000pt):
+    Check bbox:   x=190.6→474.6  y=386.6→613.7  (w=284 h=227)
+    E:            x=400.5→492.5  y=399.8→522.2  (w=92  h=122)
+    T:            x=503.0→606.2  y=399.8→522.2  (w=103 h=122)
+    L:            x=622.0→714.5  y=399.8→522.2  (w=92  h=122)
+    Y:            x=705.4→812.5  y=399.8→522.2  (w=107 h=122)
+
+  Fonte: Manrope Black (900) — equivalente visual mais próximo
+  Letras no .ai original estão convertidas em contornos (paths).
+-->
+<svg xmlns="http://www.w3.org/2000/svg"
+     viewBox="0 0 1000 1000"
+     width="1000" height="1000"
+     role="img"
+     aria-label="Vetly logo">
+
+  <!-- Checkmark — geometria proporcional ao .ai original -->
+  <!-- Bbox alvo: (190.6, 386.6) → (474.6, 613.7) -->
+  <path d="M 200 472
+           L 300 612
+           L 470 396"
+        stroke="#ADDA1A"
+        stroke-width="92"
+        fill="none"
+        stroke-linecap="round"
+        stroke-linejoin="round"/>
+
+  <!-- Wordmark ETLY — Manrope Black, all caps, tracking ajustado -->
+  <!-- Posição: y baseline = 522, x início = 500 -->
+  <text x="500" y="522"
+        font-family="Manrope, 'SF Pro Display', sans-serif"
+        font-size="170"
+        font-weight="900"
+        fill="#181819"
+        letter-spacing="-3">ETLY</text>
+</svg>

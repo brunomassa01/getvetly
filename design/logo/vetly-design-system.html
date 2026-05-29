@@ -1,0 +1,614 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
+<title>Vetly · Design System · v1.1</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Manrope:wght@300;400;500;600;700;800;900&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+  :root{
+    /* ========== EXTRAÍDOS DO SVG OFICIAL (fonte da verdade) ========== */
+    --lime:        #C8FF02;
+    --lime-deep:   #A8D900;
+    --lime-soft:   #E8FF7F;
+    --lime-faint:  #F8FFD4;
+    --ink:         #1E1E1E;
+
+    /* ========== SURFACES ========== */
+    --paper:       #FAFAF7;
+    --paper-warm:  #F4F0E2;
+    --ink-dim:     #2A2A2A;
+    --ink-soft:    #383838;
+
+    /* ========== TEXT ========== */
+    --text-1: #1E1E1E;
+    --text-2: #4A4A48;
+    --text-3: #85827A;
+
+    /* ========== SEMANTIC ========== */
+    --success: #C8FF02;
+    --warning: #F2A03F;
+    --danger:  #E24B4A;
+    --info:    #3B8FAD;
+
+    /* ========== BORDERS ========== */
+    --border-subtle:  rgba(30,30,30,.08);
+    --border-default: rgba(30,30,30,.14);
+    --border-strong:  rgba(30,30,30,.24);
+
+    /* ========== RADIUS ========== */
+    --r-sm: 4px;
+    --r-md: 8px;
+    --r-lg: 14px;
+    --r-xl: 20px;
+
+    /* ========== SHADOWS ========== */
+    --sh-sm: 0 1px 2px rgba(30,30,30,.06);
+    --sh-md: 0 8px 24px rgba(30,30,30,.08);
+    --sh-lg: 0 24px 60px rgba(30,30,30,.12);
+    --sh-ring: 0 0 0 3px rgba(200,255,2,.35);
+
+    /* ========== FONTS ========== */
+    --font-display: 'Manrope', 'SF Pro Display', sans-serif;
+    --font-body:    'Manrope', system-ui, sans-serif;
+    --font-mono:    'JetBrains Mono', 'SF Mono', monospace;
+  }
+
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{font-family:var(--font-body);background:var(--paper);color:var(--text-1);line-height:1.55;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1320px;margin:0 auto;padding:0 48px}
+  @media (max-width:760px){.wrap{padding:0 24px}}
+
+  /* TOP */
+  .top{display:flex;justify-content:space-between;align-items:center;padding:28px 0;border-bottom:1px solid var(--border-subtle)}
+  .top .id{font-family:var(--font-mono);font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)}
+  .top .id b{color:var(--ink);font-weight:500}
+
+  /* HERO */
+  .hero{padding:80px 0 64px;text-align:center}
+  .hero .kicker{
+    display:inline-flex;align-items:center;gap:10px;
+    font-family:var(--font-mono);font-size:11px;letter-spacing:.18em;text-transform:uppercase;
+    color:#5C7A0E;background:var(--lime-faint);
+    padding:8px 14px;border-radius:999px;margin-bottom:36px;
+    border:1px solid var(--lime-soft);
+  }
+  .hero .kicker::before{content:"";width:6px;height:6px;border-radius:50%;background:var(--lime-deep)}
+  .hero h1{
+    font-family:var(--font-display);font-weight:800;
+    font-size:clamp(40px,5.4vw,68px);
+    line-height:1.04;letter-spacing:-.025em;
+    color:var(--ink);margin-bottom:18px;
+  }
+  .hero h1 em{font-style:normal;background:var(--lime);padding:0 6px;border-radius:4px}
+  .hero .sub{font-size:16px;color:var(--text-2);max-width:560px;margin:0 auto;line-height:1.6}
+
+  /* SECTIONS */
+  .sec{padding:64px 0;border-top:1px solid var(--border-subtle)}
+  .sec-head{display:flex;justify-content:space-between;align-items:baseline;margin-bottom:40px;gap:24px;flex-wrap:wrap}
+  .sec-num{font-family:var(--font-mono);font-size:10px;letter-spacing:.18em;text-transform:uppercase;color:var(--text-3)}
+  .sec-num b{color:var(--ink);font-weight:500}
+  .sec-head h2{font-family:var(--font-display);font-weight:700;font-size:clamp(28px,3vw,38px);letter-spacing:-.02em;line-height:1.15;color:var(--ink)}
+
+  /* LOGO STAGES */
+  .stage{
+    background:var(--paper-warm);border-radius:var(--r-xl);
+    padding:80px 48px;display:flex;align-items:center;justify-content:center;
+    min-height:320px;position:relative;overflow:hidden;
+  }
+  .stage.dark{background:var(--ink)}
+  .stage.lime{background:var(--lime)}
+  .stage svg.logo{display:block;max-width:520px;width:100%;height:auto}
+
+  .hero-asset{
+    background:var(--paper-warm);border-radius:var(--r-xl);
+    padding:90px 60px;display:flex;align-items:center;justify-content:center;margin-top:64px;
+  }
+  .hero-asset svg{max-width:540px;width:100%;height:auto;display:block}
+
+  .trio{display:grid;grid-template-columns:repeat(3,1fr);gap:14px;margin-top:14px}
+  @media (max-width:900px){.trio{grid-template-columns:1fr}}
+  .trio .stage{padding:48px 24px;min-height:160px}
+  .trio .stage svg.logo{max-width:300px}
+
+  /* MARK GRID */
+  .marks-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:12px}
+  @media (max-width:760px){.marks-grid{grid-template-columns:repeat(2,1fr)}}
+  .mark-tile{
+    background:var(--paper-warm);border:1px solid var(--border-subtle);
+    border-radius:var(--r-lg);padding:32px 18px;
+    display:flex;flex-direction:column;align-items:center;justify-content:center;gap:14px;min-height:160px;
+  }
+  .mark-tile .cap{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3)}
+  .icon-tile{display:flex;align-items:center;justify-content:center;border-radius:var(--r-lg);overflow:hidden;width:80px;height:80px;padding:14px}
+  .icon-tile.ink{background:var(--ink)}
+  .icon-tile.lime{background:var(--lime)}
+  .icon-tile.paper{background:var(--paper);border:1px solid var(--border-default)}
+  .icon-tile.circle{border-radius:50%}
+  .icon-tile svg{display:block;width:100%;height:100%}
+
+  /* COLOR SWATCHES */
+  .swatches{display:grid;grid-template-columns:repeat(4,1fr);gap:14px}
+  @media (max-width:900px){.swatches{grid-template-columns:repeat(2,1fr)}}
+  .swatch{border-radius:var(--r-lg);overflow:hidden;border:1px solid var(--border-subtle);background:var(--paper)}
+  .swatch .chip{height:120px;position:relative}
+  .swatch .chip .hex-overlay{
+    position:absolute;bottom:10px;left:14px;
+    font-family:var(--font-mono);font-size:11px;font-weight:500;
+    background:rgba(255,255,255,.9);padding:3px 8px;border-radius:4px;color:var(--ink);
+  }
+  .swatch .chip.dark-text .hex-overlay{background:rgba(30,30,30,.85);color:var(--paper)}
+  .swatch .info{padding:14px 16px}
+  .swatch .info .name{font-size:14px;font-weight:600;color:var(--ink)}
+  .swatch .info .usage{font-size:12px;color:var(--text-3);margin-top:4px;line-height:1.5}
+
+  /* TYPE */
+  .type-sample{padding:18px 0;border-bottom:1px solid var(--border-subtle)}
+  .type-sample:last-child{border-bottom:none}
+  .type-sample .l{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:10px}
+  .type-sample .demo{color:var(--ink)}
+
+  /* TOKENS */
+  .tokens-row{display:flex;gap:24px;flex-wrap:wrap;align-items:flex-end;padding:24px 0}
+  .token-cell{display:flex;flex-direction:column;align-items:center;gap:8px;min-width:80px}
+  .token-cell .visual{background:var(--lime-faint);border:1px solid var(--lime-soft)}
+  .token-cell .label{font-family:var(--font-mono);font-size:10px;letter-spacing:.12em;text-transform:uppercase;color:var(--text-3);text-align:center}
+  .token-cell .val{font-family:var(--font-mono);font-size:11px;color:var(--ink);font-weight:500}
+
+  .shadows-row{display:grid;grid-template-columns:repeat(4,1fr);gap:20px}
+  @media (max-width:760px){.shadows-row{grid-template-columns:repeat(2,1fr)}}
+  .shadow-card{background:#fff;padding:32px 20px;border-radius:var(--r-lg);text-align:center}
+  .shadow-card .sh-name{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:6px}
+  .shadow-card .sh-val{font-family:var(--font-mono);font-size:11px;color:var(--ink)}
+
+  /* COMPONENTS */
+  .comp-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:32px}
+  @media (max-width:760px){.comp-grid{grid-template-columns:1fr}}
+  .comp-block{background:var(--paper-warm);border-radius:var(--r-lg);padding:32px;border:1px solid var(--border-subtle)}
+  .comp-block .title{font-family:var(--font-mono);font-size:10px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3);margin-bottom:18px}
+  .comp-block .demo{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+
+  /* BUTTONS */
+  .btn{
+    font-family:var(--font-body);font-weight:600;font-size:14px;
+    padding:10px 20px;border-radius:var(--r-md);border:none;cursor:pointer;
+    transition:all 150ms cubic-bezier(.4,0,.2,1);
+    letter-spacing:.005em;display:inline-flex;align-items:center;gap:8px;
+  }
+  .btn-primary{background:var(--lime);color:var(--ink)}
+  .btn-primary:hover{background:var(--lime-deep)}
+  .btn-secondary{background:var(--ink);color:var(--paper)}
+  .btn-secondary:hover{background:#000}
+  .btn-outline{background:transparent;color:var(--ink);border:1px solid var(--border-strong)}
+  .btn-outline:hover{background:var(--paper-warm)}
+  .btn-ghost{background:transparent;color:var(--ink)}
+  .btn-ghost:hover{background:var(--paper-warm)}
+  .btn-danger{background:var(--danger);color:#fff}
+  .btn-sm{padding:6px 14px;font-size:12px}
+  .btn-lg{padding:14px 28px;font-size:16px}
+
+  /* INPUTS */
+  .input{
+    font-family:var(--font-body);font-size:14px;color:var(--ink);
+    padding:10px 14px;background:var(--paper);
+    border:1px solid var(--border-default);border-radius:var(--r-md);
+    outline:none;transition:all 150ms;width:100%;max-width:280px;
+  }
+  .input:focus{border-color:var(--lime-deep);box-shadow:var(--sh-ring)}
+  .input::placeholder{color:var(--text-3)}
+
+  /* PILLS */
+  .pill{display:inline-flex;align-items:center;gap:6px;padding:4px 10px;border-radius:999px;font-size:11px;font-weight:600;letter-spacing:.04em}
+  .pill::before{content:"";width:6px;height:6px;border-radius:50%}
+  .pill-success{background:var(--lime-faint);color:#5C7A0E}
+  .pill-success::before{background:var(--lime-deep)}
+  .pill-warning{background:#FCEBD7;color:#8C5510}
+  .pill-warning::before{background:var(--warning)}
+  .pill-danger{background:#FBE3E3;color:#8E2828}
+  .pill-danger::before{background:var(--danger)}
+  .pill-info{background:#E0EFF5;color:#1E5468}
+  .pill-info::before{background:var(--info)}
+  .pill-neutral{background:#E8E6DC;color:var(--text-2)}
+  .pill-neutral::before{background:var(--text-3)}
+
+  /* CARDS */
+  .card{background:#fff;border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:24px;box-shadow:var(--sh-sm)}
+  .card .ttl{font-family:var(--font-display);font-weight:700;font-size:18px;margin-bottom:8px}
+  .card .desc{font-size:14px;color:var(--text-2);line-height:1.55}
+
+  /* TABLES */
+  .tbl{width:100%;border-collapse:collapse;font-size:14px}
+  .tbl th,.tbl td{padding:12px 16px;text-align:left;border-bottom:1px solid var(--border-subtle)}
+  .tbl thead{background:var(--paper-warm)}
+  .tbl thead th{font-weight:600;font-size:12px;text-transform:uppercase;letter-spacing:.06em;color:var(--text-3)}
+  .tbl tbody tr:hover{background:rgba(200,255,2,.06)}
+  .tbl-wrap{border:1px solid var(--border-subtle);border-radius:var(--r-lg);overflow:hidden;background:#fff}
+
+  /* STATS */
+  .stat{background:#fff;border:1px solid var(--border-subtle);border-radius:var(--r-lg);padding:20px}
+  .stat .lbl{font-size:11px;text-transform:uppercase;letter-spacing:.14em;color:var(--text-3);font-weight:600}
+  .stat .num{font-family:var(--font-display);font-size:32px;font-weight:800;color:var(--ink);margin-top:6px;letter-spacing:-.02em}
+  .stat .delta{font-size:12px;color:#5C7A0E;font-weight:600;margin-top:4px}
+  .stat .delta.neg{color:var(--danger)}
+
+  /* CODE */
+  pre.code{background:var(--ink);color:var(--paper);padding:18px 22px;border-radius:var(--r-md);font-family:var(--font-mono);font-size:12px;line-height:1.6;overflow-x:auto}
+  pre.code .key{color:var(--lime)}
+  pre.code .str{color:#9CCBD4}
+
+  footer{padding:32px 0 60px;text-align:center;border-top:1px solid var(--border-subtle);margin-top:60px}
+  footer .small{font-family:var(--font-mono);font-size:10px;letter-spacing:.16em;text-transform:uppercase;color:var(--text-3)}
+</style>
+</head>
+<body>
+
+<!-- SVG SPRITE — definições reutilizáveis -->
+<svg style="display:none" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo principal: lime + ink -->
+  <symbol id="vetly-logo" viewBox="0 0 761.7 327.8">
+    <path fill="#C8FF02" d="M197.1,157.8l4.4-4.3,6-5.9,6.8-6.8,8-7.7,7.6-7.4,15.8-15.9,10.6-10.5,6.5-6.2,7.2-7.2,7.1-7.1,12.5-12.3,8-7.9,9.1-8.4c4.3-4,14-4.1,18.9.3,10.3,9.3,19.5,18.5,29.2,28.7,4.6,4.8,5.6,14.9.4,20.1l-180.5,178c-5.3,5.3-15.8,3.7-20.5-.9l-81.5-80.3c-5-4.9-6.5-14.4-1.5-20.1,9.3-10.4,19.4-19.7,29.7-29.6,5.2-5,15.2-5.1,20.7.3l41.8,40.7c2.1,2.1,4.5-.9,5.7-2.1l19.7-19.5,8.2-7.9Z"/>
+    <polygon fill="#1E1E1E" points="311.5 217.1 311.2 236.9 373.4 237 373.3 264.1 281.4 264.1 281.3 184.2 300.6 164.8 323.4 141.7 373.3 141.7 373.3 169.2 311.3 169.2 311.3 189.3 361.2 189.4 361.2 217.1 311.5 217.1"/>
+    <path fill="#1E1E1E" d="M693.3,175c0,9.5-5,17.9-9.3,25.5l-4.8,5.1c-6.2,6.6-14.7,10.2-23.7,12.8v45.7s-29.9,0-29.9,0v-45.4c-23.9-5.8-38-23.3-39.1-47.5l-.2-29.4h30.2c0-.1.2,30.4.2,30.4,0,5,2.6,9.4,5.5,13.1,4.5,5.7,10.9,6.9,18,7.2,10,.3,20-4.3,22.2-14.6l1.2-5.7v-30.5c.1,0,29.9,0,29.9,0v33.3Z"/>
+    <polygon fill="#1E1E1E" points="420.6 264.1 420.7 216.8 420.5 192.3 420.3 169.2 383.9 169.1 384.1 141.7 487.1 141.7 487 169.2 450.6 168.9 450.6 263.9 420.6 264.1"/>
+    <polygon fill="#1E1E1E" points="595.4 237 595.4 264.1 502.9 264.1 502.9 141.7 533.4 141.9 533.4 236.9 595.4 237"/>
+  </symbol>
+
+  <!-- Inverted: lime + paper (pra fundos escuros) -->
+  <symbol id="vetly-logo-inverted" viewBox="0 0 761.7 327.8">
+    <path fill="#C8FF02" d="M197.1,157.8l4.4-4.3,6-5.9,6.8-6.8,8-7.7,7.6-7.4,15.8-15.9,10.6-10.5,6.5-6.2,7.2-7.2,7.1-7.1,12.5-12.3,8-7.9,9.1-8.4c4.3-4,14-4.1,18.9.3,10.3,9.3,19.5,18.5,29.2,28.7,4.6,4.8,5.6,14.9.4,20.1l-180.5,178c-5.3,5.3-15.8,3.7-20.5-.9l-81.5-80.3c-5-4.9-6.5-14.4-1.5-20.1,9.3-10.4,19.4-19.7,29.7-29.6,5.2-5,15.2-5.1,20.7.3l41.8,40.7c2.1,2.1,4.5-.9,5.7-2.1l19.7-19.5,8.2-7.9Z"/>
+    <polygon fill="#FAFAF7" points="311.5 217.1 311.2 236.9 373.4 237 373.3 264.1 281.4 264.1 281.3 184.2 300.6 164.8 323.4 141.7 373.3 141.7 373.3 169.2 311.3 169.2 311.3 189.3 361.2 189.4 361.2 217.1 311.5 217.1"/>
+    <path fill="#FAFAF7" d="M693.3,175c0,9.5-5,17.9-9.3,25.5l-4.8,5.1c-6.2,6.6-14.7,10.2-23.7,12.8v45.7s-29.9,0-29.9,0v-45.4c-23.9-5.8-38-23.3-39.1-47.5l-.2-29.4h30.2c0-.1.2,30.4.2,30.4,0,5,2.6,9.4,5.5,13.1,4.5,5.7,10.9,6.9,18,7.2,10,.3,20-4.3,22.2-14.6l1.2-5.7v-30.5c.1,0,29.9,0,29.9,0v33.3Z"/>
+    <polygon fill="#FAFAF7" points="420.6 264.1 420.7 216.8 420.5 192.3 420.3 169.2 383.9 169.1 384.1 141.7 487.1 141.7 487 169.2 450.6 168.9 450.6 263.9 420.6 264.1"/>
+    <polygon fill="#FAFAF7" points="595.4 237 595.4 264.1 502.9 264.1 502.9 141.7 533.4 141.9 533.4 236.9 595.4 237"/>
+  </symbol>
+
+  <!-- Mono ink (tudo preto sobre lime) -->
+  <symbol id="vetly-logo-mono-ink" viewBox="0 0 761.7 327.8">
+    <path fill="#1E1E1E" d="M197.1,157.8l4.4-4.3,6-5.9,6.8-6.8,8-7.7,7.6-7.4,15.8-15.9,10.6-10.5,6.5-6.2,7.2-7.2,7.1-7.1,12.5-12.3,8-7.9,9.1-8.4c4.3-4,14-4.1,18.9.3,10.3,9.3,19.5,18.5,29.2,28.7,4.6,4.8,5.6,14.9.4,20.1l-180.5,178c-5.3,5.3-15.8,3.7-20.5-.9l-81.5-80.3c-5-4.9-6.5-14.4-1.5-20.1,9.3-10.4,19.4-19.7,29.7-29.6,5.2-5,15.2-5.1,20.7.3l41.8,40.7c2.1,2.1,4.5-.9,5.7-2.1l19.7-19.5,8.2-7.9Z"/>
+    <polygon fill="#1E1E1E" points="311.5 217.1 311.2 236.9 373.4 237 373.3 264.1 281.4 264.1 281.3 184.2 300.6 164.8 323.4 141.7 373.3 141.7 373.3 169.2 311.3 169.2 311.3 189.3 361.2 189.4 361.2 217.1 311.5 217.1"/>
+    <path fill="#1E1E1E" d="M693.3,175c0,9.5-5,17.9-9.3,25.5l-4.8,5.1c-6.2,6.6-14.7,10.2-23.7,12.8v45.7s-29.9,0-29.9,0v-45.4c-23.9-5.8-38-23.3-39.1-47.5l-.2-29.4h30.2c0-.1.2,30.4.2,30.4,0,5,2.6,9.4,5.5,13.1,4.5,5.7,10.9,6.9,18,7.2,10,.3,20-4.3,22.2-14.6l1.2-5.7v-30.5c.1,0,29.9,0,29.9,0v33.3Z"/>
+    <polygon fill="#1E1E1E" points="420.6 264.1 420.7 216.8 420.5 192.3 420.3 169.2 383.9 169.1 384.1 141.7 487.1 141.7 487 169.2 450.6 168.9 450.6 263.9 420.6 264.1"/>
+    <polygon fill="#1E1E1E" points="595.4 237 595.4 264.1 502.9 264.1 502.9 141.7 533.4 141.9 533.4 236.9 595.4 237"/>
+  </symbol>
+
+  <!-- Mark only — só o check (favicon/avatar) -->
+  <symbol id="vetly-mark" viewBox="0 0 280 280">
+    <path fill="#C8FF02" transform="translate(-50 87)"
+          d="M147.1,86.8l4.4-4.3,6-5.9,6.8-6.8,8-7.7,7.6-7.4,15.8-15.9,10.6-10.5,6.5-6.2,7.2-7.2,7.1-7.1,12.5-12.3,8-7.9,9.1-8.4c4.3-4,14-4.1,18.9.3,10.3,9.3,19.5,18.5,29.2,28.7,4.6,4.8,5.6,14.9.4,20.1l-180.5,178c-5.3,5.3-15.8,3.7-20.5-.9l-81.5-80.3c-5-4.9-6.5-14.4-1.5-20.1,9.3-10.4,19.4-19.7,29.7-29.6,5.2-5,15.2-5.1,20.7.3l41.8,40.7c2.1,2.1,4.5-.9,5.7-2.1l19.7-19.5,8.2-7.9Z"/>
+  </symbol>
+
+  <symbol id="vetly-mark-ink" viewBox="0 0 280 280">
+    <path fill="#1E1E1E" transform="translate(-50 87)"
+          d="M147.1,86.8l4.4-4.3,6-5.9,6.8-6.8,8-7.7,7.6-7.4,15.8-15.9,10.6-10.5,6.5-6.2,7.2-7.2,7.1-7.1,12.5-12.3,8-7.9,9.1-8.4c4.3-4,14-4.1,18.9.3,10.3,9.3,19.5,18.5,29.2,28.7,4.6,4.8,5.6,14.9.4,20.1l-180.5,178c-5.3,5.3-15.8,3.7-20.5-.9l-81.5-80.3c-5-4.9-6.5-14.4-1.5-20.1,9.3-10.4,19.4-19.7,29.7-29.6,5.2-5,15.2-5.1,20.7.3l41.8,40.7c2.1,2.1,4.5-.9,5.7-2.1l19.7-19.5,8.2-7.9Z"/>
+  </symbol>
+</svg>
+
+
+<header class="top wrap">
+  <div class="id"><b>VETLY</b> · design system</div>
+  <div class="id">v1.1 · svg oficial</div>
+</header>
+
+<!-- ============ HERO ============ -->
+<section class="hero wrap">
+  <span class="kicker">Design system · v1.1 · svg oficial</span>
+  <h1>Sistema construído sobre o <em>logo oficial</em>.</h1>
+  <p class="sub">Cores extraídas literalmente do <code>logo.svg</code>. Logo aplicado como SVG inline — escala perfeita em qualquer tamanho, sem perda de qualidade.</p>
+
+  <div class="hero-asset">
+    <svg viewBox="0 0 761.7 327.8" width="540"><use href="#vetly-logo"/></svg>
+  </div>
+</section>
+
+<!-- ============ 01 · LOGO ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">01<br><b>logo · brand mark</b></div>
+    <h2>O logo em três superfícies.</h2>
+  </div>
+
+  <div class="trio">
+    <div class="stage">
+      <svg class="logo" viewBox="0 0 761.7 327.8"><use href="#vetly-logo"/></svg>
+    </div>
+    <div class="stage dark">
+      <svg class="logo" viewBox="0 0 761.7 327.8"><use href="#vetly-logo-inverted"/></svg>
+    </div>
+    <div class="stage lime">
+      <svg class="logo" viewBox="0 0 761.7 327.8"><use href="#vetly-logo-mono-ink"/></svg>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 02 · STANDALONE MARK ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">02<br><b>standalone mark</b></div>
+    <h2>Quando só o check carrega — favicon, avatar, app icon.</h2>
+  </div>
+
+  <div class="marks-grid">
+    <div class="mark-tile">
+      <div class="icon-tile ink"><svg viewBox="0 0 280 280"><use href="#vetly-mark"/></svg></div>
+      <span class="cap">squircle · ink</span>
+    </div>
+    <div class="mark-tile">
+      <div class="icon-tile lime"><svg viewBox="0 0 280 280"><use href="#vetly-mark-ink"/></svg></div>
+      <span class="cap">squircle · lime</span>
+    </div>
+    <div class="mark-tile">
+      <div class="icon-tile paper"><svg viewBox="0 0 280 280"><use href="#vetly-mark-ink"/></svg></div>
+      <span class="cap">paper · outline</span>
+    </div>
+    <div class="mark-tile">
+      <div class="icon-tile ink circle"><svg viewBox="0 0 280 280"><use href="#vetly-mark"/></svg></div>
+      <span class="cap">circle · ink</span>
+    </div>
+    <div class="mark-tile">
+      <div class="icon-tile" style="background:transparent;border:1px dashed var(--border-default)"><svg viewBox="0 0 280 280"><use href="#vetly-mark"/></svg></div>
+      <span class="cap">naked · transparent</span>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 03 · SCALE TEST ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">03<br><b>scale test</b></div>
+    <h2>Como o logo se comporta em cada tamanho.</h2>
+  </div>
+
+  <div class="stage" style="padding:48px;flex-direction:column;gap:32px">
+    <div style="display:flex;align-items:flex-end;gap:40px;flex-wrap:wrap;justify-content:center">
+      <div style="text-align:center">
+        <svg viewBox="0 0 761.7 327.8" width="120"><use href="#vetly-logo"/></svg>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-top:8px;letter-spacing:.12em">120px · nav</div>
+      </div>
+      <div style="text-align:center">
+        <svg viewBox="0 0 761.7 327.8" width="200"><use href="#vetly-logo"/></svg>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-top:8px;letter-spacing:.12em">200px · header</div>
+      </div>
+      <div style="text-align:center">
+        <svg viewBox="0 0 761.7 327.8" width="340"><use href="#vetly-logo"/></svg>
+        <div style="font-family:var(--font-mono);font-size:10px;color:var(--text-3);margin-top:8px;letter-spacing:.12em">340px · hero</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============ 04 · COLOR ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">04<br><b>color · brand</b></div>
+    <h2>Paleta brand · extraída do <em>SVG oficial</em>.</h2>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch"><div class="chip" style="background:#C8FF02"><span class="hex-overlay">#C8FF02</span></div><div class="info"><div class="name">Lime</div><div class="usage">Primária da marca. Check do logo, CTAs, sucesso.</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#A8D900"><span class="hex-overlay">#A8D900</span></div><div class="info"><div class="name">Lime Deep</div><div class="usage">Hover de CTAs, foco, sombras.</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#E8FF7F"><span class="hex-overlay">#E8FF7F</span></div><div class="info"><div class="name">Lime Soft</div><div class="usage">Fundos de badges, highlights sutis.</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#F8FFD4"><span class="hex-overlay">#F8FFD4</span></div><div class="info"><div class="name">Lime Faint</div><div class="usage">Pills informativas, fundos de status sucesso.</div></div></div>
+  </div>
+</section>
+
+<!-- ============ 04b · NEUTRAL & SEMANTIC ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">04b<br><b>color · neutral & semantic</b></div>
+    <h2>Neutras, superfícies e cores semânticas.</h2>
+  </div>
+
+  <div class="swatches" style="margin-bottom:14px">
+    <div class="swatch"><div class="chip dark-text" style="background:#1E1E1E"><span class="hex-overlay">#1E1E1E</span></div><div class="info"><div class="name">Ink</div><div class="usage">Wordmark ETLY do logo. Texto e fundo escuro.</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#FAFAF7"><span class="hex-overlay">#FAFAF7</span></div><div class="info"><div class="name">Paper</div><div class="usage">Fundo principal modo light. Off-white quente.</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#F4F0E2"><span class="hex-overlay">#F4F0E2</span></div><div class="info"><div class="name">Paper Warm</div><div class="usage">Cards e surfaces elevadas em light mode.</div></div></div>
+    <div class="swatch"><div class="chip dark-text" style="background:#2A2A2A"><span class="hex-overlay">#2A2A2A</span></div><div class="info"><div class="name">Ink Dim</div><div class="usage">Cards e elevações em dark mode.</div></div></div>
+  </div>
+
+  <div class="swatches">
+    <div class="swatch"><div class="chip" style="background:#C8FF02"><span class="hex-overlay">#C8FF02</span></div><div class="info"><div class="name">Success</div><div class="usage">Sucesso/aprovado. Reaproveita o lime da marca.</div></div></div>
+    <div class="swatch"><div class="chip" style="background:#F2A03F"><span class="hex-overlay">#F2A03F</span></div><div class="info"><div class="name">Warning</div><div class="usage">Alerta amigável. Harmoniza com o lime.</div></div></div>
+    <div class="swatch"><div class="chip dark-text" style="background:#E24B4A"><span class="hex-overlay">#E24B4A</span></div><div class="info"><div class="name">Danger</div><div class="usage">Erro crítico, exclusão.</div></div></div>
+    <div class="swatch"><div class="chip dark-text" style="background:#3B8FAD"><span class="hex-overlay">#3B8FAD</span></div><div class="info"><div class="name">Info</div><div class="usage">Informação neutra, link.</div></div></div>
+  </div>
+</section>
+
+<!-- ============ 05 · TYPOGRAPHY ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">05<br><b>typography · UI system</b></div>
+    <h2>Manrope para a interface · o logo é arquivo, não fonte.</h2>
+  </div>
+
+  <p style="font-size:14px;color:var(--text-2);max-width:720px;margin-bottom:32px;line-height:1.6">
+    A tipografia do logotipo VETLY está embutida no SVG oficial como paths. Para toda a interface usamos <strong>Manrope</strong> — gratuita, geométrica, harmoniza com o caráter do logo.
+  </p>
+
+  <div class="type-sample"><div class="l">display · manrope 800 · 56px</div><div class="demo" style="font-family:var(--font-display);font-weight:800;font-size:56px;letter-spacing:-.025em;line-height:1.04">A análise honesta de cada proposta.</div></div>
+  <div class="type-sample"><div class="l">h1 · manrope 700 · 40px</div><div class="demo" style="font-family:var(--font-display);font-weight:700;font-size:40px;letter-spacing:-.02em;line-height:1.1">Compras inteligentes começam aqui</div></div>
+  <div class="type-sample"><div class="l">h2 · manrope 700 · 32px</div><div class="demo" style="font-family:var(--font-display);font-weight:700;font-size:32px;letter-spacing:-.02em;line-height:1.15">Resumo executivo</div></div>
+  <div class="type-sample"><div class="l">h3 · manrope 600 · 24px</div><div class="demo" style="font-family:var(--font-display);font-weight:600;font-size:24px;letter-spacing:-.01em;line-height:1.2">Detalhamento por item</div></div>
+  <div class="type-sample"><div class="l">body · manrope 400 · 15px</div><div class="demo" style="font-family:var(--font-body);font-weight:400;font-size:15px;line-height:1.55;color:var(--text-2);max-width:680px">Vetly transforma propostas comerciais em relatórios padronizados com leitura crítica honesta. Para times de compras de PME que querem decidir bem.</div></div>
+  <div class="type-sample"><div class="l">caption · manrope 500 · 13px</div><div class="demo" style="font-family:var(--font-body);font-weight:500;font-size:13px;color:var(--text-3)">Atualizado em 29 de maio de 2026</div></div>
+  <div class="type-sample"><div class="l">micro · jetbrains mono 500 · 11px uppercase</div><div class="demo" style="font-family:var(--font-mono);font-weight:500;font-size:11px;letter-spacing:.14em;text-transform:uppercase;color:var(--text-3)">tag · metadata · timestamp · status</div></div>
+</section>
+
+<!-- ============ 06 · SPACING ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">06<br><b>spacing · 4px base</b></div>
+    <h2>Escala modular baseada em 4px.</h2>
+  </div>
+
+  <div class="tokens-row">
+    <div class="token-cell"><div class="visual" style="width:4px;height:32px"></div><div class="label">1</div><div class="val">4px</div></div>
+    <div class="token-cell"><div class="visual" style="width:8px;height:32px"></div><div class="label">2</div><div class="val">8px</div></div>
+    <div class="token-cell"><div class="visual" style="width:12px;height:32px"></div><div class="label">3</div><div class="val">12px</div></div>
+    <div class="token-cell"><div class="visual" style="width:16px;height:32px"></div><div class="label">4</div><div class="val">16px</div></div>
+    <div class="token-cell"><div class="visual" style="width:24px;height:32px"></div><div class="label">6</div><div class="val">24px</div></div>
+    <div class="token-cell"><div class="visual" style="width:32px;height:32px"></div><div class="label">8</div><div class="val">32px</div></div>
+    <div class="token-cell"><div class="visual" style="width:48px;height:32px"></div><div class="label">12</div><div class="val">48px</div></div>
+    <div class="token-cell"><div class="visual" style="width:64px;height:32px"></div><div class="label">16</div><div class="val">64px</div></div>
+    <div class="token-cell"><div class="visual" style="width:80px;height:32px"></div><div class="label">20</div><div class="val">80px</div></div>
+  </div>
+</section>
+
+<!-- ============ 07 · RADIUS ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">07<br><b>radius</b></div>
+    <h2>Cantos arredondados.</h2>
+  </div>
+
+  <div class="tokens-row">
+    <div class="token-cell"><div class="visual" style="width:80px;height:80px;border-radius:4px"></div><div class="label">sm</div><div class="val">4px</div></div>
+    <div class="token-cell"><div class="visual" style="width:80px;height:80px;border-radius:8px"></div><div class="label">md</div><div class="val">8px</div></div>
+    <div class="token-cell"><div class="visual" style="width:80px;height:80px;border-radius:14px"></div><div class="label">lg</div><div class="val">14px</div></div>
+    <div class="token-cell"><div class="visual" style="width:80px;height:80px;border-radius:20px"></div><div class="label">xl</div><div class="val">20px</div></div>
+    <div class="token-cell"><div class="visual" style="width:80px;height:80px;border-radius:9999px"></div><div class="label">full</div><div class="val">9999px</div></div>
+  </div>
+</section>
+
+<!-- ============ 08 · SHADOWS ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">08<br><b>elevation · shadows</b></div>
+    <h2>Sombras sutis · três níveis.</h2>
+  </div>
+
+  <div class="shadows-row">
+    <div class="shadow-card" style="box-shadow:var(--sh-sm)"><div class="sh-name">sm</div><div class="sh-val">0 1px 2px / 6%</div></div>
+    <div class="shadow-card" style="box-shadow:var(--sh-md)"><div class="sh-name">md</div><div class="sh-val">0 8px 24px / 8%</div></div>
+    <div class="shadow-card" style="box-shadow:var(--sh-lg)"><div class="sh-name">lg</div><div class="sh-val">0 24px 60px / 12%</div></div>
+    <div class="shadow-card" style="box-shadow:var(--sh-ring)"><div class="sh-name">focus ring</div><div class="sh-val">0 0 0 3px lime/35%</div></div>
+  </div>
+</section>
+
+<!-- ============ 09 · BUTTONS ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">09<br><b>components · buttons</b></div>
+    <h2>Botões — primário lime, secundário ink.</h2>
+  </div>
+
+  <div class="comp-grid">
+    <div class="comp-block"><div class="title">variants</div><div class="demo">
+      <button class="btn btn-primary">Analisar proposta</button>
+      <button class="btn btn-secondary">Cancelar</button>
+      <button class="btn btn-outline">Salvar rascunho</button>
+      <button class="btn btn-ghost">Voltar</button>
+      <button class="btn btn-danger">Excluir</button>
+    </div></div>
+    <div class="comp-block"><div class="title">sizes</div><div class="demo">
+      <button class="btn btn-primary btn-sm">Small</button>
+      <button class="btn btn-primary">Default</button>
+      <button class="btn btn-primary btn-lg">Large</button>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============ 10 · INPUTS & PILLS ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">10<br><b>components · inputs & pills</b></div>
+    <h2>Entrada de dados e status.</h2>
+  </div>
+
+  <div class="comp-grid">
+    <div class="comp-block"><div class="title">inputs</div><div style="display:flex;flex-direction:column;gap:12px">
+      <input class="input" placeholder="Nome do fornecedor" />
+      <input class="input" placeholder="CNPJ (opcional)" />
+      <input class="input" value="Eletromidia ES" />
+    </div></div>
+    <div class="comp-block"><div class="title">pills · status</div><div class="demo">
+      <span class="pill pill-success">Aprovado</span>
+      <span class="pill pill-warning">Em revisão</span>
+      <span class="pill pill-danger">Recusado</span>
+      <span class="pill pill-info">Aguardando</span>
+      <span class="pill pill-neutral">Rascunho</span>
+    </div></div>
+  </div>
+</section>
+
+<!-- ============ 11 · CARDS & STATS ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">11<br><b>components · cards & stats</b></div>
+    <h2>Containers de conteúdo e métricas.</h2>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:16px;margin-bottom:24px">
+    <div class="stat"><div class="lbl">Análises este mês</div><div class="num">23</div><div class="delta">+8% vs mês anterior</div></div>
+    <div class="stat"><div class="lbl">Aprovação média</div><div class="num">87%</div><div class="delta">+3 pontos</div></div>
+    <div class="stat"><div class="lbl">Tempo médio</div><div class="num">2:14</div><div class="delta">-18s</div></div>
+    <div class="stat"><div class="lbl">Economia gerada</div><div class="num">R$ 84k</div><div class="delta neg">-12% no trimestre</div></div>
+  </div>
+
+  <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:16px">
+    <div class="card"><div class="ttl">Card básico</div><div class="desc">Container padrão com fundo branco, borda sutil e padding consistente.</div></div>
+    <div class="card" style="border-color:var(--lime-deep);background:linear-gradient(180deg,#FFFFFF, #FCFFE8)"><div class="ttl" style="color:#5C7A0E">Card destacado</div><div class="desc">Borda lime para marcar item recomendado, ativo ou em foco.</div></div>
+  </div>
+</section>
+
+<!-- ============ 12 · TABLES ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">12<br><b>tables</b></div>
+    <h2>Listagens e dados tabulares.</h2>
+  </div>
+
+  <div class="tbl-wrap"><table class="tbl">
+    <thead><tr><th>Fornecedor</th><th>Categoria</th><th>Valor</th><th>Status</th><th>Última análise</th></tr></thead>
+    <tbody>
+      <tr><td><strong>Eletromidia ES</strong></td><td>Mídia OOH</td><td>R$ 209.112,38</td><td><span class="pill pill-success">Aprovado</span></td><td>29/05/2026</td></tr>
+      <tr><td><strong>TOTVS Brasil</strong></td><td>Software</td><td>R$ 48.500,00</td><td><span class="pill pill-warning">Em revisão</span></td><td>27/05/2026</td></tr>
+      <tr><td><strong>Uniformes Premium</strong></td><td>Brindes</td><td>R$ 12.890,00</td><td><span class="pill pill-info">Aguardando</span></td><td>25/05/2026</td></tr>
+      <tr><td><strong>Consultoria Acme</strong></td><td>Serviços</td><td>R$ 87.000,00</td><td><span class="pill pill-danger">Recusado</span></td><td>22/05/2026</td></tr>
+    </tbody>
+  </table></div>
+</section>
+
+<!-- ============ 13 · CSS VARIABLES ============ -->
+<section class="sec wrap">
+  <div class="sec-head">
+    <div class="sec-num">13<br><b>tokens · css variables</b></div>
+    <h2>Copie e cole no seu projeto.</h2>
+  </div>
+
+  <pre class="code"><span class="key">:root</span> {
+  <span class="key">/* brand · extraído de logo.svg */</span>
+  <span class="key">--lime</span>:       <span class="str">#C8FF02</span>;
+  <span class="key">--lime-deep</span>:  <span class="str">#A8D900</span>;
+  <span class="key">--lime-soft</span>:  <span class="str">#E8FF7F</span>;
+  <span class="key">--lime-faint</span>: <span class="str">#F8FFD4</span>;
+  <span class="key">--ink</span>:        <span class="str">#1E1E1E</span>;
+
+  <span class="key">/* surfaces */</span>
+  <span class="key">--paper</span>:      <span class="str">#FAFAF7</span>;
+  <span class="key">--paper-warm</span>: <span class="str">#F4F0E2</span>;
+  <span class="key">--ink-dim</span>:    <span class="str">#2A2A2A</span>;
+
+  <span class="key">/* text */</span>
+  <span class="key">--text-1</span>: <span class="str">#1E1E1E</span>;
+  <span class="key">--text-2</span>: <span class="str">#4A4A48</span>;
+  <span class="key">--text-3</span>: <span class="str">#85827A</span>;
+
+  <span class="key">/* semantic */</span>
+  <span class="key">--success</span>: <span class="str">#C8FF02</span>;
+  <span class="key">--warning</span>: <span class="str">#F2A03F</span>;
+  <span class="key">--danger</span>:  <span class="str">#E24B4A</span>;
+  <span class="key">--info</span>:    <span class="str">#3B8FAD</span>;
+
+  <span class="key">/* type */</span>
+  <span class="key">--font-display</span>: <span class="str">'Manrope', sans-serif</span>;
+  <span class="key">--font-body</span>:    <span class="str">'Manrope', system-ui, sans-serif</span>;
+  <span class="key">--font-mono</span>:    <span class="str">'JetBrains Mono', monospace</span>;
+}</pre>
+</section>
+
+<footer><div class="small">vetly · design system · v1.1 · svg oficial · getvetly.com</div></footer>
+
+</body>
+</html>

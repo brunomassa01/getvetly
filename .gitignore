@@ -1,0 +1,66 @@
+# Node
+node_modules/
+.pnpm-debug.log*
+*.log
+
+# Next.js
+.next/
+out/
+build/
+.turbo/
+
+# Env vars
+.env
+.env.local
+.env*.local
+
+# Vercel
+.vercel/
+
+# Supabase
+.supabase/
+
+# Testes
+coverage/
+test-results/
+playwright-report/
+playwright/.cache/
+
+# IDE
+.vscode/*
+!.vscode/extensions.json
+!.vscode/settings.json
+.idea/
+.cursor/
+*.swp
+
+# Sistema
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Build de tipos
+*.tsbuildinfo
+next-env.d.ts
+
+# Sentry
+.sentryclirc
+
+# Auditoria
+audit-results.json
+
+# Backups locais
+backups/
+*.sql.bak
+
+# Arquivos temporários do projeto
+tmp/
+temp/
+
+# Pacote original extraído (não versionar)
+saas-procurement.zip
+
+# Segredos / credenciais locais
+*secrets*
+*.pem
+*.key

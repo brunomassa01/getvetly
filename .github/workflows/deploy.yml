@@ -1,0 +1,49 @@
+name: Deploy para Produção
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch: # permite rodar manualmente pelo painel do GitHub
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout do código
+        uses: actions/checkout@v4
+
+      - name: Configurar Node.js 20
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+
+      - name: Instalar pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
+
+      - name: Instalar dependências
+        run: pnpm install --frozen-lockfile
+
+      - name: Lint
+        run: pnpm lint
+
+      - name: Checagem de tipos
+        run: pnpm type-check
+
+      - name: Build
+        run: pnpm build
+
+      - name: Deploy via SSH
+        uses: appleboy/ssh-action@v1
+        with:
+          host: ${{ secrets.SERVER_HOST }}
+          username: deploy
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            cd /var/www/getvetly
+            git pull origin main
+            pnpm install --frozen-lockfile
+            pnpm build
+            pm2 restart getvetly || pm2 start "pnpm start" --name getvetly
+            pm2 save

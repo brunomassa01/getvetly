@@ -1,0 +1,14 @@
+# Normaliza quebras de linha como LF no repositório.
+# Evita problemas ao rodar scripts/configs no servidor Linux (VPS),
+# mesmo editando no Windows.
+* text=auto eol=lf
+
+# Binários — nunca normalizar
+*.png binary
+*.gif binary
+*.pdf binary
+*.ai binary
+*.ait binary
+*.woff binary
+*.woff2 binary
+*.ico binary

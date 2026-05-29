@@ -1,0 +1,156 @@
+{
+  "$schema": "https://design-tokens.org/schemas/v1",
+  "name": "vetly-design-tokens",
+  "version": "1.1.0",
+  "source": "logo.svg (Adobe Illustrator 29.8 export) — fonte da verdade",
+  "description": "Tokens de design da Vetly. Cores hex extraídas literalmente do SVG oficial. Versão anterior usava aproximações do PDF rasterizado — superada.",
+  "changelog": {
+    "1.1.0": "Cores corrigidas a partir do SVG oficial: lime #ADDA1A → #C8FF02, ink #181819 → #1E1E1E.",
+    "1.0.0": "Versão inicial com cores extraídas do PDF render (aproximadas)."
+  },
+
+  "color": {
+    "brand": {
+      "lime": {
+        "value": "#C8FF02",
+        "description": "Cor primária. Verde-limão neon do checkmark do logo oficial."
+      },
+      "lime-deep": {
+        "value": "#A8D900",
+        "description": "Variante mais escura. Hover de CTAs, foco, sombras do accent."
+      },
+      "lime-soft": {
+        "value": "#E8FF7F",
+        "description": "Tint claro. Fundos de badges, highlights sutis."
+      },
+      "lime-faint": {
+        "value": "#F8FFD4",
+        "description": "Tint muito claro. Pills informativas, fundos de status sucesso."
+      },
+      "ink": {
+        "value": "#1E1E1E",
+        "description": "Texto primário e fundo escuro. Wordmark ETLY do logo oficial."
+      }
+    },
+    "surface": {
+      "paper": {
+        "value": "#FAFAF7",
+        "description": "Fundo padrão modo light. Off-white quente, não branco frio."
+      },
+      "paper-warm": {
+        "value": "#F4F0E2",
+        "description": "Fundo secundário modo light. Cards, surfaces elevadas."
+      },
+      "ink-dim": {
+        "value": "#2A2A2A",
+        "description": "Cards e elevações em modo dark (variação clara do ink)."
+      },
+      "ink-soft": {
+        "value": "#383838",
+        "description": "Borda em modo dark, divisores sutis."
+      }
+    },
+    "text": {
+      "primary": { "value": "#1E1E1E" },
+      "secondary": { "value": "#4A4A48" },
+      "tertiary": { "value": "#85827A" },
+      "inverse": { "value": "#FAFAF7" }
+    },
+    "semantic": {
+      "success": { "value": "#C8FF02", "description": "Reaproveita o lime da marca." },
+      "warning": { "value": "#F2A03F", "description": "Alerta amigável." },
+      "danger":  { "value": "#E24B4A", "description": "Erro crítico, ação destrutiva." },
+      "info":    { "value": "#3B8FAD", "description": "Informação neutra, link." }
+    },
+    "border": {
+      "subtle":  { "value": "rgba(30, 30, 30, 0.08)" },
+      "default": { "value": "rgba(30, 30, 30, 0.14)" },
+      "strong":  { "value": "rgba(30, 30, 30, 0.24)" }
+    }
+  },
+
+  "typography": {
+    "fontFamily": {
+      "wordmark": {
+        "value": "embutido no SVG oficial (paths convertidos)",
+        "description": "Não tente reproduzir o wordmark com font-face. Use sempre o arquivo SVG/PNG oficial."
+      },
+      "display": {
+        "value": "'Manrope', 'SF Pro Display', sans-serif",
+        "description": "Headings. Peso 700-800. Harmoniza visualmente com o caráter do logo."
+      },
+      "body": {
+        "value": "'Manrope', system-ui, sans-serif",
+        "description": "Texto corrido, UI labels. Peso 400-500."
+      },
+      "mono": {
+        "value": "'JetBrains Mono', 'SF Mono', monospace",
+        "description": "Captions, metadados, dados tabulares."
+      }
+    },
+    "fontSize": {
+      "display": { "value": "56px", "lineHeight": "1.04", "letterSpacing": "-0.025em" },
+      "h1":      { "value": "40px", "lineHeight": "1.1",  "letterSpacing": "-0.02em" },
+      "h2":      { "value": "32px", "lineHeight": "1.15", "letterSpacing": "-0.02em" },
+      "h3":      { "value": "24px", "lineHeight": "1.2",  "letterSpacing": "-0.01em" },
+      "h4":      { "value": "18px", "lineHeight": "1.3" },
+      "body":    { "value": "15px", "lineHeight": "1.55" },
+      "sm":      { "value": "13px", "lineHeight": "1.5" },
+      "xs":      { "value": "11px", "lineHeight": "1.4",  "letterSpacing": "0.02em" },
+      "micro":   { "value": "10px", "lineHeight": "1.3",  "letterSpacing": "0.14em" }
+    },
+    "fontWeight": {
+      "light": 300, "regular": 400, "medium": 500,
+      "semibold": 600, "bold": 700, "extrabold": 800, "black": 900
+    }
+  },
+
+  "spacing": {
+    "0":  "0px", "1":  "4px", "2":  "8px", "3":  "12px",
+    "4":  "16px", "5":  "20px", "6":  "24px", "8":  "32px",
+    "10": "40px", "12": "48px", "16": "64px", "20": "80px", "24": "96px"
+  },
+
+  "radius": {
+    "sm":   "4px", "md":   "8px", "lg":   "14px",
+    "xl":   "20px", "2xl":  "28px", "full": "9999px"
+  },
+
+  "shadow": {
+    "sm":         "0 1px 2px rgba(30, 30, 30, 0.06)",
+    "md":         "0 8px 24px rgba(30, 30, 30, 0.08)",
+    "lg":         "0 24px 60px rgba(30, 30, 30, 0.12)",
+    "focus-ring": "0 0 0 3px rgba(200, 255, 2, 0.35)"
+  },
+
+  "animation": {
+    "duration": { "fast": "150ms", "normal": "250ms", "slow": "400ms" },
+    "easing": {
+      "default": "cubic-bezier(0.4, 0, 0.2, 1)",
+      "out":     "cubic-bezier(0.16, 1, 0.3, 1)",
+      "in":      "cubic-bezier(0.4, 0, 1, 1)"
+    }
+  },
+
+  "breakpoint": {
+    "sm":  "640px", "md":  "768px", "lg":  "1024px",
+    "xl":  "1280px", "2xl": "1536px"
+  },
+
+  "logo": {
+    "files": {
+      "primary":     "vetly-logo.svg          — check lime + ETLY ink (uso padrão)",
+      "inverted":    "vetly-logo-inverted.svg — check lime + ETLY paper (fundos escuros)",
+      "mono-ink":    "vetly-logo-mono-ink.svg — tudo ink (preto sobre paper)",
+      "mono-paper":  "vetly-logo-mono-paper.svg — tudo paper (sobre fundos escuros sólidos)",
+      "mark":        "vetly-mark.svg          — só o check (favicon, avatar, app icon)"
+    },
+    "viewBox": "0 0 761.7 327.8",
+    "aspectRatio": "2.32:1",
+    "minSize": {
+      "wordmark": "80px wide",
+      "mark":     "16px wide"
+    },
+    "clearSpace": "Min ½ da altura do checkmark em todos os lados"
+  }
+}
