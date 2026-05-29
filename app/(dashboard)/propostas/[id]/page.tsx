@@ -112,7 +112,11 @@ export default async function PropostaDetalhePage({
           {proposta.arquivos.length > 0 && (
             <BotaoAnalisar
               propostaId={proposta.id}
-              rotular={analise ? "Refazer análise" : "Analisar com IA"}
+              rotular={
+                analise || proposta.status === "failed"
+                  ? "Refazer análise"
+                  : "Analisar com IA"
+              }
             />
           )}
         </div>
