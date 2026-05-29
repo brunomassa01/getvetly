@@ -105,9 +105,16 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 2. **Envio/exportação em PDF** — gerar PDF do relatório da análise para compartilhar.
 3. **Preparar apresentação** — montar uma apresentação a partir da análise/comparação (já vai com a recomendação do comparativo). Possível Gamma/Adobe MCP.
 4. ✅ **Comparação de propostas** (US-021) — FEITO: `/comparativos`, seleciona 2+ propostas prontas + critério → IA gera matriz + recomendação + cenários. Salvo em `comparativos`.
-5. **Edição manual da proposta** — deixar o usuário completar campos que a IA não achou (período, validade, condição pagamento, etc.). Mensagem de "não encontrado" deve ser mais clara/acionável.
+5. **Edição manual da proposta** — deixar o usuário completar campos que a IA não achou. Mensagem de "não encontrado" mais clara/acionável.
 
-- **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, histórico/detalhe fornecedor (US-031), Mistral OCR (PDF escaneado), XLSX/DOCX
+### Ideias de negócio / monetização (a avaliar — Bruno, 2026-05-29)
+6. **Modelo de venda: assinatura vs. crédito** — assinatura por tier (recorrente) e/ou compra de créditos por análise. Recomendação inicial: assinatura como base (MRR previsível B2B) + pacotes de crédito como add-on/overflow e entrada p/ avulsos. Regra dos 50% de margem vale p/ ambos.
+7. **Canal de parceiros/afiliados** — afiliados revendem (links/cupons de indicação, comissão %, painel do parceiro). Relacionado a whitelabel (consultorias). Fase pós-PMF; depende de Stripe + atribuição de origem.
+
+## 🐞 Bug aberto (investigar ao retomar)
+- **Client-side exception ao subir 2 arquivos da MESMA proposta** em /propostas/nova (deploy a1abef9). Erro "Application error: a client-side exception has occurred". Falta o texto do console do Bruno p/ diagnosticar. Hipótese: renderização do relatório/serialização RSC com algum campo da análise. Verificar status da proposta no banco (Pronta/Falhou) e `pm2 logs getvetly`.
+
+- **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, histórico/detalhe fornecedor (US-031), Mistral OCR (PDF escaneado)
 
 ## ⚠️ Segurança — segredos e pasta pessoal
 - **Pasta `BRUNO/` = espaço pessoal do Bruno. NADA dela sobe para o Git.** Já está no `.gitignore`. Ele move para lá tudo que for pessoal/segredo (ex: chaves em `BRUNO/getvetly.txt`, e moveu a antiga pasta `marketing/` para `BRUNO/marketing/`).
