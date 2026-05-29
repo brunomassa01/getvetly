@@ -26,6 +26,12 @@ export default function DashboardLayout({
                 Propostas
               </Link>
               <Link
+                href="/comparativos"
+                className="text-texto-2 hover:text-ink transition-colors"
+              >
+                Comparativos
+              </Link>
+              <Link
                 href="/fornecedores"
                 className="text-texto-2 hover:text-ink transition-colors"
               >

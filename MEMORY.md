@@ -105,9 +105,10 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 
 - **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, histórico/detalhe fornecedor (US-031), Mistral OCR (PDF escaneado), XLSX/DOCX
 
-## ⚠️ Segurança — segredos
-- `BRUNO/getvetly.txt` no disco contém as chaves do Bruno (Anthropic, Google, Stripe). Pasta `BRUNO/` está no `.gitignore` — NUNCA versionar.
-- 2026-05-29: GitHub Push Protection bloqueou um commit que continha esse arquivo (segredos não vazaram). Lição: evitar `git add .` cego; conferir `git status` antes de commitar. Segredos vão sempre via `.env` no servidor, nunca no repo.
+## ⚠️ Segurança — segredos e pasta pessoal
+- **Pasta `BRUNO/` = espaço pessoal do Bruno. NADA dela sobe para o Git.** Já está no `.gitignore`. Ele move para lá tudo que for pessoal/segredo (ex: chaves em `BRUNO/getvetly.txt`, e moveu a antiga pasta `marketing/` para `BRUNO/marketing/`).
+- **PENDENTE para o próximo deploy**: remover do Git (mantendo no disco) o arquivo `marketing/vetly-campaign-plan-v1.md` que foi commitado por engano antes da mudança — rodar `git rm --cached -r marketing` (a pasta marketing antiga já foi movida para BRUNO/ pelo Bruno).
+- 2026-05-29: GitHub Push Protection bloqueou um commit que continha `BRUNO/getvetly.txt` (segredos não vazaram). Lição: evitar `git add .` cego; conferir `git status` antes de commitar. Segredos vão sempre via `.env` no servidor, nunca no repo.
 
 ## Como trabalhar
 1. Bruno escolhe uma user story de `docs/01-product/user-stories.md`
