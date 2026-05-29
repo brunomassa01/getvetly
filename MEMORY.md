@@ -92,9 +92,10 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - **Pendente p/ ativar**: conta Resend (e-mail de recuperação — hoje cai no log do servidor via `pm2 logs getvetly`)
 - ✅ **CRUD de fornecedores** (US-030): /fornecedores (lista + busca debounce + filtro categoria), /novo, /[id] (editar + arquivar). Isolado por workspace via `withUser`. Padrão de telas estabelecido.
 - ✅ **Vitest configurado** + passo de testes no CI (lint → type-check → testes → build). 8 testes (schemas de fornecedor e proposta).
-- ✅ **Propostas — criação + upload** (US-010/011): /propostas (lista), /nova (form + upload múltiplo), /[id] (detalhe). Arquivos no disco do VPS (`STORAGE_DIR/<workspace>/<proposta>/`). Status nasce `draft`.
-- **PRÓXIMA FATIA (alto valor)**: análise por IA das propostas (OCR + Claude). Claude API pronta (chave de Bruno → colocar no `.env` do VPS). OCR: criar conta Mistral OU extrair texto de PDF localmente (decidir).
-- **Pendente futuro**: checkout Stripe, conta Resend, publicar app Google
+- ✅ **Propostas — criação + upload** (US-010/011): /propostas (lista), /nova (form + upload múltiplo), /[id] (detalhe). Arquivos no disco do VPS (`STORAGE_DIR/<workspace>/<proposta>/`).
+- ✅ **Análise por IA** (US-012): botão "Analisar com IA" → extrai texto do PDF (unpdf, local) → Claude (`lib/ai/`) → relatório (resumo executivo, prós, pontos a questionar, valores, itens, métricas). `ANTHROPIC_API_KEY` no `.env` do VPS. Nginx com `proxy_read_timeout 300s`. análises gravadas via service (BYPASSRLS), prompt v1.0.0.
+  - MVP só lê PDF com texto (unpdf). PDF escaneado/imagem + XLSX/DOCX = evolução (Mistral OCR + libs). Análise é SÍNCRONA (server action); migrar p/ Inngest async se ficar lenta.
+- **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, comparativo de propostas (US-021), histórico/detalhe fornecedor (US-031)
 
 ## ⚠️ Segurança — segredos
 - `BRUNO/getvetly.txt` no disco contém as chaves do Bruno (Anthropic, Google, Stripe). Pasta `BRUNO/` está no `.gitignore` — NUNCA versionar.
@@ -136,3 +137,8 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
   - US-010/011: criar proposta com vínculo a fornecedor, valores e upload múltiplo de arquivos (disco do VPS).
   - `next.config` bodySizeLimit 25mb. Status `draft` (análise IA é a próxima fatia).
   - Incidente contido: Push Protection do GitHub barrou `BRUNO/getvetly.txt` (segredos) — removido do git, mantido no disco, pasta `BRUNO/` ignorada.
+- **2026-05-29 — análise por IA no ar** ✅ (coração do produto)
+  - US-012: PDF → texto (unpdf) → Claude (claude-sonnet-4-6) → relatório estruturado validado por Zod.
+  - Deps: `@anthropic-ai/sdk`, `unpdf`. Chave Claude no `.env` do VPS, limite US$30. Prompt cacheado.
+  - Nginx `proxy_read_timeout/send_timeout 300s` para a análise síncrona não estourar.
+  - 12 testes no total. Aguardando 1º teste real do Bruno com PDF de proposta.
