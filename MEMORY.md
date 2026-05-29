@@ -91,9 +91,14 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - ✅ Google OAuth ativo: credenciais no `.env` do VPS; projeto "GetVetly" no Google Cloud (modo teste — publicar antes de abrir ao público geral). Verificar em https://app.getvetly.com/api/auth/providers
 - **Pendente p/ ativar**: conta Resend (e-mail de recuperação — hoje cai no log do servidor via `pm2 logs getvetly`)
 - ✅ **CRUD de fornecedores** (US-030): /fornecedores (lista + busca debounce + filtro categoria), /novo, /[id] (editar + arquivar). Isolado por workspace via `withUser`. Padrão de telas estabelecido.
-- ✅ **Vitest configurado** + passo de testes no CI (lint → type-check → testes → build). 5 testes do schema de fornecedor.
-- **Pendente futuro**: módulo de propostas (upload + análise IA — coração do produto, usa Claude API já pronta), checkout Stripe, conta Resend, publicar app Google
-- **Stripe**: Bruno já tem chave publicável + secret em mãos (2026-05-29). Configurar quando construir o checkout/assinaturas.
+- ✅ **Vitest configurado** + passo de testes no CI (lint → type-check → testes → build). 8 testes (schemas de fornecedor e proposta).
+- ✅ **Propostas — criação + upload** (US-010/011): /propostas (lista), /nova (form + upload múltiplo), /[id] (detalhe). Arquivos no disco do VPS (`STORAGE_DIR/<workspace>/<proposta>/`). Status nasce `draft`.
+- **PRÓXIMA FATIA (alto valor)**: análise por IA das propostas (OCR + Claude). Claude API pronta (chave de Bruno → colocar no `.env` do VPS). OCR: criar conta Mistral OU extrair texto de PDF localmente (decidir).
+- **Pendente futuro**: checkout Stripe, conta Resend, publicar app Google
+
+## ⚠️ Segurança — segredos
+- `BRUNO/getvetly.txt` no disco contém as chaves do Bruno (Anthropic, Google, Stripe). Pasta `BRUNO/` está no `.gitignore` — NUNCA versionar.
+- 2026-05-29: GitHub Push Protection bloqueou um commit que continha esse arquivo (segredos não vazaram). Lição: evitar `git add .` cego; conferir `git status` antes de commitar. Segredos vão sempre via `.env` no servidor, nunca no repo.
 
 ## Como trabalhar
 1. Bruno escolhe uma user story de `docs/01-product/user-stories.md`
@@ -127,3 +132,7 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - **2026-05-29 — CRUD de fornecedores no ar** ✅
   - US-030: lista com busca/filtro, cadastro, edição, arquivar. Tudo isolado por workspace (RLS via `withUser`).
   - Vitest entrou no projeto + passo de testes no CI. Padrão de tela (data layer → schema Zod → server actions → form client → páginas) estabelecido para reusar nas próximas features.
+- **2026-05-29 — propostas (criação + upload) no ar** ✅
+  - US-010/011: criar proposta com vínculo a fornecedor, valores e upload múltiplo de arquivos (disco do VPS).
+  - `next.config` bodySizeLimit 25mb. Status `draft` (análise IA é a próxima fatia).
+  - Incidente contido: Push Protection do GitHub barrou `BRUNO/getvetly.txt` (segredos) — removido do git, mantido no disco, pasta `BRUNO/` ignorada.

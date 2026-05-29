@@ -1,7 +1,9 @@
 import "server-only";
-import { withUser } from "@/lib/db/client";
+import { withUser, getSqlService } from "@/lib/db/client";
 import { salvarArquivo } from "./storage";
 import type { PropostaInput } from "./schema";
+import type { Analise } from "@/lib/ai/schema";
+import type { ResultadoAnalise } from "@/lib/ai/analisar";
 
 export interface PropostaListaItem {
   id: string;
@@ -134,4 +136,113 @@ export async function criarProposta(
   }
 
   return { id };
+}
+
+// ===================== Análise por IA =====================
+
+export interface DadosParaAnalise {
+  workspaceId: string;
+  titulo: string;
+  categoria: string;
+  escopo: string | null;
+  arquivos: {
+    nome_original: string;
+    nome_storage: string;
+    mime_type: string;
+  }[];
+}
+
+/** Reúne os dados necessários para rodar a análise (RLS garante ownership). */
+export async function dadosParaAnalise(
+  userId: string,
+  propostaId: string,
+): Promise<DadosParaAnalise | null> {
+  return withUser(userId, async (sql) => {
+    const [proposta] = await sql<
+      { workspace_id: string; titulo: string; categoria: string; escopo: string | null }[]
+    >`
+      select workspace_id, titulo, categoria, escopo
+      from propostas where id = ${propostaId}
+    `;
+    if (!proposta) return null;
+
+    const arquivos = await sql<
+      { nome_original: string; nome_storage: string; mime_type: string }[]
+    >`
+      select nome_original, nome_storage, mime_type
+      from proposta_arquivos where proposta_id = ${propostaId}
+      order by created_at asc
+    `;
+
+    return {
+      workspaceId: proposta.workspace_id,
+      titulo: proposta.titulo,
+      categoria: proposta.categoria,
+      escopo: proposta.escopo,
+      arquivos: [...arquivos],
+    };
+  });
+}
+
+/** Atualiza o status da proposta (criador ou admin via RLS). */
+export async function atualizarStatusProposta(
+  userId: string,
+  propostaId: string,
+  status: string,
+  mensagem?: string,
+): Promise<void> {
+  await withUser(userId, (sql) =>
+    sql`
+      update propostas
+      set status = ${status}, status_message = ${mensagem ?? null}
+      where id = ${propostaId}
+    `,
+  );
+}
+
+/**
+ * Salva a análise gerada pela IA. Usa a conexão de SERVIÇO (BYPASSRLS),
+ * pois a tabela analises não tem policy de insert (worker confiável).
+ */
+export async function salvarAnalise(
+  workspaceId: string,
+  propostaId: string,
+  resultado: ResultadoAnalise,
+): Promise<void> {
+  const sql = getSqlService();
+  await sql`
+    insert into analises
+      (proposta_id, workspace_id, versao, payload, modelo_usado,
+       prompt_versao, tokens_input, tokens_output, custo_usd, latencia_ms)
+    values (
+      ${propostaId}, ${workspaceId}, 1,
+      ${JSON.stringify(resultado.analise)}::jsonb,
+      ${resultado.modelo}, ${resultado.promptVersao},
+      ${resultado.tokensInput}, ${resultado.tokensOutput},
+      ${resultado.custoUsd}, ${resultado.latenciaMs}
+    )
+    on conflict (proposta_id, versao) do update set
+      payload = excluded.payload,
+      modelo_usado = excluded.modelo_usado,
+      tokens_input = excluded.tokens_input,
+      tokens_output = excluded.tokens_output,
+      custo_usd = excluded.custo_usd,
+      latencia_ms = excluded.latencia_ms,
+      created_at = now()
+  `;
+}
+
+/** Busca a análise mais recente de uma proposta (RLS select por membro). */
+export async function buscarAnalise(
+  userId: string,
+  propostaId: string,
+): Promise<Analise | null> {
+  return withUser(userId, async (sql) => {
+    const [linha] = await sql<{ payload: Analise }[]>`
+      select payload from analises
+      where proposta_id = ${propostaId}
+      order by versao desc limit 1
+    `;
+    return linha?.payload ?? null;
+  });
 }

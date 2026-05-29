@@ -2,10 +2,12 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/sessao";
-import { buscarProposta } from "@/lib/propostas/db";
+import { buscarProposta, buscarAnalise } from "@/lib/propostas/db";
 import { STATUS_PROPOSTA } from "@/lib/propostas/schema";
 import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
 import { formatarMoeda, formatarData, formatarTamanho } from "@/lib/format";
+import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
+import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
 
 export const metadata: Metadata = { title: "Proposta — Vetly" };
 export const dynamic = "force-dynamic";
@@ -27,6 +29,7 @@ export default async function PropostaDetalhePage({
   const userId = await usuarioAtual();
   const proposta = await buscarProposta(userId, params.id);
   if (!proposta) notFound();
+  const analise = await buscarAnalise(userId, params.id);
 
   return (
     <div className="max-w-3xl space-y-8">
@@ -100,14 +103,42 @@ export default async function PropostaDetalhePage({
         )}
       </section>
 
-      {/* Análise (próxima etapa) */}
-      <section className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-6 text-center">
-        <p className="font-display font-bold text-ink">Análise por IA</p>
-        <p className="text-sm text-texto-2 mt-1">
-          O motor de análise (OCR + Claude) entra na próxima etapa. Em breve
-          esta proposta vira um relatório com leitura crítica.
-        </p>
-      </section>
+      {/* Análise por IA */}
+      <div>
+        <div className="flex items-center justify-between gap-4 mb-4">
+          <h2 className="font-display font-extrabold text-ink text-xl tracking-tighter">
+            Análise por IA
+          </h2>
+          {proposta.arquivos.length > 0 && (
+            <BotaoAnalisar
+              propostaId={proposta.id}
+              rotular={analise ? "Refazer análise" : "Analisar com IA"}
+            />
+          )}
+        </div>
+
+        {analise ? (
+          <RelatorioAnalise analise={analise} />
+        ) : (
+          <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-6 text-center">
+            {proposta.status === "failed" ? (
+              <p className="text-sm text-danger">
+                A última análise falhou. Verifique se o PDF tem texto (não é só
+                imagem) e tente novamente.
+              </p>
+            ) : proposta.arquivos.length === 0 ? (
+              <p className="text-sm text-texto-2">
+                Anexe ao menos um arquivo (PDF com texto) para analisar.
+              </p>
+            ) : (
+              <p className="text-sm text-texto-2">
+                Clique em <strong>Analisar com IA</strong> para gerar o
+                relatório com leitura crítica desta proposta.
+              </p>
+            )}
+          </div>
+        )}
+      </div>
     </div>
   );
 }
