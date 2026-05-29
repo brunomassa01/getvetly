@@ -22,12 +22,20 @@ export default async function ComparativosPage() {
             Compare propostas e descubra a melhor escolha pelo seu critério.
           </p>
         </div>
-        <Link
-          href="/comparativos/novo"
-          className="shrink-0 font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
-        >
-          Nova comparação
-        </Link>
+        <div className="flex gap-2 shrink-0">
+          <Link
+            href="/comparativos/novo"
+            className="font-body font-semibold text-sm bg-transparent text-ink px-4 py-2.5 rounded-md border border-[color:var(--border-strong)] hover:bg-paper-warm transition-colors"
+          >
+            Comparar analisadas
+          </Link>
+          <Link
+            href="/comparativos/subir"
+            className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
+          >
+            Subir e comparar
+          </Link>
+        </div>
       </div>
 
       {comparativos.length === 0 ? (
@@ -39,10 +47,10 @@ export default async function ComparativosPage() {
             Selecione 2 ou mais propostas analisadas e deixe a IA recomendar.
           </p>
           <Link
-            href="/comparativos/novo"
+            href="/comparativos/subir"
             className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
           >
-            Criar primeira comparação
+            Subir e comparar
           </Link>
         </div>
       ) : (
