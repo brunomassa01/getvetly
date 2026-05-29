@@ -60,28 +60,22 @@ ${input.contexto}`;
         cache_control: { type: "ephemeral" },
       },
     ],
-    messages: [
-      { role: "user", content: mensagemUsuario },
-      // Prefill: força a resposta a começar já no JSON, sem texto antes.
-      { role: "assistant", content: "{" },
-    ],
+    messages: [{ role: "user", content: mensagemUsuario }],
   });
   const latenciaMs = Date.now() - inicio;
 
-  const continuacao = resposta.content
+  const texto = resposta.content
     .filter((bloco): bloco is Anthropic.TextBlock => bloco.type === "text")
     .map((bloco) => bloco.text)
     .join("");
-  // Reanexa o "{" do prefill e recorta o objeto JSON.
-  const textoCompleto = "{" + continuacao;
 
   let json: unknown;
   try {
-    json = JSON.parse(extrairJson(textoCompleto));
+    json = JSON.parse(extrairJson(texto));
   } catch {
     console.error(
       `[analise] JSON inválido. stop_reason=${resposta.stop_reason}. Prévia:`,
-      textoCompleto.slice(0, 300),
+      texto.slice(0, 300),
     );
     throw new Error(
       resposta.stop_reason === "max_tokens"
