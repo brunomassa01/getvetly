@@ -1,36 +1,29 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useEffect, useRef, useState } from "react";
+import { useFormState } from "react-dom";
 import { Campo, Aviso } from "@/components/auth/Campos";
 import { ESTADO_INICIAL } from "@/lib/auth/tipos";
 import { criarEAnalisarPropostaAction } from "@/app/(dashboard)/propostas/actions";
 import { OverlayAnalisando } from "./OverlayAnalisando";
 
-function BotaoAnalisar() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full font-body font-semibold text-sm bg-lime text-ink px-5 py-3 rounded-md transition-colors hover:bg-lime-deep disabled:opacity-60 disabled:cursor-not-allowed"
-    >
-      {pending
-        ? "Analisando proposta... (pode levar até 1 min)"
-        : "Analisar proposta"}
-    </button>
-  );
-}
+const ACEITA = ".pdf,.docx,.xlsx,.xls,.csv,.ppt,.pptx,.png,.jpg,.jpeg";
 
 export function PropostaForm() {
   const [estado, action] = useFormState(
     criarEAnalisarPropostaAction,
     ESTADO_INICIAL,
   );
+  const [analisando, setAnalisando] = useState(false);
   const [nomes, setNomes] = useState<string[]>([]);
   const [arrastando, setArrastando] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  // Se a ação voltar com erro, esconde o overlay (em sucesso, navega e desmonta).
+  useEffect(() => {
+    if (estado.erro) setAnalisando(false);
+  }, [estado]);
 
   function atualizarNomes(files: FileList | null) {
     setNomes(Array.from(files ?? []).map((f) => f.name));
@@ -48,19 +41,18 @@ export function PropostaForm() {
 
   return (
     <form action={action} className="space-y-5">
-      <OverlayAnalisando />
-      {/* Input real (escondido), preenchido por clique ou drag-and-drop */}
+      <OverlayAnalisando ativo={analisando} />
+
       <input
         ref={inputRef}
         type="file"
         name="arquivos"
         multiple
-        accept=".pdf,.docx,.xlsx,.xls,.csv,.png,.jpg,.jpeg"
+        accept={ACEITA}
         className="sr-only"
         onChange={(e) => atualizarNomes(e.target.files)}
       />
 
-      {/* Dropzone */}
       <div
         role="button"
         tabIndex={0}
@@ -84,11 +76,11 @@ export function PropostaForm() {
         }`}
       >
         <p className="font-display font-bold text-lg text-ink">
-          {arrastando ? "Solte o arquivo aqui" : "Suba a proposta"}
+          {arrastando ? "Solte os arquivos aqui" : "Suba a proposta"}
         </p>
         <p className="text-sm text-texto-2 mt-1">
-          Arraste o arquivo aqui ou clique para escolher (PDF com texto). A IA
-          cuida do resto: fornecedor, valores, categoria e leitura crítica.
+          Arraste os arquivos ou clique para escolher. Pode ser mais de um da
+          mesma proposta: PDF, Excel, Word ou PowerPoint. A IA lê tudo junto.
         </p>
         {nomes.length > 0 && (
           <ul className="mt-4 inline-block text-left space-y-1">
@@ -116,9 +108,13 @@ export function PropostaForm() {
         >
           Cancelar
         </Link>
-        <div className="flex-[2]">
-          <BotaoAnalisar />
-        </div>
+        <button
+          type="submit"
+          onClick={() => setAnalisando(true)}
+          className="flex-[2] font-body font-semibold text-sm bg-lime text-ink px-5 py-3 rounded-md hover:bg-lime-deep transition-colors"
+        >
+          Analisar proposta
+        </button>
       </div>
     </form>
   );

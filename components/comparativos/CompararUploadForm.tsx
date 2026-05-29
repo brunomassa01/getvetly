@@ -1,34 +1,28 @@
 "use client";
 
 import Link from "next/link";
-import { useRef, useState } from "react";
-import { useFormState, useFormStatus } from "react-dom";
+import { useEffect, useRef, useState } from "react";
+import { useFormState } from "react-dom";
 import { CampoArea, Aviso } from "@/components/auth/Campos";
 import { OverlayAnalisando } from "@/components/propostas/OverlayAnalisando";
 import { ESTADO_INICIAL } from "@/lib/auth/tipos";
 import { compararNovosArquivosAction } from "@/app/(dashboard)/comparativos/actions";
 
-function Botao() {
-  const { pending } = useFormStatus();
-  return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="w-full font-body font-semibold text-sm bg-lime text-ink px-5 py-3 rounded-md transition-colors hover:bg-lime-deep disabled:opacity-60 disabled:cursor-not-allowed"
-    >
-      {pending ? "Analisando e comparando..." : "Analisar e comparar"}
-    </button>
-  );
-}
+const ACEITA = ".pdf,.docx,.xlsx,.xls,.csv,.ppt,.pptx,.png,.jpg,.jpeg";
 
 export function CompararUploadForm() {
   const [estado, action] = useFormState(
     compararNovosArquivosAction,
     ESTADO_INICIAL,
   );
+  const [comparando, setComparando] = useState(false);
   const [nomes, setNomes] = useState<string[]>([]);
   const [arrastando, setArrastando] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    if (estado.erro) setComparando(false);
+  }, [estado]);
 
   function atualizar(files: FileList | null) {
     setNomes(Array.from(files ?? []).map((f) => f.name));
@@ -45,14 +39,14 @@ export function CompararUploadForm() {
 
   return (
     <form action={action} className="space-y-5">
-      <OverlayAnalisando titulo="Analisando e comparando..." />
+      <OverlayAnalisando ativo={comparando} titulo="Analisando e comparando..." />
 
       <input
         ref={inputRef}
         type="file"
         name="arquivos"
         multiple
-        accept=".pdf,.docx,.xlsx,.xls,.csv,.png,.jpg,.jpeg"
+        accept={ACEITA}
         className="sr-only"
         onChange={(e) => atualizar(e.target.files)}
       />
@@ -83,8 +77,8 @@ export function CompararUploadForm() {
           {arrastando ? "Solte os arquivos aqui" : "Suba as propostas"}
         </p>
         <p className="text-sm text-texto-2 mt-1">
-          Um arquivo por fornecedor (PDF com texto). A IA analisa cada uma e
-          monta a comparação.
+          Um arquivo por fornecedor (PDF, Excel, Word ou PPT). A IA analisa cada
+          uma e monta a comparação.
         </p>
         {nomes.length > 0 && (
           <ul className="mt-4 inline-block text-left space-y-1">
@@ -112,9 +106,13 @@ export function CompararUploadForm() {
         >
           Cancelar
         </Link>
-        <div className="flex-[2]">
-          <Botao />
-        </div>
+        <button
+          type="submit"
+          onClick={() => setComparando(true)}
+          className="flex-[2] font-body font-semibold text-sm bg-lime text-ink px-5 py-3 rounded-md hover:bg-lime-deep transition-colors"
+        >
+          Analisar e comparar
+        </button>
       </div>
     </form>
   );

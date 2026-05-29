@@ -4,16 +4,19 @@ import { useFormStatus } from "react-dom";
 import { analisarPropostaAction } from "@/app/(dashboard)/propostas/actions";
 import { OverlayAnalisando } from "./OverlayAnalisando";
 
-function Botao({ rotular }: { rotular: string }) {
+function BotaoEOverlay({ rotular }: { rotular: string }) {
   const { pending } = useFormStatus();
   return (
-    <button
-      type="submit"
-      disabled={pending}
-      className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md transition-colors hover:bg-lime-deep disabled:opacity-60 disabled:cursor-not-allowed"
-    >
-      {pending ? "Analisando... (pode levar até 1 min)" : rotular}
-    </button>
+    <>
+      <button
+        type="submit"
+        disabled={pending}
+        className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md transition-colors hover:bg-lime-deep disabled:opacity-60 disabled:cursor-not-allowed"
+      >
+        {pending ? "Analisando..." : rotular}
+      </button>
+      <OverlayAnalisando ativo={pending} />
+    </>
   );
 }
 
@@ -27,8 +30,7 @@ export function BotaoAnalisar({
   return (
     <form action={analisarPropostaAction}>
       <input type="hidden" name="id" value={propostaId} />
-      <Botao rotular={rotular} />
-      <OverlayAnalisando />
+      <BotaoEOverlay rotular={rotular} />
     </form>
   );
 }

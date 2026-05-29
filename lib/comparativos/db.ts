@@ -19,13 +19,22 @@ export interface ComparativoDetalhe {
   payload: Comparativo;
 }
 
+export interface PropostaPronta {
+  id: string;
+  titulo: string;
+  fornecedor_nome: string | null;
+  valor_negociado: string | null;
+  created_at: string;
+}
+
 /** Propostas já analisadas (status ready) — candidatas a comparação. */
 export async function listarPropostasProntas(
   userId: string,
-): Promise<{ id: string; titulo: string; fornecedor_nome: string | null }[]> {
+): Promise<PropostaPronta[]> {
   return withUser(userId, (sql) =>
-    sql<{ id: string; titulo: string; fornecedor_nome: string | null }[]>`
-      select p.id, p.titulo, f.nome as fornecedor_nome
+    sql<PropostaPronta[]>`
+      select p.id, p.titulo, p.valor_negociado, p.created_at,
+        f.nome as fornecedor_nome
       from propostas p
       left join fornecedores f on f.id = p.fornecedor_id
       where p.status = 'ready'
