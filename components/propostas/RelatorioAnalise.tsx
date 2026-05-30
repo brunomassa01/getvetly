@@ -9,7 +9,7 @@ function Secao({
   children: React.ReactNode;
 }) {
   return (
-    <section className="bg-white border border-[color:var(--border-subtle)] rounded-lg p-6">
+    <section className="bg-white border border-[color:var(--border-subtle)] rounded-xl p-6">
       <h2 className="font-display font-bold text-lg text-ink mb-3">{titulo}</h2>
       {children}
     </section>
@@ -29,12 +29,16 @@ export function RelatorioAnalise({ analise }: { analise: Analise }) {
 
   return (
     <div className="space-y-6">
-      {/* Resumo executivo */}
-      <Secao titulo="Resumo executivo">
-        <p className="text-sm text-texto-1 leading-relaxed">
+      {/* Resumo executivo — card de destaque */}
+      <section className="rounded-xl border border-lime-deep/40 bg-gradient-to-b from-[#FCFFE8] to-white p-6 sm:p-8 shadow-sm">
+        <div className="flex items-center gap-2 font-mono text-[11px] tracking-wide2 uppercase text-[#5C7A0E]">
+          <span className="w-1.5 h-1.5 rounded-full bg-lime-deep" />
+          Resumo executivo
+        </div>
+        <p className="mt-3 text-base text-ink leading-relaxed whitespace-pre-line max-w-2xl">
           {critica.resumo_executivo}
         </p>
-      </Secao>
+      </section>
 
       {/* Fornecedor */}
       <Secao titulo="Fornecedor">

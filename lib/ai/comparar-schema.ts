@@ -24,7 +24,9 @@ export const comparativoSchema = z.object({
       vencedor_ref: z.string().nullable(),
     }),
   ),
-  // Recomendação final alinhada ao critério do usuário.
+  // Headline curta (1-2 frases) — exibida em destaque.
+  resumo: z.string().optional(),
+  // Recomendação final alinhada ao critério do usuário (parágrafos curtos).
   recomendacao: z.string(),
   vencedor_ref: z.string(),
   // Cenários condicionais ("se prazo crítico → X").
