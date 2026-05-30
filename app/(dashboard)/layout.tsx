@@ -37,6 +37,12 @@ export default function DashboardLayout({
               >
                 Fornecedores
               </Link>
+              <Link
+                href="/configuracoes"
+                className="text-texto-2 hover:text-ink transition-colors"
+              >
+                Configurações
+              </Link>
             </nav>
           </div>
           <form action={sairAction}>

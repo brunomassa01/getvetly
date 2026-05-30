@@ -107,6 +107,9 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 3. **Preparar apresentação** — montar uma apresentação a partir da análise/comparação (já vai com a recomendação do comparativo). Possível Gamma/Adobe MCP.
 4. ✅ **Comparação de propostas** (US-021) — FEITO: `/comparativos`, seleciona 2+ propostas prontas + critério → IA gera matriz + recomendação + cenários. Salvo em `comparativos`.
 5. **Edição manual da proposta** — deixar o usuário completar campos que a IA não achou. Mensagem de "não encontrado" mais clara/acionável.
+8. **Painel + Configurações (2026-05-30)** — ✅ painel redesenhado (Propostas em destaque, contadores, card "Configurar empresa"); ✅ `/configuracoes` (nome, CNPJ, segmento, porte + whitelabel nome/cor — falta upload de logo). `lib/workspace/`.
+9. **Fornecedores — DEDUPLICAÇÃO (feedback Bruno 2026-05-30)**: auto-criação gera duplicatas do mesmo fornecedor por variação de nome (ex: "Eletromidia", "Eletromídia", "Eltormidia" = mesma empresa). Precisa: (a) editar fornecedor já existe (clicar no nome → /fornecedores/[id]); (b) **mesclar/deduplicar** fornecedores; melhorar o match do `encontrarOuCriarFornecedorPorNome` (fuzzy/normalização de acentos).
+10. **Fornecedor — métricas (futuro, "não agora")**: marcar qual proposta foi APROVADA; calcular **índice de aprovação** por fornecedor e **aderência** do fornecedor à empresa. Depende de status de aprovação nas propostas (tabela `aprovacoes` já existe).
 
 ### Ideias de negócio / monetização (a avaliar — Bruno, 2026-05-29)
 6. **Modelo de venda: assinatura vs. crédito** — assinatura por tier (recorrente) e/ou compra de créditos por análise. Recomendação inicial: assinatura como base (MRR previsível B2B) + pacotes de crédito como add-on/overflow e entrada p/ avulsos. Regra dos 50% de margem vale p/ ambos.
