@@ -6,6 +6,7 @@ import { buscarComparativo } from "@/lib/comparativos/db";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 import { ApresentacaoComparativo } from "@/components/comparativos/ApresentacaoComparativo";
 import { BotaoExportarPdf } from "@/components/BotaoExportarPdf";
+import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 
 export const metadata: Metadata = { title: "Apresentação — Vetly" };
 export const dynamic = "force-dynamic";
@@ -31,12 +32,7 @@ export default async function ApresentacaoPage({
           ← Voltar
         </Link>
         <div className="flex gap-2">
-          <a
-            href={`/comparativos/${params.id}/pptx`}
-            className="font-body font-semibold text-sm bg-transparent text-ink px-4 py-2.5 rounded-md border border-[color:var(--border-strong)] hover:bg-paper-warm transition-colors"
-          >
-            Baixar PPT
-          </a>
+          <BotaoBaixarPpt comparativoId={params.id} />
           <BotaoExportarPdf />
         </div>
       </div>
