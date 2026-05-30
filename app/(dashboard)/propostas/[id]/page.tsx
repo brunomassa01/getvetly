@@ -8,6 +8,8 @@ import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
 import { formatarMoeda, formatarData, formatarTamanho } from "@/lib/format";
 import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
 import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
+import { WhitelabelHeader } from "@/components/WhitelabelHeader";
+import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 
 export const metadata: Metadata = { title: "Proposta — Vetly" };
 export const dynamic = "force-dynamic";
@@ -30,9 +32,11 @@ export default async function PropostaDetalhePage({
   const proposta = await buscarProposta(userId, params.id);
   if (!proposta) notFound();
   const analise = await buscarAnalise(userId, params.id);
+  const workspace = await buscarWorkspaceDoUsuario(userId);
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
+      <WhitelabelHeader workspace={workspace} />
       <div>
         <Link href="/propostas" className="text-sm text-texto-2 hover:text-ink">
           ← Voltar

@@ -5,6 +5,8 @@ import { usuarioAtual } from "@/lib/auth/sessao";
 import { buscarComparativo } from "@/lib/comparativos/db";
 import { formatarData } from "@/lib/format";
 import { RelatorioComparativo } from "@/components/comparativos/RelatorioComparativo";
+import { WhitelabelHeader } from "@/components/WhitelabelHeader";
+import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 
 export const metadata: Metadata = { title: "Comparativo — Vetly" };
 export const dynamic = "force-dynamic";
@@ -17,9 +19,11 @@ export default async function ComparativoDetalhePage({
   const userId = await usuarioAtual();
   const comparativo = await buscarComparativo(userId, params.id);
   if (!comparativo) notFound();
+  const workspace = await buscarWorkspaceDoUsuario(userId);
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
+      <WhitelabelHeader workspace={workspace} />
       <div>
         <Link
           href="/comparativos"

@@ -3,7 +3,7 @@
 import { revalidatePath } from "next/cache";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { workspaceSchema } from "@/lib/workspace/schema";
-import { atualizarWorkspace } from "@/lib/workspace/db";
+import { atualizarWorkspace, salvarLogoWorkspace } from "@/lib/workspace/db";
 import type { EstadoForm } from "@/lib/auth/tipos";
 
 export async function salvarConfiguracoesAction(
@@ -30,6 +30,12 @@ export async function salvarConfiguracoesAction(
 
   try {
     await atualizarWorkspace(userId, parsed.data);
+
+    // Logo (opcional)
+    const logo = formData.get("logo");
+    if (logo instanceof File && logo.size > 0) {
+      await salvarLogoWorkspace(userId, logo);
+    }
   } catch (erro) {
     return {
       erro: erro instanceof Error ? erro.message : "Falha ao salvar.",

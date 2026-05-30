@@ -58,10 +58,31 @@ export function ConfiguracoesForm({ workspace }: { workspace: Workspace }) {
             Marca nos relatórios
           </h2>
           <p className="text-sm text-texto-2 mt-1">
-            Personalize como sua empresa aparece nos relatórios compartilhados.
-            (Upload de logo chega em breve.)
+            Personalize como sua empresa aparece nos relatórios.
           </p>
         </div>
+
+        {/* Logo */}
+        <label className="block">
+          <span className="block text-sm font-medium text-texto-2 mb-1.5">
+            Logotipo (PNG, JPG, WEBP ou SVG — até 2 MB)
+          </span>
+          {workspace.whitelabel_logo_url && (
+            // eslint-disable-next-line @next/next/no-img-element
+            <img
+              src={`/api/whitelabel/${workspace.id}?v=${Date.now()}`}
+              alt="Logo atual"
+              className="h-12 w-auto mb-3 rounded border border-[color:var(--border-subtle)] bg-white p-1"
+            />
+          )}
+          <input
+            type="file"
+            name="logo"
+            accept="image/png,image/jpeg,image/webp,image/svg+xml"
+            className="w-full bg-paper border border-[color:var(--border-default)] rounded-md px-3.5 py-2.5 text-sm text-ink outline-none file:mr-3 file:rounded file:border-0 file:bg-ink file:text-paper file:px-3 file:py-1.5 file:text-xs file:font-medium"
+          />
+        </label>
+
         <Campo
           label="Nome exibido nos relatórios"
           name="whitelabel_empresa_nome"

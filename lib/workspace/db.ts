@@ -1,5 +1,6 @@
 import "server-only";
-import { withUser } from "@/lib/db/client";
+import { withUser, getSqlService } from "@/lib/db/client";
+import { salvarLogo } from "./logo";
 import type { WorkspaceInput } from "./schema";
 
 export interface Workspace {
@@ -11,6 +12,7 @@ export interface Workspace {
   tier: string;
   whitelabel_empresa_nome: string | null;
   whitelabel_cor_primaria: string | null;
+  whitelabel_logo_url: string | null;
 }
 
 /** Workspace do usuário logado. */
@@ -20,7 +22,7 @@ export async function buscarWorkspaceDoUsuario(
   return withUser(userId, async (sql) => {
     const [ws] = await sql<Workspace[]>`
       select w.id, w.nome, w.cnpj, w.segmento, w.tamanho, w.tier,
-        w.whitelabel_empresa_nome, w.whitelabel_cor_primaria
+        w.whitelabel_empresa_nome, w.whitelabel_cor_primaria, w.whitelabel_logo_url
       from workspaces w
       join workspace_members m on m.workspace_id = w.id
       where m.user_id = ${userId} and m.ativo = true
@@ -28,6 +30,39 @@ export async function buscarWorkspaceDoUsuario(
     `;
     return ws ?? null;
   });
+}
+
+/** Salva o logo do whitelabel e grava o caminho no workspace (somente admin). */
+export async function salvarLogoWorkspace(
+  userId: string,
+  arquivo: File,
+): Promise<void> {
+  const workspaceId = await withUser(userId, async (sql) => {
+    const [membro] = await sql<{ workspace_id: string }[]>`
+      select workspace_id from workspace_members
+      where user_id = ${userId} and role = 'admin' and ativo = true
+      limit 1
+    `;
+    if (!membro) throw new Error("Sem permissão para editar a empresa.");
+    return membro.workspace_id;
+  });
+
+  const caminho = await salvarLogo(workspaceId, arquivo);
+
+  await withUser(userId, (sql) =>
+    sql`update workspaces set whitelabel_logo_url = ${caminho} where id = ${workspaceId}`,
+  );
+}
+
+/** Caminho do logo de um workspace (rota pública servir a imagem). Service. */
+export async function caminhoLogoWorkspace(
+  workspaceId: string,
+): Promise<string | null> {
+  const sql = getSqlService();
+  const [ws] = await sql<{ whitelabel_logo_url: string | null }[]>`
+    select whitelabel_logo_url from workspaces where id = ${workspaceId}
+  `;
+  return ws?.whitelabel_logo_url ?? null;
 }
 
 /** Atualiza os dados da empresa (somente admin — RLS aplica). */
