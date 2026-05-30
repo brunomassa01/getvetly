@@ -10,18 +10,24 @@ function ehRisco(valor: string): boolean {
   return /risco/i.test(valor);
 }
 
+// hex (#RRGGBB) → rgba com alpha (para tints suaves).
+function rgba(hex: string, alpha: number): string {
+  const h = hex.replace("#", "");
+  if (h.length !== 6) return `rgba(200,255,2,${alpha})`;
+  const r = parseInt(h.slice(0, 2), 16);
+  const g = parseInt(h.slice(2, 4), 16);
+  const b = parseInt(h.slice(4, 6), 16);
+  return `rgba(${r}, ${g}, ${b}, ${alpha})`;
+}
+
 function ValorCelula({ valor }: { valor: string }) {
   if (ehNaoInformado(valor))
     return <span className="text-texto-3 italic">não informado</span>;
-  if (ehRisco(valor)) return <span className="text-danger">{valor}</span>;
+  if (ehRisco(valor))
+    return <span className="text-danger font-medium">{valor}</span>;
   return <span>{valor}</span>;
 }
 
-/**
- * Layout de APRESENTAÇÃO EXECUTIVA do comparativo — desenhado para virar PDF
- * bonito (capa, recomendação em destaque, matriz, cenários), com quebras de
- * página entre as seções.
- */
 export function ApresentacaoComparativo({
   comparativo,
   workspace,
@@ -40,20 +46,39 @@ export function ApresentacaoComparativo({
   const corFundo = workspace?.whitelabel_cor_primaria || "#1E1E1E";
   const corDestaque = workspace?.whitelabel_cor_secundaria || "#C8FF02";
 
+  // Título de seção com barra de destaque.
+  const TituloSecao = ({ children }: { children: React.ReactNode }) => (
+    <div className="flex items-center gap-3 mb-5">
+      <span
+        className="h-6 w-1.5 rounded-full"
+        style={{ backgroundColor: corDestaque }}
+      />
+      <h2 className="font-display font-extrabold text-2xl text-ink tracking-tighter">
+        {children}
+      </h2>
+    </div>
+  );
+
   return (
     <div className="mx-auto max-w-3xl bg-white text-ink">
       {/* ===== Capa ===== */}
       <header
-        className="rounded-2xl text-paper p-8 sm:p-10 print:rounded-none break-inside-avoid"
+        className="relative overflow-hidden rounded-2xl text-paper p-10 sm:p-12 print:rounded-none break-inside-avoid flex flex-col min-h-[520px]"
         style={{ backgroundColor: corFundo }}
       >
+        {/* faixa de destaque no topo */}
+        <span
+          className="absolute top-0 left-0 right-0 h-1.5"
+          style={{ backgroundColor: corDestaque }}
+        />
+
         <div className="flex items-center justify-between gap-4">
           {temLogo ? (
             // eslint-disable-next-line @next/next/no-img-element
             <img
               src={`/api/whitelabel/${workspace!.id}`}
               alt={nomeEmpresa ?? "Empresa"}
-              className="h-9 w-auto bg-white rounded px-2 py-1"
+              className="h-10 w-auto bg-white rounded px-2 py-1"
             />
           ) : (
             <Logo variant="inverted" className="h-7 w-auto" />
@@ -66,61 +91,83 @@ export function ApresentacaoComparativo({
           </span>
         </div>
 
-        <h1 className="mt-8 font-display font-extrabold text-3xl sm:text-4xl tracking-tightest">
-          {titulo}
-        </h1>
-        <p className="mt-2 text-sm text-paper/60">
-          {nomeEmpresa ? `${nomeEmpresa} · ` : ""}
-          {formatarData(criadoEm)}
-        </p>
+        <div className="mt-auto pt-12">
+          <h1 className="font-display font-extrabold text-4xl sm:text-5xl tracking-tightest leading-[1.05]">
+            {titulo}
+          </h1>
+          <div
+            className="mt-4 h-1 w-16 rounded-full"
+            style={{ backgroundColor: corDestaque }}
+          />
+          <p className="mt-4 text-sm text-paper/70">
+            {nomeEmpresa ? `${nomeEmpresa} · ` : ""}
+            {formatarData(criadoEm)} · {propostas.length} propostas
+          </p>
 
+          {/* chips das propostas comparadas */}
+          <div className="mt-5 flex flex-wrap gap-2">
+            {propostas.map((p) => (
+              <span
+                key={p.ref}
+                className="rounded-full px-3 py-1 text-xs text-paper/90"
+                style={{ border: `1px solid ${rgba(corDestaque, 0.5)}` }}
+              >
+                {p.ref}
+              </span>
+            ))}
+          </div>
+        </div>
+
+        {/* faixa do vencedor */}
         <div
-          className="mt-8 inline-flex flex-col gap-1 rounded-xl px-5 py-4"
+          className="mt-8 rounded-xl px-6 py-5"
           style={{ backgroundColor: corDestaque, color: corFundo }}
         >
-          <span className="font-mono text-[10px] tracking-wide3 uppercase">
+          <span className="font-mono text-[10px] tracking-wide3 uppercase opacity-80">
             Recomendação
           </span>
-          <span className="font-display font-extrabold text-xl tracking-tighter">
+          <span className="block font-display font-extrabold text-2xl tracking-tighter mt-0.5">
             {vencedor_ref}
           </span>
         </div>
       </header>
 
       {/* ===== Recomendação ===== */}
-      <section className="mt-8 break-inside-avoid">
+      <section className="mt-10 break-inside-avoid">
+        <TituloSecao>Recomendação</TituloSecao>
         {resumo && (
-          <p className="font-display font-bold text-xl sm:text-2xl text-ink leading-snug tracking-tight max-w-2xl">
+          <p
+            className="font-display font-bold text-xl sm:text-2xl text-ink leading-snug tracking-tight max-w-2xl pl-4 border-l-4"
+            style={{ borderColor: corDestaque }}
+          >
             {resumo}
           </p>
         )}
-        <p className="mt-4 text-sm text-texto-2 leading-relaxed whitespace-pre-line max-w-2xl">
+        <p className="mt-5 text-sm text-texto-2 leading-relaxed whitespace-pre-line max-w-2xl">
           {recomendacao}
         </p>
       </section>
 
       {/* ===== Matriz ===== */}
-      <section className="mt-10 break-before-page">
-        <h2 className="font-display font-extrabold text-xl text-ink tracking-tighter mb-4">
-          Comparativo lado a lado
-        </h2>
-        <div className="overflow-x-auto">
+      <section className="mt-12 break-before-page">
+        <TituloSecao>Comparativo lado a lado</TituloSecao>
+        <div className="overflow-x-auto rounded-xl border border-[color:var(--border-subtle)]">
           <table className="w-full text-sm border-separate border-spacing-0">
             <thead>
-              <tr>
-                <th className="text-left text-texto-3 text-xs uppercase tracking-wide font-semibold py-2 pr-4 align-bottom border-b-2 border-[color:var(--border-default)]">
+              <tr style={{ backgroundColor: corFundo }}>
+                <th className="text-left text-paper/70 text-xs uppercase tracking-wide font-semibold py-3 px-4 align-bottom">
                   Critério
                 </th>
                 {propostas.map((p) => (
                   <th
                     key={p.ref}
-                    className="text-left py-2 px-3 align-bottom min-w-[130px] border-b-2 border-[color:var(--border-default)]"
+                    className="text-left py-3 px-3 align-bottom min-w-[140px]"
                   >
-                    <span className="block font-display font-bold text-ink text-sm">
+                    <span className="block font-display font-bold text-paper text-sm">
                       {p.ref}
                     </span>
                     {p.fornecedor && (
-                      <span className="block text-texto-3 text-xs font-normal">
+                      <span className="block text-paper/60 text-xs font-normal">
                         {p.fornecedor}
                       </span>
                     )}
@@ -132,9 +179,12 @@ export function ApresentacaoComparativo({
               {matriz.map((linha, i) => (
                 <tr
                   key={i}
-                  className={`break-inside-avoid ${i % 2 === 1 ? "bg-paper-warm/40" : ""}`}
+                  className="break-inside-avoid"
+                  style={
+                    i % 2 === 1 ? { backgroundColor: "#FAFAF7" } : undefined
+                  }
                 >
-                  <td className="py-2.5 pr-4 text-texto-2 font-medium align-top">
+                  <td className="py-3 px-4 text-texto-2 font-medium align-top border-t border-[color:var(--border-subtle)]">
                     {linha.criterio}
                   </td>
                   {propostas.map((p) => {
@@ -143,14 +193,21 @@ export function ApresentacaoComparativo({
                     return (
                       <td
                         key={p.ref}
-                        className={`py-2.5 px-3 align-top ${
+                        className="py-3 px-3 align-top border-t border-[color:var(--border-subtle)]"
+                        style={
                           venc
-                            ? "bg-lime-faint font-semibold text-[#5C7A0E]"
-                            : ""
-                        }`}
+                            ? {
+                                backgroundColor: rgba(corDestaque, 0.18),
+                                color: corFundo,
+                                fontWeight: 600,
+                              }
+                            : undefined
+                        }
                       >
-                        <span className="inline-flex items-start gap-1">
-                          {venc && <span className="text-lime-deep">✓</span>}
+                        <span className="inline-flex items-start gap-1.5">
+                          {venc && (
+                            <span style={{ color: corFundo }}>✓</span>
+                          )}
                           {av ? (
                             <ValorCelula valor={av.valor} />
                           ) : (
@@ -169,24 +226,31 @@ export function ApresentacaoComparativo({
 
       {/* ===== Cenários ===== */}
       {cenarios.length > 0 && (
-        <section className="mt-10 break-before-page">
-          <h2 className="font-display font-extrabold text-xl text-ink tracking-tighter mb-4">
-            Cenários de decisão
-          </h2>
+        <section className="mt-12 break-before-page">
+          <TituloSecao>Cenários de decisão</TituloSecao>
           <div className="grid sm:grid-cols-2 gap-4">
             {cenarios.map((c, i) => (
               <div
                 key={i}
-                className="break-inside-avoid border border-[color:var(--border-subtle)] rounded-xl p-5 bg-paper-warm/40"
+                className="break-inside-avoid rounded-xl p-5 bg-white border border-[color:var(--border-subtle)] border-l-4"
+                style={{ borderLeftColor: corDestaque }}
               >
-                <p className="text-sm text-texto-2">
-                  <span className="font-semibold text-ink">Se</span> {c.se}
-                </p>
-                <p className="mt-2 inline-flex items-center gap-1.5 font-semibold text-sm">
-                  <span className="text-texto-3">→</span>
-                  <span className="rounded-full bg-lime-faint text-[#5C7A0E] px-2.5 py-0.5">
+                <div className="flex items-center gap-2 mb-2">
+                  <span
+                    className="flex items-center justify-center w-6 h-6 rounded-full text-xs font-bold"
+                    style={{ backgroundColor: corDestaque, color: corFundo }}
+                  >
+                    {i + 1}
+                  </span>
+                  <span
+                    className="rounded-full px-2.5 py-0.5 text-xs font-semibold"
+                    style={{ backgroundColor: rgba(corDestaque, 0.18), color: corFundo }}
+                  >
                     {c.entao_ref}
                   </span>
+                </div>
+                <p className="text-sm text-ink">
+                  <span className="font-semibold">Se</span> {c.se}
                 </p>
                 <p className="mt-2 text-xs text-texto-3 leading-relaxed">
                   {c.porque}
@@ -198,7 +262,7 @@ export function ApresentacaoComparativo({
       )}
 
       {/* ===== Rodapé ===== */}
-      <footer className="mt-12 pt-4 border-t border-[color:var(--border-subtle)] flex items-center justify-between break-inside-avoid">
+      <footer className="mt-14 pt-4 border-t border-[color:var(--border-subtle)] flex items-center justify-between break-inside-avoid">
         <span className="font-mono text-[10px] tracking-wide2 uppercase text-texto-3">
           {nomeEmpresa ?? "Vetly"} · análise de propostas
         </span>

@@ -5,11 +5,23 @@ import type { Comparativo } from "@/lib/ai/comparar-schema";
 const PAPER = "FAFAF7";
 const TEXTO2 = "4A4A48";
 const TEXTO3 = "85827A";
-const LIME_FAINT = "F1FFC2";
 const DANGER = "E24B4A";
 
 const hexLimpo = (cor: string | null | undefined, padrao: string): string =>
   (cor ?? padrao).replace("#", "").toUpperCase();
+
+// Clareia um hex misturando com branco (fator 0..1; maior = mais claro).
+function clarear(hex: string, fator: number): string {
+  const n = parseInt(hex, 16);
+  const r = (n >> 16) & 255;
+  const g = (n >> 8) & 255;
+  const b = n & 255;
+  const mix = (c: number) => Math.round(c + (255 - c) * fator);
+  return [mix(r), mix(g), mix(b)]
+    .map((c) => c.toString(16).padStart(2, "0"))
+    .join("")
+    .toUpperCase();
+}
 
 /** Gera um .pptx editável a partir do comparativo. Retorna um Buffer. */
 export async function gerarPptxComparativo(
@@ -24,6 +36,7 @@ export async function gerarPptxComparativo(
   // Cores da identidade da empresa (fallback: ink + lime da Vetly).
   const INK = hexLimpo(cores?.fundo, "#1E1E1E");
   const LIME = hexLimpo(cores?.destaque, "#C8FF02");
+  const LIME_FAINT = clarear(LIME, 0.82); // tom claro do destaque (célula vencedora)
 
   const pptx = new pptxgen();
   pptx.layout = "LAYOUT_WIDE"; // 13.33 x 7.5 in
@@ -144,7 +157,7 @@ export async function gerarPptxComparativo(
       return {
         text: (venc ? "✓ " : "") + valor,
         options: {
-          color: venc ? "5C7A0E" : ehRisco ? DANGER : INK,
+          color: venc ? INK : ehRisco ? DANGER : INK,
           fill: { color: venc ? LIME_FAINT : "FFFFFF" },
           bold: venc,
         },
