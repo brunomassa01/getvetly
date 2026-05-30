@@ -70,3 +70,9 @@ BRUNO/
 
 # Storage local de arquivos de propostas (gerado em runtime)
 storage/
+
+# Skills de terceiros instaladas localmente (ferramenta do agente, não produto)
+.agents/
+.claude/skills/nanobanana-ppt-skills/
+.claude/skills/ppt-visual/
+skills-lock.json

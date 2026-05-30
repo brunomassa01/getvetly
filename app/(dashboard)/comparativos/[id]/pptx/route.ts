@@ -2,7 +2,8 @@ import { NextResponse } from "next/server";
 import { auth } from "@/auth";
 import { buscarComparativo } from "@/lib/comparativos/db";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
-import { lerLogo } from "@/lib/workspace/logo";
+import { lerLogo, dimensoesImagem } from "@/lib/workspace/logo";
+import { montarDeck } from "@/lib/comparativos/deck-plan";
 import { gerarPptxComparativo } from "@/lib/comparativos/pptx";
 
 export const dynamic = "force-dynamic";
@@ -38,27 +39,39 @@ export async function GET(
   const empresa = ws?.whitelabel_empresa_nome || ws?.nome || null;
 
   // Logo da empresa para a capa (PowerPoint só aceita raster — pulamos SVG).
-  let logoDataUrl: string | null = null;
+  // Lê as dimensões reais para preservar a proporção (sem esticar).
+  let logo: { dataUrl: string; w: number; h: number } | null = null;
   const logoPath = ws?.whitelabel_logo_url;
   if (logoPath && !logoPath.toLowerCase().endsWith(".svg")) {
     try {
       const { bytes, contentType } = await lerLogo(logoPath);
-      logoDataUrl = `data:${contentType};base64,${bytes.toString("base64")}`;
+      const dim = dimensoesImagem(bytes);
+      if (dim) {
+        logo = {
+          dataUrl: `data:${contentType};base64,${bytes.toString("base64")}`,
+          w: dim.w,
+          h: dim.h,
+        };
+      }
     } catch {
-      logoDataUrl = null;
+      logo = null;
     }
   }
 
-  const buffer = await gerarPptxComparativo(
-    comparativo.payload,
-    comparativo.titulo,
+  // A IA compõe o roteiro da apresentação (com fallback seguro embutido).
+  const { deck } = await montarDeck(comparativo.payload, empresa);
+
+  const buffer = await gerarPptxComparativo(deck, {
     empresa,
-    {
+    criadoEm: comparativo.created_at,
+    propostas: comparativo.payload.propostas.map((p) => ({ ref: p.ref })),
+    vencedorRef: comparativo.payload.vencedor_ref,
+    cores: {
       fundo: ws?.whitelabel_cor_primaria,
       destaque: ws?.whitelabel_cor_secundaria,
     },
-    { criadoEm: comparativo.created_at, logoDataUrl },
-  );
+    logo,
+  });
 
   return new NextResponse(new Uint8Array(buffer), {
     headers: {
