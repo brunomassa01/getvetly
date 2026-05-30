@@ -9,6 +9,7 @@ import { criarEAnalisarPropostaAction } from "@/app/(dashboard)/propostas/action
 import { OverlayAnalisando } from "./OverlayAnalisando";
 
 const ACEITA = ".pdf,.docx,.xlsx,.xls,.csv,.ppt,.pptx,.png,.jpg,.jpeg";
+const TAMANHO_MAX = 25 * 1024 * 1024; // 25 MB no total (limite do servidor)
 
 export function PropostaForm() {
   const [estado, action] = useFormState(
@@ -16,14 +17,36 @@ export function PropostaForm() {
     ESTADO_INICIAL,
   );
   const [analisando, setAnalisando] = useState(false);
+  const [erroLocal, setErroLocal] = useState<string | null>(null);
   const [nomes, setNomes] = useState<string[]>([]);
   const [arrastando, setArrastando] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Se a ação voltar com erro, esconde o overlay (em sucesso, navega e desmonta).
+  // estado pode vir indefinido se o envio falhar no servidor — por isso o "?.".
   useEffect(() => {
-    if (estado.erro) setAnalisando(false);
+    if (estado?.erro) setAnalisando(false);
   }, [estado]);
+
+  // Valida no cliente antes de enviar: evita o 413 do servidor e dá mensagem clara.
+  function aoEnviar(e: React.FormEvent<HTMLFormElement>) {
+    setErroLocal(null);
+    const arquivos = Array.from(inputRef.current?.files ?? []);
+    if (arquivos.length === 0) {
+      e.preventDefault();
+      setErroLocal("Anexe ao menos um arquivo.");
+      return;
+    }
+    const total = arquivos.reduce((soma, f) => soma + f.size, 0);
+    if (total > TAMANHO_MAX) {
+      e.preventDefault();
+      setErroLocal(
+        "Arquivo(s) muito grande(s): o total passa de 25 MB. Comprima o PDF ou envie só o essencial.",
+      );
+      return;
+    }
+    setAnalisando(true);
+  }
 
   function atualizarNomes(files: FileList | null) {
     setNomes(Array.from(files ?? []).map((f) => f.name));
@@ -40,7 +63,7 @@ export function PropostaForm() {
   }
 
   return (
-    <form action={action} className="space-y-5">
+    <form action={action} onSubmit={aoEnviar} className="space-y-5">
       <OverlayAnalisando ativo={analisando} />
 
       <input
@@ -99,7 +122,7 @@ export function PropostaForm() {
         placeholder="Ex.: Campanha CLT - Eletromidia"
       />
 
-      <Aviso erro={estado.erro} />
+      <Aviso erro={erroLocal ?? estado?.erro} />
 
       <div className="flex gap-3 pt-1">
         <Link
@@ -110,7 +133,6 @@ export function PropostaForm() {
         </Link>
         <button
           type="submit"
-          onClick={() => setAnalisando(true)}
           className="flex-[2] font-body font-semibold text-sm bg-lime text-ink px-5 py-3 rounded-md hover:bg-lime-deep transition-colors"
         >
           Analisar proposta
