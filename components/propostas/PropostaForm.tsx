@@ -105,6 +105,9 @@ export function PropostaForm() {
           Arraste os arquivos ou clique para escolher. Pode ser mais de um da
           mesma proposta: PDF, Excel, Word ou PowerPoint. A IA lê tudo junto.
         </p>
+        <p className="text-xs text-texto-3 mt-2">
+          Até 25 MB no total por proposta.
+        </p>
         {nomes.length > 0 && (
           <ul className="mt-4 inline-block text-left space-y-1">
             {nomes.map((n) => (
