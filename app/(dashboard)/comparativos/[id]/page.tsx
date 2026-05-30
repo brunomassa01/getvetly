@@ -6,7 +6,6 @@ import { buscarComparativo } from "@/lib/comparativos/db";
 import { formatarData } from "@/lib/format";
 import { RelatorioComparativo } from "@/components/comparativos/RelatorioComparativo";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
-import { BotaoExportarPdf } from "@/components/BotaoExportarPdf";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 
 export const metadata: Metadata = { title: "Comparativo — Vetly" };
@@ -41,7 +40,12 @@ export default async function ComparativoDetalhePage({
               Criado em {formatarData(comparativo.created_at)}
             </p>
           </div>
-          <BotaoExportarPdf />
+          <Link
+            href={`/comparativos/${params.id}/apresentacao`}
+            className="shrink-0 font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
+          >
+            Exportar apresentação
+          </Link>
         </div>
       </div>
 
