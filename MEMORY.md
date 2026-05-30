@@ -167,3 +167,21 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
   - Deps: `@anthropic-ai/sdk`, `unpdf`. Chave Claude no `.env` do VPS, limite US$30. Prompt cacheado.
   - Nginx `proxy_read_timeout/send_timeout 300s` para a análise síncrona não estourar.
   - 12 testes no total. Aguardando 1º teste real do Bruno com PDF de proposta.
+- **2026-05-29 — fluxo de proposta + extração multi-formato no ar** ✅
+  - Upload-first (subir e pronto, como no Claude). Auto-cria/vincula fornecedor pelo nome extraído pela IA.
+  - Extração: PDF (unpdf), Excel todas as abas (xlsx), DOCX (mammoth). PPTX = placeholder (OCR futuro).
+  - Overlay "Analisando" persiste até a navegação (estado, não useFormStatus). Botão refazer análise.
+  - Bug corrigido: relatório quebrava em `contato` undefined → parse-if-string no buscarAnalise + defensivo no componente. (monitorar: erro ainda aparece em log antigo)
+- **2026-05-29 — comparação de propostas no ar** ✅
+  - Comparar 2+ propostas prontas (de fornecedores diferentes), critérios livres, matriz + cenários + recomendação.
+  - `lib/ai/comparar` v1.1.0 (campo `resumo`, texto escaneável, lida com propostas heterogêneas).
+- **2026-05-29 — whitelabel: logo + cores + configuração da empresa** ✅
+  - Tela de Configurações: dados da empresa, upload de logo, cor de fundo + cor de destaque.
+  - Painel reordenado: Propostas primeiro, depois Fornecedores, depois Configurações.
+- **2026-05-29 — design system opcional via upload** ✅
+  - Upload de README/.md/.css/.json do design system → IA extrai 2 cores de marca (`lib/ai/design-tokens`).
+  - Fallback Vetly (ink/lime) se a empresa não tiver design system. Extração assertiva + normalização de hex.
+- **2026-05-30 — apresentação do comparativo rediagramada** ✅
+  - Motivo: cores aplicavam mas "ficou sem graça". Redesenho: capa composta (faixa de destaque, logo, título, divisor, chips de proposta, faixa do vencedor), `TituloSecao` com barra de accent, recomendação com borda lateral, matriz com faixa de cabeçalho (cor de fundo) + célula vencedora em tom claro do destaque (não mais verde conflitante), cenários numerados.
+  - PPT (`lib/comparativos/pptx.ts`): vencedor agora em `clarear(LIME, 0.82)` (tom claro do accent) e texto na cor de fundo — antes usava verde fixo `5C7A0E`/`LIME_FAINT`. Capa e títulos fluem as cores da empresa.
+  - Export PDF = window.print (custo zero). Export PPT editável = pptxgenjs. Commit `e63e68b`, deploy CI OK (~success).
