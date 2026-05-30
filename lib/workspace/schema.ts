@@ -47,6 +47,13 @@ export const workspaceSchema = z.object({
       .regex(/^#[0-9a-fA-F]{6}$/, "Use uma cor no formato #RRGGBB")
       .optional(),
   ),
+  whitelabel_cor_secundaria: z.preprocess(
+    opcional,
+    z
+      .string()
+      .regex(/^#[0-9a-fA-F]{6}$/, "Use uma cor no formato #RRGGBB")
+      .optional(),
+  ),
 });
 
 export type WorkspaceInput = z.infer<typeof workspaceSchema>;

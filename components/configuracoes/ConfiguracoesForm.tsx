@@ -89,17 +89,53 @@ export function ConfiguracoesForm({ workspace }: { workspace: Workspace }) {
           defaultValue={workspace.whitelabel_empresa_nome ?? ""}
           placeholder={workspace.nome}
         />
-        <label className="block">
+        <div className="grid grid-cols-2 gap-4 max-w-sm">
+          <label className="block">
+            <span className="block text-sm font-medium text-texto-2 mb-1.5">
+              Cor de fundo
+            </span>
+            <input
+              type="color"
+              name="whitelabel_cor_primaria"
+              defaultValue={workspace.whitelabel_cor_primaria ?? "#0A0A0A"}
+              className="h-10 w-full rounded-md border border-[color:var(--border-default)] bg-paper cursor-pointer"
+            />
+          </label>
+          <label className="block">
+            <span className="block text-sm font-medium text-texto-2 mb-1.5">
+              Cor de destaque
+            </span>
+            <input
+              type="color"
+              name="whitelabel_cor_secundaria"
+              defaultValue={workspace.whitelabel_cor_secundaria ?? "#C8FF02"}
+              className="h-10 w-full rounded-md border border-[color:var(--border-default)] bg-paper cursor-pointer"
+            />
+          </label>
+        </div>
+
+        {/* Design system (opcional) */}
+        <div className="pt-2 border-t border-[color:var(--border-subtle)]">
           <span className="block text-sm font-medium text-texto-2 mb-1.5">
-            Cor principal
+            Design system da sua empresa (opcional)
           </span>
+          <p className="text-xs text-texto-3 mb-2">
+            Tem um design system em Markdown (.md)? Suba aqui — a IA lê e aplica
+            as cores da sua identidade na apresentação. Sem isso, usamos as
+            cores acima.
+            {workspace.tem_design_system && (
+              <span className="block mt-1 text-[#5C7A0E] font-medium">
+                ✓ Design system aplicado. Suba outro para atualizar.
+              </span>
+            )}
+          </p>
           <input
-            type="color"
-            name="whitelabel_cor_primaria"
-            defaultValue={workspace.whitelabel_cor_primaria ?? "#0A0A0A"}
-            className="h-10 w-20 rounded-md border border-[color:var(--border-default)] bg-paper cursor-pointer"
+            type="file"
+            name="design_md"
+            accept=".md,.markdown,text/markdown,text/plain"
+            className="w-full bg-paper border border-[color:var(--border-default)] rounded-md px-3.5 py-2.5 text-sm text-ink outline-none file:mr-3 file:rounded file:border-0 file:bg-ink file:text-paper file:px-3 file:py-1.5 file:text-xs file:font-medium"
           />
-        </label>
+        </div>
       </div>
 
       <Aviso erro={estado.erro} sucesso={estado.sucesso} />

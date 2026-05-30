@@ -1,6 +1,8 @@
 import "server-only";
 import { withUser, getSqlService } from "@/lib/db/client";
 import { salvarLogo } from "./logo";
+import { salvarDesignMd, temDesignMd } from "./design";
+import { extrairTokensDesign } from "@/lib/ai/design-tokens";
 import type { WorkspaceInput } from "./schema";
 
 export interface Workspace {
@@ -12,24 +14,62 @@ export interface Workspace {
   tier: string;
   whitelabel_empresa_nome: string | null;
   whitelabel_cor_primaria: string | null;
+  whitelabel_cor_secundaria: string | null;
   whitelabel_logo_url: string | null;
+  tem_design_system?: boolean;
 }
 
 /** Workspace do usuário logado. */
 export async function buscarWorkspaceDoUsuario(
   userId: string,
 ): Promise<Workspace | null> {
-  return withUser(userId, async (sql) => {
-    const [ws] = await sql<Workspace[]>`
+  const ws = await withUser(userId, async (sql) => {
+    const [w] = await sql<Workspace[]>`
       select w.id, w.nome, w.cnpj, w.segmento, w.tamanho, w.tier,
-        w.whitelabel_empresa_nome, w.whitelabel_cor_primaria, w.whitelabel_logo_url
+        w.whitelabel_empresa_nome, w.whitelabel_cor_primaria,
+        w.whitelabel_cor_secundaria, w.whitelabel_logo_url
       from workspaces w
       join workspace_members m on m.workspace_id = w.id
       where m.user_id = ${userId} and m.ativo = true
       limit 1
     `;
-    return ws ?? null;
+    return w ?? null;
   });
+  if (!ws) return null;
+  ws.tem_design_system = await temDesignMd(ws.id);
+  return ws;
+}
+
+/**
+ * Processa o upload do design system (markdown): salva o arquivo, extrai as
+ * cores com IA e atualiza as cores do whitelabel (só as encontradas).
+ */
+export async function salvarDesignSystemWorkspace(
+  userId: string,
+  arquivo: File,
+): Promise<void> {
+  const workspaceId = await withUser(userId, async (sql) => {
+    const [membro] = await sql<{ workspace_id: string }[]>`
+      select workspace_id from workspace_members
+      where user_id = ${userId} and role = 'admin' and ativo = true
+      limit 1
+    `;
+    if (!membro) throw new Error("Sem permissão para editar a empresa.");
+    return membro.workspace_id;
+  });
+
+  const conteudo = await arquivo.text();
+  await salvarDesignMd(workspaceId, conteudo);
+
+  const tokens = await extrairTokensDesign(conteudo);
+  await withUser(userId, (sql) =>
+    sql`
+      update workspaces set
+        whitelabel_cor_primaria = coalesce(${tokens.cor_primaria}, whitelabel_cor_primaria),
+        whitelabel_cor_secundaria = coalesce(${tokens.cor_secundaria}, whitelabel_cor_secundaria)
+      where id = ${workspaceId}
+    `,
+  );
 }
 
 /** Salva o logo do whitelabel e grava o caminho no workspace (somente admin). */
@@ -85,7 +125,8 @@ export async function atualizarWorkspace(
         segmento = ${dados.segmento ?? null},
         tamanho = ${dados.tamanho ?? null},
         whitelabel_empresa_nome = ${dados.whitelabel_empresa_nome ?? null},
-        whitelabel_cor_primaria = ${dados.whitelabel_cor_primaria ?? "#0A0A0A"}
+        whitelabel_cor_primaria = ${dados.whitelabel_cor_primaria ?? "#0A0A0A"},
+        whitelabel_cor_secundaria = ${dados.whitelabel_cor_secundaria ?? "#C8FF02"}
       where id = ${membro.workspace_id}
     `;
   });

@@ -2,22 +2,28 @@ import "server-only";
 import pptxgen from "pptxgenjs";
 import type { Comparativo } from "@/lib/ai/comparar-schema";
 
-const LIME = "C8FF02";
-const INK = "1E1E1E";
 const PAPER = "FAFAF7";
 const TEXTO2 = "4A4A48";
 const TEXTO3 = "85827A";
 const LIME_FAINT = "F1FFC2";
 const DANGER = "E24B4A";
 
+const hexLimpo = (cor: string | null | undefined, padrao: string): string =>
+  (cor ?? padrao).replace("#", "").toUpperCase();
+
 /** Gera um .pptx editável a partir do comparativo. Retorna um Buffer. */
 export async function gerarPptxComparativo(
   comparativo: Comparativo,
   titulo: string,
   empresa: string | null,
+  cores?: { fundo?: string | null; destaque?: string | null },
 ): Promise<Buffer> {
   const { propostas, matriz, resumo, recomendacao, vencedor_ref, cenarios } =
     comparativo;
+
+  // Cores da identidade da empresa (fallback: ink + lime da Vetly).
+  const INK = hexLimpo(cores?.fundo, "#1E1E1E");
+  const LIME = hexLimpo(cores?.destaque, "#C8FF02");
 
   const pptx = new pptxgen();
   pptx.layout = "LAYOUT_WIDE"; // 13.33 x 7.5 in

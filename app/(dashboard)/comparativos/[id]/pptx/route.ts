@@ -40,6 +40,10 @@ export async function GET(
     comparativo.payload,
     comparativo.titulo,
     empresa,
+    {
+      fundo: ws?.whitelabel_cor_primaria,
+      destaque: ws?.whitelabel_cor_secundaria,
+    },
   );
 
   return new NextResponse(new Uint8Array(buffer), {

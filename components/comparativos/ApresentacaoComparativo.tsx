@@ -37,11 +37,16 @@ export function ApresentacaoComparativo({
     comparativo;
   const temLogo = !!workspace?.whitelabel_logo_url;
   const nomeEmpresa = workspace?.whitelabel_empresa_nome || workspace?.nome;
+  const corFundo = workspace?.whitelabel_cor_primaria || "#1E1E1E";
+  const corDestaque = workspace?.whitelabel_cor_secundaria || "#C8FF02";
 
   return (
     <div className="mx-auto max-w-3xl bg-white text-ink">
       {/* ===== Capa ===== */}
-      <header className="rounded-2xl bg-ink text-paper p-8 sm:p-10 print:rounded-none break-inside-avoid">
+      <header
+        className="rounded-2xl text-paper p-8 sm:p-10 print:rounded-none break-inside-avoid"
+        style={{ backgroundColor: corFundo }}
+      >
         <div className="flex items-center justify-between gap-4">
           {temLogo ? (
             // eslint-disable-next-line @next/next/no-img-element
@@ -53,7 +58,10 @@ export function ApresentacaoComparativo({
           ) : (
             <Logo variant="inverted" className="h-7 w-auto" />
           )}
-          <span className="font-mono text-[10px] tracking-wide3 uppercase text-paper/60">
+          <span
+            className="font-mono text-[10px] tracking-wide3 uppercase"
+            style={{ color: corDestaque }}
+          >
             Comparativo de propostas
           </span>
         </div>
@@ -66,7 +74,10 @@ export function ApresentacaoComparativo({
           {formatarData(criadoEm)}
         </p>
 
-        <div className="mt-8 inline-flex flex-col gap-1 rounded-xl bg-lime text-ink px-5 py-4">
+        <div
+          className="mt-8 inline-flex flex-col gap-1 rounded-xl px-5 py-4"
+          style={{ backgroundColor: corDestaque, color: corFundo }}
+        >
           <span className="font-mono text-[10px] tracking-wide3 uppercase">
             Recomendação
           </span>

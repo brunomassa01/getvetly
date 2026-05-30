@@ -3,7 +3,11 @@
 import { revalidatePath } from "next/cache";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { workspaceSchema } from "@/lib/workspace/schema";
-import { atualizarWorkspace, salvarLogoWorkspace } from "@/lib/workspace/db";
+import {
+  atualizarWorkspace,
+  salvarLogoWorkspace,
+  salvarDesignSystemWorkspace,
+} from "@/lib/workspace/db";
 import type { EstadoForm } from "@/lib/auth/tipos";
 
 export async function salvarConfiguracoesAction(
@@ -23,6 +27,9 @@ export async function salvarConfiguracoesAction(
     whitelabel_cor_primaria: String(
       formData.get("whitelabel_cor_primaria") ?? "",
     ),
+    whitelabel_cor_secundaria: String(
+      formData.get("whitelabel_cor_secundaria") ?? "",
+    ),
   });
   if (!parsed.success) {
     return { erro: parsed.error.issues[0]?.message ?? "Dados inválidos." };
@@ -36,6 +43,12 @@ export async function salvarConfiguracoesAction(
     if (logo instanceof File && logo.size > 0) {
       await salvarLogoWorkspace(userId, logo);
     }
+
+    // Design system .md (opcional) — IA extrai as cores da identidade
+    const design = formData.get("design_md");
+    if (design instanceof File && design.size > 0) {
+      await salvarDesignSystemWorkspace(userId, design);
+    }
   } catch (erro) {
     return {
       erro: erro instanceof Error ? erro.message : "Falha ao salvar.",
@@ -44,5 +57,7 @@ export async function salvarConfiguracoesAction(
 
   revalidatePath("/configuracoes");
   revalidatePath("/painel");
-  return { sucesso: "Dados da empresa salvos." };
+  return {
+    sucesso: "Dados da empresa salvos.",
+  };
 }
