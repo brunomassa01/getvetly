@@ -30,7 +30,15 @@ export default async function ApresentacaoPage({
         >
           ← Voltar
         </Link>
-        <BotaoExportarPdf />
+        <div className="flex gap-2">
+          <a
+            href={`/comparativos/${params.id}/pptx`}
+            className="font-body font-semibold text-sm bg-transparent text-ink px-4 py-2.5 rounded-md border border-[color:var(--border-strong)] hover:bg-paper-warm transition-colors"
+          >
+            Baixar PPT
+          </a>
+          <BotaoExportarPdf />
+        </div>
       </div>
 
       <ApresentacaoComparativo

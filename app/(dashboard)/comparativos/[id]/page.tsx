@@ -40,12 +40,20 @@ export default async function ComparativoDetalhePage({
               Criado em {formatarData(comparativo.created_at)}
             </p>
           </div>
-          <Link
-            href={`/comparativos/${params.id}/apresentacao`}
-            className="shrink-0 font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
-          >
-            Exportar apresentação
-          </Link>
+          <div className="flex gap-2 shrink-0">
+            <a
+              href={`/comparativos/${params.id}/pptx`}
+              className="font-body font-semibold text-sm bg-transparent text-ink px-4 py-2.5 rounded-md border border-[color:var(--border-strong)] hover:bg-paper-warm transition-colors"
+            >
+              Baixar PPT
+            </a>
+            <Link
+              href={`/comparativos/${params.id}/apresentacao`}
+              className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
+            >
+              Apresentação / PDF
+            </Link>
+          </div>
         </div>
       </div>
 
