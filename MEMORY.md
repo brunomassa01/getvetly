@@ -101,7 +101,7 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - **Detalhe do modelo**: `claude-sonnet-4-6` NÃO suporta prefill de mensagem do assistente (erro 400 "does not support assistant message prefill"). Forçar JSON via system prompt + extração robusta (1º { ao último }), nunca por prefill.
 
 ## 📋 Backlog priorizado pelo Bruno (2026-05-29)
-0. **⭐ PRÓXIMA AO RETOMAR — Rediagramar relatórios (análise + comparativo)**: a comparação funciona mas a diagramação está ruim (tabela densa, texto corrido grande). Bruno pediu: usar as **melhores skills de design** (design system Vetly em `design/logo/vetly-design-system.html` + skills GSD de UI: `gsd-ui-phase`/`gsd-ui-review`) para reorganizar layout (cards, hierarquia, matriz mais legível, destaque do vencedor) E usar a skill **`humanize`** para reescrever os textos (recomendação/cenários). Pediu explicitamente para NÃO fazer na sessão anterior — fazer ao retomar.
+0. ✅ **Rediagramar relatórios (2026-05-30)** — FEITO: comparativo e análise com card de destaque (gradiente lime), matriz legível (vencedor com ✓, "não informado" suave, riscos em vermelho), cenários em cards. Prompt de comparação v1.1.0 gera `resumo` (headline) + recomendação escaneável. Design system Vetly aplicado direto (GSD-UI não roda sem `.planning/`; humanize é p/ texto estático — naturalidade resolvida via prompt).
 1. **Whitelabel** — empresa cliente aplica o próprio logotipo no relatório/análise (campos `whitelabel_*` já existem em workspaces). 
 2. **Envio/exportação em PDF** — gerar PDF do relatório da análise para compartilhar.
 3. **Preparar apresentação** — montar uma apresentação a partir da análise/comparação (já vai com a recomendação do comparativo). Possível Gamma/Adobe MCP.
