@@ -102,7 +102,7 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 
 ## 📋 Backlog priorizado pelo Bruno (2026-05-29)
 0. ✅ **Rediagramar relatórios (2026-05-30)** — FEITO: comparativo e análise com card de destaque (gradiente lime), matriz legível (vencedor com ✓, "não informado" suave, riscos em vermelho), cenários em cards. Prompt de comparação v1.1.0 gera `resumo` (headline) + recomendação escaneável. Design system Vetly aplicado direto (GSD-UI não roda sem `.planning/`; humanize é p/ texto estático — naturalidade resolvida via prompt).
-1. **Whitelabel** — empresa cliente aplica o próprio logotipo no relatório/análise (campos `whitelabel_*` já existem em workspaces). 
+1. ✅ **Whitelabel (2026-05-30)** — FEITO: em /configuracoes sobe logo (PNG/JPG/WEBP/SVG, até 2MB) → salvo em `STORAGE_DIR/whitelabel/<wsId>/` no VPS; servido pela rota pública `/api/whitelabel/[workspaceId]`. `whitelabel_logo_url` no banco. Cabeçalho `WhitelabelHeader` aparece nos relatórios (proposta + comparativo) quando logo/nome configurados. + nome exibido + cor primária.
 2. **Envio/exportação em PDF** — gerar PDF do relatório da análise para compartilhar.
 3. **Preparar apresentação** — montar uma apresentação a partir da análise/comparação (já vai com a recomendação do comparativo). Possível Gamma/Adobe MCP.
 4. ✅ **Comparação de propostas** (US-021) — FEITO: `/comparativos`, seleciona 2+ propostas prontas + critério → IA gera matriz + recomendação + cenários. Salvo em `comparativos`.
