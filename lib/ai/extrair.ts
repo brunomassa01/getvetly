@@ -105,7 +105,13 @@ export async function montarContexto(
   }
 
   let contexto = partes.join("\n\n");
-  const LIMITE_CHARS = 500_000; // ~150k tokens de margem
+  // Teto de texto enviado à IA. Controla DOIS problemas de uma vez:
+  // (1) latência — menos tokens = análise muito mais rápida (evita o timeout
+  //     de 300s do Nginx); (2) custo — menos tokens = conta da Claude menor.
+  // ~120k chars ≈ ~35k tokens cobre uma proposta de ~40 páginas, que é o que
+  // importa. Documentos maiores são truncados (os dados comerciais costumam
+  // estar no início). Ajustável conforme a necessidade.
+  const LIMITE_CHARS = 120_000;
   if (contexto.length > LIMITE_CHARS) {
     contexto = contexto.slice(0, LIMITE_CHARS) + "\n\n[...conteúdo truncado...]";
   }
