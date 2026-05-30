@@ -2,8 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { listarFornecedores } from "@/lib/fornecedores/db";
+import { agruparDuplicados } from "@/lib/fornecedores/dedup";
 import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
+import { formatarMoeda } from "@/lib/format";
 import { BuscaFornecedores } from "@/components/fornecedores/BuscaFornecedores";
+import { DuplicadosFornecedores } from "@/components/fornecedores/DuplicadosFornecedores";
 
 export const metadata: Metadata = { title: "Fornecedores — Vetly" };
 export const dynamic = "force-dynamic";
@@ -23,6 +26,17 @@ export default async function FornecedoresPage({
   const categoria = searchParams.categoria ?? "";
   const fornecedores = await listarFornecedores(userId, { busca, categoria });
 
+  // Detecção de duplicados roda sobre TODOS os ativos (ignora busca/filtro).
+  const todos =
+    busca || categoria ? await listarFornecedores(userId) : fornecedores;
+  const grupos = agruparDuplicados(todos).map((g) => ({
+    fornecedores: g.fornecedores.map((f) => ({
+      id: f.id,
+      nome: f.nome,
+      cotacoes: f.cotacoes ?? 0,
+    })),
+  }));
+
   return (
     <div className="space-y-6">
       <div className="flex items-center justify-between gap-4">
@@ -41,6 +55,8 @@ export default async function FornecedoresPage({
           Novo fornecedor
         </Link>
       </div>
+
+      <DuplicadosFornecedores grupos={grupos} />
 
       <BuscaFornecedores buscaInicial={busca} categoriaInicial={categoria} />
 
@@ -72,9 +88,9 @@ export default async function FornecedoresPage({
               <tr className="text-left text-texto-3 text-xs uppercase tracking-wide">
                 <th className="px-4 py-3 font-semibold">Nome</th>
                 <th className="px-4 py-3 font-semibold">Categoria</th>
-                <th className="px-4 py-3 font-semibold">CNPJ</th>
-                <th className="px-4 py-3 font-semibold">Contato</th>
                 <th className="px-4 py-3 font-semibold">Cotações</th>
+                <th className="px-4 py-3 font-semibold">Economia gerada</th>
+                <th className="px-4 py-3 font-semibold">Desconto médio</th>
               </tr>
             </thead>
             <tbody>
@@ -94,11 +110,17 @@ export default async function FornecedoresPage({
                   <td className="px-4 py-3 text-texto-2">
                     {rotuloCategoria(f.segmento)}
                   </td>
-                  <td className="px-4 py-3 text-texto-2">{f.cnpj ?? "—"}</td>
-                  <td className="px-4 py-3 text-texto-2">
-                    {f.email ?? f.telefone ?? "—"}
-                  </td>
                   <td className="px-4 py-3 text-texto-2">{f.cotacoes ?? 0}</td>
+                  <td className="px-4 py-3 text-texto-2">
+                    {f.economia_total && Number(f.economia_total) > 0
+                      ? formatarMoeda(f.economia_total)
+                      : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-texto-2">
+                    {f.desconto_medio != null
+                      ? `${Number(f.desconto_medio).toLocaleString("pt-BR")}%`
+                      : "—"}
+                  </td>
                 </tr>
               ))}
             </tbody>

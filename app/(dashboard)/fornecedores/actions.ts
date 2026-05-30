@@ -8,6 +8,7 @@ import {
   criarFornecedor,
   atualizarFornecedor,
   arquivarFornecedor,
+  mesclarFornecedores,
 } from "@/lib/fornecedores/db";
 import type { EstadoForm } from "@/lib/auth/tipos";
 
@@ -60,6 +61,18 @@ export async function arquivarFornecedorAction(
   const id = String(formData.get("id") ?? "");
   if (id) {
     await arquivarFornecedor(userId, id);
+    revalidatePath("/fornecedores");
+  }
+}
+
+export async function mesclarFornecedoresAction(
+  formData: FormData,
+): Promise<void> {
+  const userId = await usuarioAtual();
+  const principalId = String(formData.get("principalId") ?? "");
+  const ids = formData.getAll("ids").map((v) => String(v));
+  if (principalId && ids.length > 0) {
+    await mesclarFornecedores(userId, principalId, ids);
     revalidatePath("/fornecedores");
   }
 }

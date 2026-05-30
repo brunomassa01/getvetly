@@ -12,6 +12,8 @@ export interface Fornecedor {
   observacoes: string | null;
   created_at: string;
   cotacoes?: number;
+  economia_total?: string | null;
+  desconto_medio?: string | null;
 }
 
 export interface FiltrosFornecedor {
@@ -35,7 +37,16 @@ export async function listarFornecedores(
         (
           select count(*)::int from propostas p
           where p.fornecedor_id = f.id and p.status <> 'archived'
-        ) as cotacoes
+        ) as cotacoes,
+        (
+          select coalesce(sum(p.economia), 0) from propostas p
+          where p.fornecedor_id = f.id and p.status <> 'archived'
+        ) as economia_total,
+        (
+          select round(avg(p.desconto_pct), 1) from propostas p
+          where p.fornecedor_id = f.id and p.status <> 'archived'
+            and p.desconto_pct is not null
+        ) as desconto_medio
       from fornecedores f
       where f.ativo = true
         ${busca ? sql`and f.nome ilike ${"%" + busca + "%"}` : sql``}
@@ -151,6 +162,49 @@ export async function atualizarFornecedor(
       where id = ${id}
     `,
   );
+}
+
+/**
+ * Mescla fornecedores duplicados em um principal: re-aponta as propostas dos
+ * duplicados para o principal, completa campos vazios do principal com dados
+ * dos duplicados e arquiva os duplicados. Tudo numa transação (RLS aplicado).
+ */
+export async function mesclarFornecedores(
+  userId: string,
+  principalId: string,
+  idsParaMesclar: string[],
+): Promise<void> {
+  const dups = idsParaMesclar.filter((id) => id && id !== principalId);
+  if (dups.length === 0) return;
+
+  await withUser(userId, async (sql) => {
+    // Re-aponta as propostas dos duplicados para o principal.
+    await sql`
+      update propostas set fornecedor_id = ${principalId}
+      where fornecedor_id = any(${dups}::uuid[])
+    `;
+
+    // Completa campos vazios do principal com o que houver nos duplicados.
+    await sql`
+      update fornecedores p set
+        cnpj = coalesce(p.cnpj, d.cnpj),
+        email = coalesce(p.email, d.email),
+        telefone = coalesce(p.telefone, d.telefone),
+        segmento = coalesce(p.segmento, d.segmento)
+      from (
+        select
+          max(cnpj) as cnpj, max(email) as email,
+          max(telefone) as telefone, max(segmento) as segmento
+        from fornecedores where id = any(${dups}::uuid[])
+      ) d
+      where p.id = ${principalId}
+    `;
+
+    // Arquiva os duplicados (soft delete).
+    await sql`
+      update fornecedores set ativo = false where id = any(${dups}::uuid[])
+    `;
+  });
 }
 
 /** Arquiva (soft delete) um fornecedor — marca ativo = false. */
