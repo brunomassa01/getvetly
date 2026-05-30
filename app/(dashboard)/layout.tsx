@@ -9,7 +9,7 @@ export default function DashboardLayout({
 }) {
   return (
     <div className="min-h-screen flex flex-col">
-      <header className="border-b border-[color:var(--border-subtle)]">
+      <header className="print:hidden border-b border-[color:var(--border-subtle)]">
         <div className="w-full max-w-6xl mx-auto px-6 py-4 flex items-center justify-between gap-6">
           <div className="flex items-center gap-8">
             <Link href="/painel" aria-label="Vetly — início">

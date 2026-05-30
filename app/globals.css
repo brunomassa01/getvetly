@@ -46,3 +46,28 @@ html {
     text-wrap: balance;
   }
 }
+
+/* =====================================================
+   Impressão / Exportar PDF
+   Esconde a navegação e botões; deixa só o relatório.
+   ===================================================== */
+@media print {
+  @page {
+    margin: 1.4cm;
+  }
+  body {
+    background: #fff;
+  }
+  /* Não quebrar cards/seções no meio de uma página */
+  section,
+  table,
+  .evitar-quebra {
+    break-inside: avoid;
+  }
+  /* Tira sombras/fundos pesados na impressão */
+  .shadow-sm,
+  .shadow-md,
+  .shadow-lg {
+    box-shadow: none !important;
+  }
+}

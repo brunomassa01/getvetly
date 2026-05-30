@@ -9,6 +9,7 @@ import { formatarMoeda, formatarData, formatarTamanho } from "@/lib/format";
 import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
 import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
+import { BotaoExportarPdf } from "@/components/BotaoExportarPdf";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 
 export const metadata: Metadata = { title: "Proposta — Vetly" };
@@ -38,16 +39,22 @@ export default async function PropostaDetalhePage({
     <div className="max-w-3xl mx-auto space-y-8">
       <WhitelabelHeader workspace={workspace} />
       <div>
-        <Link href="/propostas" className="text-sm text-texto-2 hover:text-ink">
+        <Link
+          href="/propostas"
+          className="print:hidden text-sm text-texto-2 hover:text-ink"
+        >
           ← Voltar
         </Link>
-        <div className="flex items-center gap-3 mt-2">
-          <h1 className="font-display font-extrabold text-ink text-2xl sm:text-3xl tracking-tighter">
-            {proposta.titulo}
-          </h1>
-          <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-[#E8E6DC] text-texto-2">
-            {STATUS_PROPOSTA[proposta.status] ?? proposta.status}
-          </span>
+        <div className="flex items-center justify-between gap-3 mt-2">
+          <div className="flex items-center gap-3">
+            <h1 className="font-display font-extrabold text-ink text-2xl sm:text-3xl tracking-tighter">
+              {proposta.titulo}
+            </h1>
+            <span className="print:hidden inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-[#E8E6DC] text-texto-2">
+              {STATUS_PROPOSTA[proposta.status] ?? proposta.status}
+            </span>
+          </div>
+          {analise && <BotaoExportarPdf />}
         </div>
       </div>
 
@@ -114,6 +121,7 @@ export default async function PropostaDetalhePage({
             Análise por IA
           </h2>
           {proposta.arquivos.length > 0 && (
+            <div className="print:hidden">
             <BotaoAnalisar
               propostaId={proposta.id}
               rotular={
@@ -122,6 +130,7 @@ export default async function PropostaDetalhePage({
                   : "Analisar com IA"
               }
             />
+            </div>
           )}
         </div>
 
