@@ -9,7 +9,7 @@ import { formatarMoeda, formatarData, formatarTamanho } from "@/lib/format";
 import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
 import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
-import { BotaoExportarPdf } from "@/components/BotaoExportarPdf";
+import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 
 export const metadata: Metadata = { title: "Proposta — Vetly" };
@@ -54,7 +54,17 @@ export default async function PropostaDetalhePage({
               {STATUS_PROPOSTA[proposta.status] ?? proposta.status}
             </span>
           </div>
-          {analise && <BotaoExportarPdf />}
+          {analise && (
+            <div className="print:hidden flex gap-2 shrink-0">
+              <BotaoBaixarPpt url={`/propostas/${params.id}/pptx`} />
+              <Link
+                href={`/propostas/${params.id}/apresentacao`}
+                className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
+              >
+                Apresentação / PDF
+              </Link>
+            </div>
+          )}
         </div>
       </div>
 

@@ -42,8 +42,10 @@ const ehRisco = (v: string) => /risco/i.test(v);
 export interface ContextoPptx {
   empresa: string | null;
   criadoEm?: string;
-  propostas: { ref: string }[];
-  vencedorRef: string;
+  eyebrow: string; // etiqueta no topo (ex: "COMPARATIVO DE PROPOSTAS")
+  subinfo?: string; // sufixo da linha de meta (ex: "3 propostas")
+  chips?: string[]; // pílulas (propostas comparadas); vazio = sem chips
+  banda?: { rotulo: string; valor: string } | null; // faixa de destaque na base
   cores?: { fundo?: string | null; destaque?: string | null };
   logo?: { dataUrl: string; w: number; h: number } | null;
 }
@@ -134,7 +136,7 @@ export async function gerarPptxComparativo(
       });
     }
 
-    slide.addText("COMPARATIVO DE PROPOSTAS", {
+    slide.addText(ctx.eyebrow, {
       x: 6.33,
       y: 0.68,
       w: 6.3,
@@ -179,7 +181,7 @@ export async function gerarPptxComparativo(
     const meta = [
       ctx.empresa,
       ctx.criadoEm ? formatarData(ctx.criadoEm) : null,
-      `${ctx.propostas.length} propostas`,
+      ctx.subinfo,
     ]
       .filter(Boolean)
       .join("  ·  ");
@@ -193,10 +195,10 @@ export async function gerarPptxComparativo(
       color: SUB_INK,
     });
 
-    // Chips das propostas
+    // Chips (opcional)
     let cx = 0.7;
-    for (const p of ctx.propostas) {
-      const w = Math.min(4, 0.5 + p.ref.length * 0.085);
+    for (const ref of ctx.chips ?? []) {
+      const w = Math.min(4, 0.5 + ref.length * 0.085);
       if (cx + w > 12.6) break;
       slide.addShape(pptx.ShapeType.roundRect, {
         x: cx,
@@ -207,7 +209,7 @@ export async function gerarPptxComparativo(
         line: { color: LIME, width: 0.75 },
         rectRadius: 0.21,
       });
-      slide.addText(p.ref, {
+      slide.addText(ref, {
         x: cx,
         y: 5.0,
         w,
@@ -221,28 +223,30 @@ export async function gerarPptxComparativo(
       cx += w + 0.2;
     }
 
-    // Faixa do vencedor
-    slide.addShape(pptx.ShapeType.roundRect, {
-      x: 0.7,
-      y: 5.7,
-      w: 7,
-      h: 1.2,
-      fill: { color: LIME },
-      rectRadius: 0.12,
-    });
-    slide.addText(
-      [
-        {
-          text: "RECOMENDAÇÃO\n",
-          options: { fontSize: 11, color: INK, charSpacing: 2 },
-        },
-        {
-          text: ctx.vencedorRef,
-          options: { fontSize: 26, bold: true, color: INK },
-        },
-      ],
-      { x: 0.95, y: 5.82, w: 6.5, h: 0.95, fontFace: "Arial", valign: "middle" },
-    );
+    // Faixa de destaque na base (opcional)
+    if (ctx.banda) {
+      slide.addShape(pptx.ShapeType.roundRect, {
+        x: 0.7,
+        y: 5.7,
+        w: 7,
+        h: 1.2,
+        fill: { color: LIME },
+        rectRadius: 0.12,
+      });
+      slide.addText(
+        [
+          {
+            text: `${ctx.banda.rotulo.toUpperCase()}\n`,
+            options: { fontSize: 11, color: INK, charSpacing: 2 },
+          },
+          {
+            text: ctx.banda.valor,
+            options: { fontSize: 26, bold: true, color: INK },
+          },
+        ],
+        { x: 0.95, y: 5.82, w: 6.5, h: 0.95, fontFace: "Arial", valign: "middle" },
+      );
+    }
   };
 
   // ===== Destaques (números) =====

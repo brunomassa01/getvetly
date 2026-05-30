@@ -7,7 +7,7 @@ import { useRef, useState } from "react";
  * dentro do botão. Como a IA compõe o roteiro (alguns segundos), o usuário
  * precisa de feedback — e o botão fica desabilitado para não disparar várias vezes.
  */
-export function BotaoBaixarPpt({ comparativoId }: { comparativoId: string }) {
+export function BotaoBaixarPpt({ url }: { url: string }) {
   const [gerando, setGerando] = useState(false);
   const [progresso, setProgresso] = useState(0);
   const timerRef = useRef<ReturnType<typeof setInterval> | null>(null);
@@ -30,7 +30,7 @@ export function BotaoBaixarPpt({ comparativoId }: { comparativoId: string }) {
     }, 400);
 
     try {
-      const resp = await fetch(`/comparativos/${comparativoId}/pptx`);
+      const resp = await fetch(url);
       if (!resp.ok) throw new Error("Falha ao gerar a apresentação.");
 
       const blob = await resp.blob();
@@ -41,14 +41,14 @@ export function BotaoBaixarPpt({ comparativoId }: { comparativoId: string }) {
       pararTimer();
       setProgresso(100);
 
-      const url = URL.createObjectURL(blob);
+      const blobUrl = URL.createObjectURL(blob);
       const a = document.createElement("a");
-      a.href = url;
+      a.href = blobUrl;
       a.download = nome;
       document.body.appendChild(a);
       a.click();
       a.remove();
-      URL.revokeObjectURL(url);
+      URL.revokeObjectURL(blobUrl);
 
       setTimeout(() => {
         setGerando(false);

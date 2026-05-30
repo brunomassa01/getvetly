@@ -1,9 +1,11 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { buscarComparativo, garantirDeck } from "@/lib/comparativos/db";
+import { buscarProposta, buscarAnalise } from "@/lib/propostas/db";
+import { garantirDeckProposta } from "@/lib/propostas/deck-plan";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 import { lerLogo, dimensoesImagem } from "@/lib/workspace/logo";
 import { gerarPptxComparativo } from "@/lib/comparativos/pptx";
+import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
 
 export const dynamic = "force-dynamic";
 
@@ -15,7 +17,7 @@ function nomeArquivo(titulo: string): string {
       .replace(/[^\w]+/g, "-")
       .replace(/^-+|-+$/g, "")
       .toLowerCase()
-      .slice(0, 60) || "comparativo";
+      .slice(0, 60) || "analise";
   return `${slug}.pptx`;
 }
 
@@ -29,16 +31,16 @@ export async function GET(
   }
   const userId = session.user.id;
 
-  const comparativo = await buscarComparativo(userId, params.id);
-  if (!comparativo) {
-    return new NextResponse("Não encontrado", { status: 404 });
+  const proposta = await buscarProposta(userId, params.id);
+  if (!proposta) return new NextResponse("Não encontrado", { status: 404 });
+  const analise = await buscarAnalise(userId, params.id);
+  if (!analise) {
+    return new NextResponse("Proposta ainda não foi analisada", { status: 409 });
   }
 
   const ws = await buscarWorkspaceDoUsuario(userId);
   const empresa = ws?.whitelabel_empresa_nome || ws?.nome || null;
 
-  // Logo da empresa para a capa (PowerPoint só aceita raster — pulamos SVG).
-  // Lê as dimensões reais para preservar a proporção (sem esticar).
   let logo: { dataUrl: string; w: number; h: number } | null = null;
   const logoPath = ws?.whitelabel_logo_url;
   if (logoPath && !logoPath.toLowerCase().endsWith(".svg")) {
@@ -57,17 +59,14 @@ export async function GET(
     }
   }
 
-  // Mesmo deck usado na tela/PDF (compõe uma vez, reusa do cache).
-  const deck = await garantirDeck(params.id, comparativo.payload, empresa);
+  const deck = await garantirDeckProposta(params.id, analise, empresa);
 
-  const propostasRefs = comparativo.payload.propostas.map((p) => p.ref);
   const buffer = await gerarPptxComparativo(deck, {
     empresa,
-    criadoEm: comparativo.created_at,
-    eyebrow: "COMPARATIVO DE PROPOSTAS",
-    subinfo: `${propostasRefs.length} propostas`,
-    chips: propostasRefs,
-    banda: { rotulo: "Recomendação", valor: comparativo.payload.vencedor_ref },
+    criadoEm: proposta.created_at,
+    eyebrow: "ANÁLISE DE PROPOSTA",
+    subinfo: ROTULO_CATEGORIA[proposta.categoria as Categoria] ?? undefined,
+    banda: { rotulo: "Fornecedor", valor: analise.fornecedor.nome },
     cores: {
       fundo: ws?.whitelabel_cor_primaria,
       destaque: ws?.whitelabel_cor_secundaria,
@@ -79,7 +78,7 @@ export async function GET(
     headers: {
       "Content-Type":
         "application/vnd.openxmlformats-officedocument.presentationml.presentation",
-      "Content-Disposition": `attachment; filename="${nomeArquivo(comparativo.titulo)}"`,
+      "Content-Disposition": `attachment; filename="${nomeArquivo(proposta.titulo)}"`,
     },
   });
 }

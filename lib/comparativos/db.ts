@@ -160,9 +160,10 @@ export async function garantirDeck(
   comparativo: Comparativo,
   empresa: string | null,
 ): Promise<Deck> {
-  const cache = await lerDeckCache(comparativoId);
+  const chave = `comparativo-${comparativoId}`;
+  const cache = await lerDeckCache(chave);
   if (cache) return cache;
   const { deck } = await montarDeck(comparativo, empresa);
-  await salvarDeckCache(comparativoId, deck);
+  await salvarDeckCache(chave, deck);
   return deck;
 }

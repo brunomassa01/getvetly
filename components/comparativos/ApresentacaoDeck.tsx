@@ -20,14 +20,18 @@ export function ApresentacaoDeck({
   deck,
   workspace,
   criadoEm,
-  propostasRefs,
-  vencedorRef,
+  eyebrow,
+  subinfo,
+  chips = [],
+  banda,
 }: {
   deck: Deck;
   workspace: Workspace | null;
   criadoEm: string;
-  propostasRefs: string[];
-  vencedorRef: string;
+  eyebrow: string;
+  subinfo?: string;
+  chips?: string[];
+  banda?: { rotulo: string; valor: string } | null;
 }) {
   const temLogo = !!workspace?.whitelabel_logo_url;
   const nomeEmpresa = workspace?.whitelabel_empresa_nome || workspace?.nome;
@@ -74,7 +78,7 @@ export function ApresentacaoDeck({
                 className="font-mono text-[10px] tracking-wide3 uppercase"
                 style={{ color: corDestaque }}
               >
-                Comparativo de propostas
+                {eyebrow}
               </span>
             </div>
 
@@ -92,33 +96,42 @@ export function ApresentacaoDeck({
                 </p>
               )}
               <p className="mt-3 text-sm text-paper/60">
-                {nomeEmpresa ? `${nomeEmpresa} · ` : ""}
-                {formatarData(criadoEm)} · {propostasRefs.length} propostas
+                {[
+                  nomeEmpresa,
+                  formatarData(criadoEm),
+                  subinfo,
+                ]
+                  .filter(Boolean)
+                  .join(" · ")}
               </p>
-              <div className="mt-5 flex flex-wrap gap-2">
-                {propostasRefs.map((ref) => (
-                  <span
-                    key={ref}
-                    className="rounded-full px-3 py-1 text-xs text-paper/90"
-                    style={{ border: `1px solid ${rgba(corDestaque, 0.5)}` }}
-                  >
-                    {ref}
-                  </span>
-                ))}
-              </div>
+              {chips.length > 0 && (
+                <div className="mt-5 flex flex-wrap gap-2">
+                  {chips.map((ref) => (
+                    <span
+                      key={ref}
+                      className="rounded-full px-3 py-1 text-xs text-paper/90"
+                      style={{ border: `1px solid ${rgba(corDestaque, 0.5)}` }}
+                    >
+                      {ref}
+                    </span>
+                  ))}
+                </div>
+              )}
             </div>
 
-            <div
-              className="mt-8 rounded-xl px-6 py-5"
-              style={{ backgroundColor: corDestaque, color: corFundo }}
-            >
-              <span className="font-mono text-[10px] tracking-wide3 uppercase opacity-80">
-                Recomendação
-              </span>
-              <span className="block font-display font-extrabold text-2xl tracking-tighter mt-0.5">
-                {vencedorRef}
-              </span>
-            </div>
+            {banda && (
+              <div
+                className="mt-8 rounded-xl px-6 py-5"
+                style={{ backgroundColor: corDestaque, color: corFundo }}
+              >
+                <span className="font-mono text-[10px] tracking-wide3 uppercase opacity-80">
+                  {banda.rotulo}
+                </span>
+                <span className="block font-display font-extrabold text-2xl tracking-tighter mt-0.5">
+                  {banda.valor}
+                </span>
+              </div>
+            )}
           </header>
         );
 

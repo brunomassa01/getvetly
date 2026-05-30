@@ -42,7 +42,7 @@ export default async function ComparativoDetalhePage({
             </p>
           </div>
           <div className="flex gap-2 shrink-0">
-            <BotaoBaixarPpt comparativoId={params.id} />
+            <BotaoBaixarPpt url={`/comparativos/${params.id}/pptx`} />
             <Link
               href={`/comparativos/${params.id}/apresentacao`}
               className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
