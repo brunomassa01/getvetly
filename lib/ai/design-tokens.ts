@@ -1,23 +1,12 @@
 import "server-only";
 import Anthropic from "@anthropic-ai/sdk";
-import { z } from "zod";
 
 const MODELO = process.env.ANTHROPIC_MODEL ?? "claude-sonnet-4-6";
 
-const tokensSchema = z.object({
-  // Cor escura/principal da marca (usada em fundos de destaque). Hex ou null.
-  cor_primaria: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/)
-    .nullable(),
-  // Cor de destaque/accent (usada em realces). Hex ou null.
-  cor_secundaria: z
-    .string()
-    .regex(/^#[0-9a-fA-F]{6}$/)
-    .nullable(),
-});
-
-export type TokensDesign = z.infer<typeof tokensSchema>;
+export interface TokensDesign {
+  cor_primaria: string | null;
+  cor_secundaria: string | null;
+}
 
 function extrairJson(texto: string): string {
   const t = texto.trim();
@@ -26,9 +15,22 @@ function extrairJson(texto: string): string {
   return ini !== -1 && fim !== -1 ? t.slice(ini, fim + 1) : t;
 }
 
+// Normaliza para #RRGGBB (expande #RGB). Retorna null se não for hex válido.
+function normalizarHex(valor: unknown): string | null {
+  if (typeof valor !== "string") return null;
+  let v = valor.trim();
+  if (/^#?[0-9a-fA-F]{3}$/.test(v)) {
+    const h = v.replace("#", "");
+    v = `#${h[0]}${h[0]}${h[1]}${h[1]}${h[2]}${h[2]}`;
+  }
+  if (!v.startsWith("#")) v = `#${v}`;
+  return /^#[0-9a-fA-F]{6}$/.test(v) ? v.toUpperCase() : null;
+}
+
 /**
- * Lê o design system (markdown) da empresa e extrai as cores principais.
- * Retorna null em cada cor que não for encontrada (mantém o padrão).
+ * Lê o design system (markdown) da empresa e extrai as duas cores de marca.
+ * Assertivo: escolhe as cores mais proeminentes; só retorna null se não houver
+ * nenhuma cor no documento.
  */
 export async function extrairTokensDesign(
   markdown: string,
@@ -43,11 +45,18 @@ export async function extrairTokensDesign(
     system: [
       {
         type: "text",
-        text: `Você recebe o design system de uma empresa (markdown) e extrai as duas cores de marca.
+        text: `Você recebe a documentação de design de uma empresa e deve identificar as DUAS cores de marca mais importantes.
+
 Retorne SOMENTE JSON: { "cor_primaria": "#RRGGBB" | null, "cor_secundaria": "#RRGGBB" | null }
-- cor_primaria: a cor ESCURA/principal da marca (boa para fundos). Se não houver clara, use null.
-- cor_secundaria: a cor de DESTAQUE/accent (realces, CTAs). Se não houver, use null.
-Use apenas cores que estejam explícitas no documento. Não invente.`,
+
+- cor_primaria = a cor ESCURA/sóbria de marca (boa para FUNDO de capa). Se houver várias, escolha a mais escura/neutra.
+- cor_secundaria = a cor de DESTAQUE/accent (a mais vibrante/saturada, usada em CTAs e realces).
+
+REGRAS:
+- Seja ASSERTIVO: praticamente todo design system tem cores. Escolha as mais proeminentes mesmo que não estejam rotuladas como "primary/accent".
+- Aceite cores em qualquer notação (hex, rgb) e CONVERTA para #RRGGBB de 6 dígitos.
+- Só use null se realmente NÃO houver nenhuma cor no documento.
+- Não escreva nada além do JSON.`,
       },
     ],
     messages: [{ role: "user", content: markdown.slice(0, 30000) }],
@@ -58,12 +67,21 @@ Use apenas cores que estejam explícitas no documento. Não invente.`,
     .map((b) => b.text)
     .join("");
 
+  let bruto: { cor_primaria?: unknown; cor_secundaria?: unknown } = {};
   try {
-    const parsed = tokensSchema.safeParse(JSON.parse(extrairJson(texto)));
-    return parsed.success
-      ? parsed.data
-      : { cor_primaria: null, cor_secundaria: null };
+    bruto = JSON.parse(extrairJson(texto));
   } catch {
-    return { cor_primaria: null, cor_secundaria: null };
+    bruto = {};
   }
+
+  const tokens: TokensDesign = {
+    cor_primaria: normalizarHex(bruto.cor_primaria),
+    cor_secundaria: normalizarHex(bruto.cor_secundaria),
+  };
+
+  console.error(
+    `[design-tokens] IA: ${texto.slice(0, 200)} | normalizado:`,
+    tokens,
+  );
+  return tokens;
 }
