@@ -200,3 +200,7 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
   - Bruno aprovou o conteúdo composto pela IA ("Agora sim"). Como a composição leva alguns segundos, a aba ficava em loading sem feedback (usuário clicava várias vezes).
   - `components/comparativos/BotaoBaixarPpt.tsx`: botão cliente que baixa via fetch+blob, mostra spinner + barra de progresso simulada (avança até 92%, completa no fim) e fica desabilitado durante a geração. Aplicado na página de detalhe e na de apresentação.
   - Infra: deploy via SSH falhou 1x com `dial tcp :22 i/o timeout` (blip de rede do VPS, não é código). `gh run rerun <id> --failed` resolveu. Commit `4a379c6`.
+- **2026-05-30 — ETAPA "Apresentação do comparativo" CONCLUÍDA e validada** 🏁
+  - Bruno testou trocar o design system para OUTRA empresa (cores distintas) e o sistema entendeu/aplicou: "COISA LINDA. Agora sim. Finalizado esta etapa."
+  - Estado final: PPT editável + apresentação na tela + PDF (print), todos compostos pela IA (deck-plan) e com white-label (cores + logo) aplicado. Logo na proporção certa, sem texto sobreposto, com gráfico e próximos passos.
+  - Fica em aberto (NÃO iniciado): fluxo "Gerar apresentação" com tela HTML interativa intermediária (proposta do Bruno) — só quando ele pedir.
