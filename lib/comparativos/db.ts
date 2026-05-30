@@ -3,6 +3,9 @@ import { withUser } from "@/lib/db/client";
 import { buscarAnalise } from "@/lib/propostas/db";
 import { compararPropostas } from "@/lib/ai/comparar";
 import type { Comparativo } from "@/lib/ai/comparar-schema";
+import { montarDeck } from "./deck-plan";
+import { lerDeckCache, salvarDeckCache } from "./deck-cache";
+import type { Deck } from "./deck-schema";
 
 export interface ComparativoListaItem {
   id: string;
@@ -144,4 +147,22 @@ export async function buscarComparativo(
         : (linha.payload as Comparativo);
     return { ...linha, payload };
   });
+}
+
+/**
+ * Garante o deck (roteiro de apresentação) do comparativo: usa o cache em
+ * disco se existir; senão, pede à IA para compor e salva. HTML, PDF e PPT
+ * consomem o MESMO deck — ficam visualmente consistentes.
+ * O chamador deve ter autorizado o acesso antes (via buscarComparativo).
+ */
+export async function garantirDeck(
+  comparativoId: string,
+  comparativo: Comparativo,
+  empresa: string | null,
+): Promise<Deck> {
+  const cache = await lerDeckCache(comparativoId);
+  if (cache) return cache;
+  const { deck } = await montarDeck(comparativo, empresa);
+  await salvarDeckCache(comparativoId, deck);
+  return deck;
 }

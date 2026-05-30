@@ -2,9 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/sessao";
-import { buscarComparativo } from "@/lib/comparativos/db";
+import { buscarComparativo, garantirDeck } from "@/lib/comparativos/db";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
-import { ApresentacaoComparativo } from "@/components/comparativos/ApresentacaoComparativo";
+import { ApresentacaoDeck } from "@/components/comparativos/ApresentacaoDeck";
 import { BotaoExportarPdf } from "@/components/BotaoExportarPdf";
 import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 
@@ -20,6 +20,10 @@ export default async function ApresentacaoPage({
   const comparativo = await buscarComparativo(userId, params.id);
   if (!comparativo) notFound();
   const workspace = await buscarWorkspaceDoUsuario(userId);
+  const empresa = workspace?.whitelabel_empresa_nome || workspace?.nome || null;
+
+  // A IA compõe o roteiro (uma vez) — HTML, PDF e PPT usam o mesmo.
+  const deck = await garantirDeck(params.id, comparativo.payload, empresa);
 
   return (
     <div>
@@ -37,11 +41,12 @@ export default async function ApresentacaoPage({
         </div>
       </div>
 
-      <ApresentacaoComparativo
-        comparativo={comparativo.payload}
+      <ApresentacaoDeck
+        deck={deck}
         workspace={workspace}
-        titulo={comparativo.titulo}
         criadoEm={comparativo.created_at}
+        propostasRefs={comparativo.payload.propostas.map((p) => p.ref)}
+        vencedorRef={comparativo.payload.vencedor_ref}
       />
     </div>
   );

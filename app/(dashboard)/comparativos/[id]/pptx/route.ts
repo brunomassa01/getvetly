@@ -1,9 +1,8 @@
 import { NextResponse } from "next/server";
 import { auth } from "@/auth";
-import { buscarComparativo } from "@/lib/comparativos/db";
+import { buscarComparativo, garantirDeck } from "@/lib/comparativos/db";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 import { lerLogo, dimensoesImagem } from "@/lib/workspace/logo";
-import { montarDeck } from "@/lib/comparativos/deck-plan";
 import { gerarPptxComparativo } from "@/lib/comparativos/pptx";
 
 export const dynamic = "force-dynamic";
@@ -58,8 +57,8 @@ export async function GET(
     }
   }
 
-  // A IA compõe o roteiro da apresentação (com fallback seguro embutido).
-  const { deck } = await montarDeck(comparativo.payload, empresa);
+  // Mesmo deck usado na tela/PDF (compõe uma vez, reusa do cache).
+  const deck = await garantirDeck(params.id, comparativo.payload, empresa);
 
   const buffer = await gerarPptxComparativo(deck, {
     empresa,
