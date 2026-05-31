@@ -52,6 +52,14 @@ html {
    Esconde a navegação e botões; deixa só o relatório.
    ===================================================== */
 @media print {
+  /* Força a impressão de cores de fundo, selos, faixas e barras de gráfico
+     (por padrão o navegador descarta fundos → PDF saía "lavado"). */
+  *,
+  *::before,
+  *::after {
+    -webkit-print-color-adjust: exact !important;
+    print-color-adjust: exact !important;
+  }
   @page {
     margin: 1.4cm;
   }
