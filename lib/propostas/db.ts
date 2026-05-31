@@ -42,10 +42,23 @@ export interface PropostaDetalhe {
   arquivos: PropostaArquivo[];
 }
 
-/** Lista as propostas do workspace (mais recentes primeiro). */
+export interface FiltrosProposta {
+  busca?: string;
+  status?: string;
+  categoria?: string;
+  ordenar?: string; // 'recentes' | 'valor' | 'titulo'
+}
+
+/** Lista as propostas do workspace, com busca, filtros e ordenação. */
 export async function listarPropostas(
   userId: string,
+  filtros: FiltrosProposta = {},
 ): Promise<PropostaListaItem[]> {
+  const busca = filtros.busca?.trim();
+  const status = filtros.status?.trim();
+  const categoria = filtros.categoria?.trim();
+  const ordenar = filtros.ordenar?.trim();
+
   return withUser(userId, (sql) =>
     sql<PropostaListaItem[]>`
       select
@@ -53,8 +66,24 @@ export async function listarPropostas(
         p.created_at, f.nome as fornecedor_nome
       from propostas p
       left join fornecedores f on f.id = p.fornecedor_id
-      where p.status <> 'archived'
-      order by p.created_at desc
+      where ${
+        status
+          ? sql`p.status = ${status}`
+          : sql`p.status <> 'archived'`
+      }
+        ${
+          busca
+            ? sql`and (p.titulo ilike ${"%" + busca + "%"} or f.nome ilike ${"%" + busca + "%"})`
+            : sql``
+        }
+        ${categoria ? sql`and p.categoria = ${categoria}` : sql``}
+      ${
+        ordenar === "valor"
+          ? sql`order by p.valor_negociado desc nulls last`
+          : ordenar === "titulo"
+            ? sql`order by p.titulo asc`
+            : sql`order by p.created_at desc`
+      }
     `,
   );
 }

@@ -11,6 +11,14 @@ export function formatarData(iso: string): string {
   return new Date(iso).toLocaleDateString("pt-BR");
 }
 
+/**
+ * Código curto e estável a partir do id (uuid), para o usuário identificar/
+ * referenciar uma proposta — ex: "#A1B2C3". Não exige coluna no banco.
+ */
+export function codigoCurto(id: string): string {
+  return "#" + id.replace(/-/g, "").slice(0, 6).toUpperCase();
+}
+
 /** Formata um tamanho em bytes para KB/MB legível. */
 export function formatarTamanho(bytes: number): string {
   if (bytes < 1024) return `${bytes} B`;

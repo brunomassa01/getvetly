@@ -4,7 +4,8 @@ import { usuarioAtual } from "@/lib/auth/sessao";
 import { listarPropostas } from "@/lib/propostas/db";
 import { STATUS_PROPOSTA } from "@/lib/propostas/schema";
 import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
-import { formatarMoeda, formatarData } from "@/lib/format";
+import { formatarMoeda, formatarData, codigoCurto } from "@/lib/format";
+import { FiltrosPropostas } from "@/components/propostas/FiltrosPropostas";
 
 export const metadata: Metadata = { title: "Propostas — Vetly" };
 export const dynamic = "force-dynamic";
@@ -28,9 +29,30 @@ function StatusBadge({ status }: { status: string }) {
   );
 }
 
-export default async function PropostasPage() {
+export default async function PropostasPage({
+  searchParams,
+}: {
+  searchParams: {
+    busca?: string;
+    status?: string;
+    categoria?: string;
+    ordenar?: string;
+  };
+}) {
   const userId = await usuarioAtual();
-  const propostas = await listarPropostas(userId);
+  const filtros = {
+    busca: searchParams.busca ?? "",
+    status: searchParams.status ?? "",
+    categoria: searchParams.categoria ?? "",
+    ordenar: searchParams.ordenar ?? "",
+  };
+  const propostas = await listarPropostas(userId, filtros);
+  const temFiltro = !!(
+    filtros.busca ||
+    filtros.status ||
+    filtros.categoria ||
+    filtros.ordenar
+  );
 
   return (
     <div className="space-y-6">
@@ -51,26 +73,38 @@ export default async function PropostasPage() {
         </Link>
       </div>
 
+      <FiltrosPropostas
+        buscaInicial={filtros.busca}
+        statusInicial={filtros.status}
+        categoriaInicial={filtros.categoria}
+        ordenarInicial={filtros.ordenar}
+      />
+
       {propostas.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-[color:var(--border-default)] rounded-xl">
           <p className="font-display font-bold text-lg text-ink">
-            Nenhuma proposta ainda
+            {temFiltro ? "Nenhuma proposta encontrada" : "Nenhuma proposta ainda"}
           </p>
           <p className="text-sm text-texto-2 mt-1 mb-6">
-            Crie sua primeira proposta e anexe os arquivos do fornecedor.
+            {temFiltro
+              ? "Tente ajustar a busca ou os filtros."
+              : "Crie sua primeira proposta e anexe os arquivos do fornecedor."}
           </p>
-          <Link
-            href="/propostas/nova"
-            className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
-          >
-            Criar primeira proposta
-          </Link>
+          {!temFiltro && (
+            <Link
+              href="/propostas/nova"
+              className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
+            >
+              Criar primeira proposta
+            </Link>
+          )}
         </div>
       ) : (
         <div className="border border-[color:var(--border-subtle)] rounded-lg overflow-hidden bg-white">
           <table className="w-full text-sm">
             <thead className="bg-paper-warm">
               <tr className="text-left text-texto-3 text-xs uppercase tracking-wide">
+                <th className="px-4 py-3 font-semibold">Código</th>
                 <th className="px-4 py-3 font-semibold">Proposta</th>
                 <th className="px-4 py-3 font-semibold">Fornecedor</th>
                 <th className="px-4 py-3 font-semibold">Categoria</th>
@@ -85,6 +119,9 @@ export default async function PropostasPage() {
                   key={p.id}
                   className="border-t border-[color:var(--border-subtle)] hover:bg-[rgba(200,255,2,0.06)] transition-colors"
                 >
+                  <td className="px-4 py-3 font-mono text-xs text-texto-3">
+                    {codigoCurto(p.id)}
+                  </td>
                   <td className="px-4 py-3">
                     <Link
                       href={`/propostas/${p.id}`}
