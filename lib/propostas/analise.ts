@@ -29,6 +29,31 @@ export async function executarAnaliseProposta(
   }
 
   await atualizarStatusProposta(userId, propostaId, "processing");
+  return rodarAnalise(userId, propostaId, dados);
+}
+
+/**
+ * Dispara a análise em SEGUNDO PLANO: marca a proposta como "processando" e
+ * deixa a análise rodar solta (sem travar a resposta). O servidor é um Node
+ * persistente (PM2), então a tarefa continua depois do redirect. A página da
+ * proposta mostra "processando" e se atualiza sozinha quando fica pronta.
+ */
+export async function dispararAnaliseEmSegundoPlano(
+  userId: string,
+  propostaId: string,
+): Promise<void> {
+  await atualizarStatusProposta(userId, propostaId, "processing");
+  // NÃO await — roda em background; erros caem no status 'failed' lá dentro.
+  void executarAnaliseProposta(userId, propostaId).catch((erro) =>
+    console.error(`[analise bg] proposta ${propostaId}:`, erro),
+  );
+}
+
+async function rodarAnalise(
+  userId: string,
+  propostaId: string,
+  dados: NonNullable<Awaited<ReturnType<typeof dadosParaAnalise>>>,
+): Promise<{ ok: boolean; erro?: string }> {
   try {
     const { contexto } = await montarContexto(dados.arquivos);
     const resultado = await analisarProposta({

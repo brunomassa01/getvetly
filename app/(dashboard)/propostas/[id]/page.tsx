@@ -10,6 +10,7 @@ import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
 import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
 import { CompletarContatoFornecedor } from "@/components/propostas/CompletarContatoFornecedor";
 import { SituacaoProposta } from "@/components/propostas/SituacaoProposta";
+import { PolerAnalise } from "@/components/propostas/PolerAnalise";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
 import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
@@ -176,6 +177,21 @@ export default async function PropostaDetalhePage({
               />
             )}
             <RelatorioAnalise analise={analise} />
+          </div>
+        ) : proposta.status === "processing" ? (
+          <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-10 text-center">
+            <span
+              className="mx-auto block h-8 w-8 rounded-full border-2 border-ink/20 border-t-ink animate-spin"
+              aria-hidden
+            />
+            <p className="font-display font-bold text-ink mt-4">
+              Analisando sua proposta…
+            </p>
+            <p className="text-sm text-texto-2 mt-1">
+              A IA está lendo os arquivos e montando o relatório. Pode levar 1-2
+              minutos — esta página atualiza sozinha quando ficar pronta.
+            </p>
+            <PolerAnalise />
           </div>
         ) : (
           <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-6 text-center">

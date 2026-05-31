@@ -8,7 +8,7 @@ import {
   atualizarSituacaoProposta,
   SITUACOES,
 } from "@/lib/propostas/db";
-import { executarAnaliseProposta } from "@/lib/propostas/analise";
+import { dispararAnaliseEmSegundoPlano } from "@/lib/propostas/analise";
 import { completarContatoFornecedor } from "@/lib/fornecedores/db";
 import type { EstadoForm } from "@/lib/auth/tipos";
 
@@ -52,7 +52,8 @@ export async function criarEAnalisarPropostaAction(
     return { erro: "Não foi possível salvar a proposta. Tente novamente." };
   }
 
-  await executarAnaliseProposta(userId, id);
+  // Dispara em segundo plano e leva direto pra página (que mostra "processando").
+  await dispararAnaliseEmSegundoPlano(userId, id);
   revalidatePath("/propostas");
   redirect(`/propostas/${id}`);
 }
@@ -96,6 +97,6 @@ export async function analisarPropostaAction(formData: FormData): Promise<void> 
   const userId = await usuarioAtual();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
-  await executarAnaliseProposta(userId, id);
+  await dispararAnaliseEmSegundoPlano(userId, id);
   revalidatePath(`/propostas/${id}`);
 }

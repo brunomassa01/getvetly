@@ -1,12 +1,17 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
-import { sairAction } from "@/app/(auth)/actions";
+import { auth } from "@/auth";
+import { MenuPerfil } from "@/components/layout/MenuPerfil";
 
-export default function DashboardLayout({
+export default async function DashboardLayout({
   children,
 }: {
   children: React.ReactNode;
 }) {
+  const session = await auth();
+  const nome = session?.user?.name ?? null;
+  const email = session?.user?.email ?? null;
+
   return (
     <div className="min-h-screen flex flex-col">
       <header className="print:hidden border-b border-[color:var(--border-subtle)]">
@@ -37,22 +42,9 @@ export default function DashboardLayout({
               >
                 Fornecedores
               </Link>
-              <Link
-                href="/configuracoes"
-                className="text-texto-2 hover:text-ink transition-colors"
-              >
-                Configurações
-              </Link>
             </nav>
           </div>
-          <form action={sairAction}>
-            <button
-              type="submit"
-              className="text-sm font-medium text-texto-2 hover:text-ink transition-colors"
-            >
-              Sair
-            </button>
-          </form>
+          <MenuPerfil nome={nome} email={email} />
         </div>
       </header>
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-10">
