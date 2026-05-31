@@ -45,3 +45,18 @@ export const STATUS_PROPOSTA: Record<string, string> = {
   failed: "Falhou",
   archived: "Arquivada",
 };
+
+// Situação comercial (ciclo de aprovação) — rótulo + cor do selo.
+export const ROTULO_SITUACAO: Record<string, string> = {
+  em_aberto: "Em aberto",
+  apresentada: "Apresentada",
+  aprovada: "Aprovada",
+  recusada: "Recusada",
+};
+
+export const COR_SITUACAO: Record<string, string> = {
+  em_aberto: "bg-[#E8E6DC] text-texto-2",
+  apresentada: "bg-[#E0EFF5] text-[#1E5468]",
+  aprovada: "bg-lime-faint text-[#5C7A0E]",
+  recusada: "bg-[#FBE3E3] text-[#8E2828]",
+};

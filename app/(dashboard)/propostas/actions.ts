@@ -3,7 +3,11 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { usuarioAtual } from "@/lib/auth/sessao";
-import { criarPropostaComArquivos } from "@/lib/propostas/db";
+import {
+  criarPropostaComArquivos,
+  atualizarSituacaoProposta,
+  SITUACOES,
+} from "@/lib/propostas/db";
 import { executarAnaliseProposta } from "@/lib/propostas/analise";
 import { completarContatoFornecedor } from "@/lib/fornecedores/db";
 import type { EstadoForm } from "@/lib/auth/tipos";
@@ -72,6 +76,19 @@ export async function completarContatoFornecedorAction(
     telefone: limpar(formData, "telefone"),
   });
   if (propostaId) revalidatePath(`/propostas/${propostaId}`);
+}
+
+/** Atualiza a situação comercial da proposta (apresentada/aprovada/recusada/em_aberto). */
+export async function marcarSituacaoAction(formData: FormData): Promise<void> {
+  const userId = await usuarioAtual();
+  const id = String(formData.get("id") ?? "");
+  const situacao = String(formData.get("situacao") ?? "");
+  if (!id || !SITUACOES.includes(situacao as (typeof SITUACOES)[number])) return;
+
+  await atualizarSituacaoProposta(userId, id, situacao);
+  revalidatePath(`/propostas/${id}`);
+  revalidatePath("/propostas");
+  revalidatePath("/painel");
 }
 
 /** Reexecuta a análise de uma proposta existente (botão "Refazer análise"). */

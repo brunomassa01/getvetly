@@ -9,6 +9,7 @@ import { formatarMoeda, formatarData, formatarTamanho } from "@/lib/format";
 import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
 import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
 import { CompletarContatoFornecedor } from "@/components/propostas/CompletarContatoFornecedor";
+import { SituacaoProposta } from "@/components/propostas/SituacaoProposta";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
 import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
@@ -75,6 +76,16 @@ export default async function PropostaDetalhePage({
           )}
         </div>
       </div>
+
+      {/* Situação comercial (ciclo de aprovação) */}
+      {proposta.status === "ready" && (
+        <SituacaoProposta
+          id={proposta.id}
+          situacao={proposta.situacao}
+          apresentadaEm={proposta.apresentada_em}
+          decididaEm={proposta.decidida_em}
+        />
+      )}
 
       {/* Dados da proposta */}
       <section className="bg-white border border-[color:var(--border-subtle)] rounded-lg p-6">

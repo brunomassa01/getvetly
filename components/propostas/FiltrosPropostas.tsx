@@ -2,7 +2,7 @@
 
 import { useRef, useState } from "react";
 import { usePathname, useRouter } from "next/navigation";
-import { STATUS_PROPOSTA } from "@/lib/propostas/schema";
+import { STATUS_PROPOSTA, ROTULO_SITUACAO } from "@/lib/propostas/schema";
 import { CATEGORIAS, ROTULO_CATEGORIA } from "@/lib/fornecedores/schema";
 
 const baseInput =
@@ -16,11 +16,13 @@ const STATUS_FILTRAVEIS = Object.entries(STATUS_PROPOSTA).filter(
 export function FiltrosPropostas({
   buscaInicial = "",
   statusInicial = "",
+  situacaoInicial = "",
   categoriaInicial = "",
   ordenarInicial = "",
 }: {
   buscaInicial?: string;
   statusInicial?: string;
+  situacaoInicial?: string;
   categoriaInicial?: string;
   ordenarInicial?: string;
 }) {
@@ -58,6 +60,18 @@ export function FiltrosPropostas({
       >
         <option value="">Todos os status</option>
         {STATUS_FILTRAVEIS.map(([valor, rotulo]) => (
+          <option key={valor} value={valor}>
+            {rotulo}
+          </option>
+        ))}
+      </select>
+      <select
+        defaultValue={situacaoInicial}
+        onChange={(e) => atualizar("situacao", e.target.value)}
+        className={baseInput}
+      >
+        <option value="">Todas as situações</option>
+        {Object.entries(ROTULO_SITUACAO).map(([valor, rotulo]) => (
           <option key={valor} value={valor}>
             {rotulo}
           </option>

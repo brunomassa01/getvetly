@@ -2,7 +2,11 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { listarPropostas } from "@/lib/propostas/db";
-import { STATUS_PROPOSTA } from "@/lib/propostas/schema";
+import {
+  STATUS_PROPOSTA,
+  ROTULO_SITUACAO,
+  COR_SITUACAO,
+} from "@/lib/propostas/schema";
 import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
 import { formatarMoeda, formatarData, codigoCurto } from "@/lib/format";
 import { FiltrosPropostas } from "@/components/propostas/FiltrosPropostas";
@@ -35,6 +39,7 @@ export default async function PropostasPage({
   searchParams: {
     busca?: string;
     status?: string;
+    situacao?: string;
     categoria?: string;
     ordenar?: string;
   };
@@ -43,6 +48,7 @@ export default async function PropostasPage({
   const filtros = {
     busca: searchParams.busca ?? "",
     status: searchParams.status ?? "",
+    situacao: searchParams.situacao ?? "",
     categoria: searchParams.categoria ?? "",
     ordenar: searchParams.ordenar ?? "",
   };
@@ -50,6 +56,7 @@ export default async function PropostasPage({
   const temFiltro = !!(
     filtros.busca ||
     filtros.status ||
+    filtros.situacao ||
     filtros.categoria ||
     filtros.ordenar
   );
@@ -76,6 +83,7 @@ export default async function PropostasPage({
       <FiltrosPropostas
         buscaInicial={filtros.busca}
         statusInicial={filtros.status}
+        situacaoInicial={filtros.situacao}
         categoriaInicial={filtros.categoria}
         ordenarInicial={filtros.ordenar}
       />
@@ -110,6 +118,7 @@ export default async function PropostasPage({
                 <th className="px-4 py-3 font-semibold">Categoria</th>
                 <th className="px-4 py-3 font-semibold">Valor negociado</th>
                 <th className="px-4 py-3 font-semibold">Status</th>
+                <th className="px-4 py-3 font-semibold">Situação</th>
                 <th className="px-4 py-3 font-semibold">Criada</th>
               </tr>
             </thead>
@@ -141,6 +150,13 @@ export default async function PropostasPage({
                   </td>
                   <td className="px-4 py-3">
                     <StatusBadge status={p.status} />
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${COR_SITUACAO[p.situacao] ?? COR_SITUACAO.em_aberto}`}
+                    >
+                      {ROTULO_SITUACAO[p.situacao] ?? "Em aberto"}
+                    </span>
                   </td>
                   <td className="px-4 py-3 text-texto-3">
                     {formatarData(p.created_at)}

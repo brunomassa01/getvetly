@@ -11,6 +11,7 @@ export interface PropostaListaItem {
   titulo: string;
   categoria: string;
   status: string;
+  situacao: string;
   valor_negociado: string | null;
   fornecedor_nome: string | null;
   created_at: string;
@@ -32,6 +33,9 @@ export interface PropostaDetalhe {
   valor_tabela: string | null;
   valor_negociado: string | null;
   status: string;
+  situacao: string;
+  apresentada_em: string | null;
+  decidida_em: string | null;
   status_message: string | null;
   fornecedor_nome: string | null;
   fornecedor_id: string | null;
@@ -45,9 +49,19 @@ export interface PropostaDetalhe {
 export interface FiltrosProposta {
   busca?: string;
   status?: string;
+  situacao?: string;
   categoria?: string;
   ordenar?: string; // 'recentes' | 'valor' | 'titulo'
 }
+
+// Situações comerciais válidas (espelha a migration 0004).
+export const SITUACOES = [
+  "em_aberto",
+  "apresentada",
+  "aprovada",
+  "recusada",
+] as const;
+export type Situacao = (typeof SITUACOES)[number];
 
 /** Lista as propostas do workspace, com busca, filtros e ordenação. */
 export async function listarPropostas(
@@ -56,13 +70,14 @@ export async function listarPropostas(
 ): Promise<PropostaListaItem[]> {
   const busca = filtros.busca?.trim();
   const status = filtros.status?.trim();
+  const situacao = filtros.situacao?.trim();
   const categoria = filtros.categoria?.trim();
   const ordenar = filtros.ordenar?.trim();
 
   return withUser(userId, (sql) =>
     sql<PropostaListaItem[]>`
       select
-        p.id, p.titulo, p.categoria, p.status, p.valor_negociado,
+        p.id, p.titulo, p.categoria, p.status, p.situacao, p.valor_negociado,
         p.created_at, f.nome as fornecedor_nome
       from propostas p
       left join fornecedores f on f.id = p.fornecedor_id
@@ -76,6 +91,7 @@ export async function listarPropostas(
             ? sql`and (p.titulo ilike ${"%" + busca + "%"} or f.nome ilike ${"%" + busca + "%"})`
             : sql``
         }
+        ${situacao ? sql`and p.situacao = ${situacao}` : sql``}
         ${categoria ? sql`and p.categoria = ${categoria}` : sql``}
       ${
         ordenar === "valor"
@@ -98,6 +114,7 @@ export async function buscarProposta(
       select
         p.id, p.titulo, p.categoria, p.escopo, p.aprovador_email,
         p.valor_tabela, p.valor_negociado, p.status, p.status_message,
+        p.situacao, p.apresentada_em, p.decidida_em,
         p.created_at, f.nome as fornecedor_nome,
         f.id as fornecedor_id, f.cnpj as fornecedor_cnpj,
         f.email as fornecedor_email, f.telefone as fornecedor_telefone
@@ -372,4 +389,88 @@ export async function buscarAnalise(
     }
     return payload as Analise;
   });
+}
+
+// ===================== Situação comercial =====================
+
+/**
+ * Atualiza a situação da proposta e as datas do ciclo:
+ * - apresentada → grava `apresentada_em` (se ainda não tinha) e zera decisão
+ * - aprovada/recusada → grava `decidida_em` (e garante apresentada_em)
+ * - em_aberto → reabre (limpa as duas datas)
+ */
+export async function atualizarSituacaoProposta(
+  userId: string,
+  propostaId: string,
+  situacao: string,
+): Promise<void> {
+  await withUser(userId, (sql) => {
+    if (situacao === "apresentada") {
+      return sql`
+        update propostas set
+          situacao = 'apresentada',
+          apresentada_em = coalesce(apresentada_em, now()),
+          decidida_em = null
+        where id = ${propostaId}`;
+    }
+    if (situacao === "aprovada" || situacao === "recusada") {
+      return sql`
+        update propostas set
+          situacao = ${situacao},
+          apresentada_em = coalesce(apresentada_em, now()),
+          decidida_em = now()
+        where id = ${propostaId}`;
+    }
+    return sql`
+      update propostas set
+        situacao = 'em_aberto', apresentada_em = null, decidida_em = null
+      where id = ${propostaId}`;
+  });
+}
+
+export interface ResumoSituacao {
+  em_aberto: number;
+  apresentada: number;
+  aprovada: number;
+  recusada: number;
+}
+
+/** Contagens por situação (para o índice do painel). */
+export async function resumoSituacao(userId: string): Promise<ResumoSituacao> {
+  return withUser(userId, async (sql) => {
+    const [r] = await sql<ResumoSituacao[]>`
+      select
+        count(*) filter (where situacao = 'em_aberto')::int as em_aberto,
+        count(*) filter (where situacao = 'apresentada')::int as apresentada,
+        count(*) filter (where situacao = 'aprovada')::int as aprovada,
+        count(*) filter (where situacao = 'recusada')::int as recusada
+      from propostas
+      where status <> 'archived'
+    `;
+    return r;
+  });
+}
+
+export interface AguardandoItem {
+  id: string;
+  titulo: string;
+  fornecedor_nome: string | null;
+  apresentada_em: string | null;
+  dias: number;
+}
+
+/** Propostas apresentadas sem desfecho — para a seção "Aguardando retorno". */
+export async function listarAguardandoRetorno(
+  userId: string,
+): Promise<AguardandoItem[]> {
+  return withUser(userId, (sql) =>
+    sql<AguardandoItem[]>`
+      select p.id, p.titulo, f.nome as fornecedor_nome, p.apresentada_em,
+        coalesce(extract(day from now() - p.apresentada_em)::int, 0) as dias
+      from propostas p
+      left join fornecedores f on f.id = p.fornecedor_id
+      where p.situacao = 'apresentada' and p.status <> 'archived'
+      order by p.apresentada_em asc
+    `,
+  );
 }
