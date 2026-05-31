@@ -13,6 +13,45 @@ function normalizarEmail(email: string): string {
   return email.trim().toLowerCase();
 }
 
+export interface Perfil {
+  id: string;
+  email: string;
+  nome: string | null;
+  telefone: string | null;
+  avatar_url: string | null;
+}
+
+/** Dados do perfil do usuário (tela "Conta"). */
+export async function buscarPerfil(userId: string): Promise<Perfil | null> {
+  const sql = getSqlService();
+  const [p] = await sql<Perfil[]>`
+    select id, email, nome, telefone, avatar_url
+    from auth.users where id = ${userId}
+  `;
+  return p ?? null;
+}
+
+/** Atualiza nome e telefone do usuário (e-mail é a identidade — não muda aqui). */
+export async function atualizarPerfil(
+  userId: string,
+  dados: { nome: string | null; telefone: string | null },
+): Promise<void> {
+  const sql = getSqlService();
+  await sql`
+    update auth.users set nome = ${dados.nome}, telefone = ${dados.telefone}
+    where id = ${userId}
+  `;
+}
+
+/** Grava o caminho/URL da foto de perfil. */
+export async function salvarAvatarPerfil(
+  userId: string,
+  caminho: string,
+): Promise<void> {
+  const sql = getSqlService();
+  await sql`update auth.users set avatar_url = ${caminho} where id = ${userId}`;
+}
+
 /** Busca um usuário pelo e-mail. Retorna null se não existir. */
 export async function buscarUsuarioPorEmail(
   email: string,

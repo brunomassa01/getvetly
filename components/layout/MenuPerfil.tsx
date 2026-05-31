@@ -15,9 +15,11 @@ const ITENS = [
 export function MenuPerfil({
   nome,
   email,
+  temAvatar = false,
 }: {
   nome: string | null;
   email: string | null;
+  temAvatar?: boolean;
 }) {
   const [aberto, setAberto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -42,9 +44,14 @@ export function MenuPerfil({
         type="button"
         onClick={() => setAberto((v) => !v)}
         aria-label="Menu da conta"
-        className="flex items-center justify-center w-9 h-9 rounded-full bg-ink text-paper font-display font-bold text-sm hover:opacity-90 transition-opacity"
+        className="flex items-center justify-center w-9 h-9 rounded-full bg-ink text-paper font-display font-bold text-sm hover:opacity-90 transition-opacity overflow-hidden"
       >
-        {inicial}
+        {temAvatar ? (
+          // eslint-disable-next-line @next/next/no-img-element
+          <img src="/api/avatar" alt="" className="w-full h-full object-cover" />
+        ) : (
+          inicial
+        )}
       </button>
 
       {aberto && (

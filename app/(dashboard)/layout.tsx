@@ -1,6 +1,7 @@
 import Link from "next/link";
 import { Logo } from "@/components/Logo";
 import { auth } from "@/auth";
+import { buscarPerfil } from "@/lib/auth/usuarios";
 import { MenuPerfil } from "@/components/layout/MenuPerfil";
 
 export default async function DashboardLayout({
@@ -11,6 +12,7 @@ export default async function DashboardLayout({
   const session = await auth();
   const nome = session?.user?.name ?? null;
   const email = session?.user?.email ?? null;
+  const perfil = session?.user?.id ? await buscarPerfil(session.user.id) : null;
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -44,7 +46,11 @@ export default async function DashboardLayout({
               </Link>
             </nav>
           </div>
-          <MenuPerfil nome={nome} email={email} />
+          <MenuPerfil
+            nome={nome}
+            email={email}
+            temAvatar={!!perfil?.avatar_url}
+          />
         </div>
       </header>
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-10">
