@@ -120,9 +120,14 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - ✅ **Completar contato do fornecedor** (opcional, após análise, quando a IA não achou) — card em /propostas/[id].
 - ✅ **Propostas: código + filtros** — coluna `Código` (curto, derivado do id via `codigoCurto`) + busca/status/categoria/ordenação.
 - ✅ **Comparativos: descoberta** — colunas Fornecedores + Recomendada (IA, do payload) + busca por título/fornecedor.
-- ⏳ **Fornecedores: menu "3 pontinhos"** por linha → editar / excluir / arquivar / inserir observações.
-- ⏳ **Aprovação**: marcar proposta como aprovada. ONDE aparece (decisão de UX): selo na proposta (detalhe) + coluna/filtro na lista + alimenta índice de aprovação no fornecedor + (opcional) contador no painel. DISTINÇÃO importante: "vencedora" = recomendação da IA no comparativo; "aprovada" = decisão do usuário. **Precisa de migration** (coluna em propostas) — Bruno roda no VPS (já faz SSH).
+- ✅ **Fornecedores: menu "3 pontinhos"** (`AcoesFornecedor`) — editar (link) / observações (modal) / arquivar / excluir (DELETE, RLS só admin, com confirmação).
+- ✅ **Situação comercial da proposta (migration 0004 aplicada no VPS)** — ciclo `em_aberto → apresentada → aprovada | recusada` com datas (`apresentada_em`, `decidida_em`). Separado do `status` (pipeline de análise). Onde aparece: controle com botões na proposta (`SituacaoProposta`), selo + filtro na lista, e no **Dashboard**: índice "apresentou X, fechou Y, Z aguardam retorno" + taxa de aprovação + seção **"Aguardando retorno"** (apresentadas sem desfecho, com nº de dias + botões rápidos ✓/✕). Funções: `atualizarSituacaoProposta`, `resumoSituacao`, `listarAguardandoRetorno`. "vencedora" (IA recomenda no comparativo) ≠ "aprovada" (decisão do usuário).
 - ⏳ **Análise em segundo plano** — tirar o usuário do spinner (status processing + poller). Schema já tem o status.
+- ⏳ **Menu de perfil do usuário** (Bruno 2026-05-30, "não precisa ser agora") — ícone à direita no lugar do "Sair", dropdown: Conta (editar perfil) / Financeiro / Gestão de Usuários / Configurações da Empresa / Ajuda / Sair.
+- ⚠️ **Infra recorrente**: deploy SSH falha intermitente com `dial tcp :22 i/o timeout` (flakiness de rede do VPS Hostinger). Resolver com `gh run rerun <id> --failed`. Melhoria futura: adicionar retry/`timeout` maior no passo SSH do workflow.
+
+### Aprovação por e-mail / compartilhar (avaliado 2026-05-30)
+- Mandar a análise por e-mail: complexidade MÉDIA; gargalo é infra (Resend não configurado: conta + verificação de domínio via DNS). Com Resend pronto, versão fácil = anexar o PPT (já gerado no servidor) + resumo. Versão "linda" = link compartilhável + aprovar online (liga com a situação "Apresentada"). Recomendação: juntar num pacote só — **Resend + compartilhar por link/e-mail + aprovar online** — próximo passo natural depois do Dashboard.
 
 ### Ideias futuras (Bruno 2026-05-30) — pós-MVP / roadmap
 1. **Bot de atendimento + área de AJUDA (IA)** — pra economizar token, criar DOCUMENTAÇÃO de como o Get Vetly funciona; o bot consulta a doc (RAG) e, se não resolver, o usuário abre um chamado. (depende de doc pronta + decisão de custo)
