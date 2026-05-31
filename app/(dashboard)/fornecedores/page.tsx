@@ -7,6 +7,7 @@ import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
 import { formatarMoeda } from "@/lib/format";
 import { BuscaFornecedores } from "@/components/fornecedores/BuscaFornecedores";
 import { DuplicadosFornecedores } from "@/components/fornecedores/DuplicadosFornecedores";
+import { AcoesFornecedor } from "@/components/fornecedores/AcoesFornecedor";
 
 export const metadata: Metadata = { title: "Fornecedores — Vetly" };
 export const dynamic = "force-dynamic";
@@ -91,6 +92,7 @@ export default async function FornecedoresPage({
                 <th className="px-4 py-3 font-semibold">Cotações</th>
                 <th className="px-4 py-3 font-semibold">Economia gerada</th>
                 <th className="px-4 py-3 font-semibold">Desconto médio</th>
+                <th className="px-4 py-3 font-semibold w-10"></th>
               </tr>
             </thead>
             <tbody>
@@ -120,6 +122,13 @@ export default async function FornecedoresPage({
                     {f.desconto_medio != null
                       ? `${Number(f.desconto_medio).toLocaleString("pt-BR")}%`
                       : "—"}
+                  </td>
+                  <td className="px-4 py-3 text-right">
+                    <AcoesFornecedor
+                      id={f.id}
+                      nome={f.nome}
+                      observacoes={f.observacoes}
+                    />
                   </td>
                 </tr>
               ))}

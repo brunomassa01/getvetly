@@ -237,3 +237,27 @@ export async function arquivarFornecedor(
     sql`update fornecedores set ativo = false where id = ${id}`,
   );
 }
+
+/**
+ * Exclui PERMANENTEMENTE um fornecedor (RLS permite só admin). As propostas
+ * vinculadas não somem — ficam com fornecedor_id = null (ON DELETE SET NULL).
+ */
+export async function excluirFornecedor(
+  userId: string,
+  id: string,
+): Promise<void> {
+  await withUser(userId, (sql) =>
+    sql`delete from fornecedores where id = ${id}`,
+  );
+}
+
+/** Salva/atualiza as observações de um fornecedor. */
+export async function salvarObservacoesFornecedor(
+  userId: string,
+  id: string,
+  observacoes: string | null,
+): Promise<void> {
+  await withUser(userId, (sql) =>
+    sql`update fornecedores set observacoes = ${observacoes} where id = ${id}`,
+  );
+}
