@@ -3,13 +3,19 @@ import Link from "next/link";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { listarComparativos } from "@/lib/comparativos/db";
 import { formatarData } from "@/lib/format";
+import { BuscaComparativos } from "@/components/comparativos/BuscaComparativos";
 
 export const metadata: Metadata = { title: "Comparativos — Vetly" };
 export const dynamic = "force-dynamic";
 
-export default async function ComparativosPage() {
+export default async function ComparativosPage({
+  searchParams,
+}: {
+  searchParams: { busca?: string };
+}) {
   const userId = await usuarioAtual();
-  const comparativos = await listarComparativos(userId);
+  const busca = searchParams.busca ?? "";
+  const comparativos = await listarComparativos(userId, { busca });
 
   return (
     <div className="space-y-6">
@@ -38,20 +44,26 @@ export default async function ComparativosPage() {
         </div>
       </div>
 
+      <BuscaComparativos buscaInicial={busca} />
+
       {comparativos.length === 0 ? (
         <div className="text-center py-20 border border-dashed border-[color:var(--border-default)] rounded-xl">
           <p className="font-display font-bold text-lg text-ink">
-            Nenhuma comparação ainda
+            {busca ? "Nenhuma comparação encontrada" : "Nenhuma comparação ainda"}
           </p>
           <p className="text-sm text-texto-2 mt-1 mb-6">
-            Selecione 2 ou mais propostas analisadas e deixe a IA recomendar.
+            {busca
+              ? "Tente outro termo (título ou nome do fornecedor)."
+              : "Selecione 2 ou mais propostas analisadas e deixe a IA recomendar."}
           </p>
-          <Link
-            href="/comparativos/subir"
-            className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
-          >
-            Subir e comparar
-          </Link>
+          {!busca && (
+            <Link
+              href="/comparativos/subir"
+              className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
+            >
+              Subir e comparar
+            </Link>
+          )}
         </div>
       ) : (
         <div className="border border-[color:var(--border-subtle)] rounded-lg overflow-hidden bg-white">
@@ -59,6 +71,8 @@ export default async function ComparativosPage() {
             <thead className="bg-paper-warm">
               <tr className="text-left text-texto-3 text-xs uppercase tracking-wide">
                 <th className="px-4 py-3 font-semibold">Comparação</th>
+                <th className="px-4 py-3 font-semibold">Fornecedores</th>
+                <th className="px-4 py-3 font-semibold">Recomendada (IA)</th>
                 <th className="px-4 py-3 font-semibold">Propostas</th>
                 <th className="px-4 py-3 font-semibold">Criada</th>
               </tr>
@@ -76,6 +90,18 @@ export default async function ComparativosPage() {
                     >
                       {c.titulo}
                     </Link>
+                  </td>
+                  <td className="px-4 py-3 text-texto-2">
+                    {c.fornecedores.length > 0 ? c.fornecedores.join(", ") : "—"}
+                  </td>
+                  <td className="px-4 py-3">
+                    {c.vencedor_ref ? (
+                      <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-lime-faint text-[#5C7A0E]">
+                        ✓ {c.vencedor_ref}
+                      </span>
+                    ) : (
+                      <span className="text-texto-3">—</span>
+                    )}
                   </td>
                   <td className="px-4 py-3 text-texto-2">{c.qtd_propostas}</td>
                   <td className="px-4 py-3 text-texto-3">

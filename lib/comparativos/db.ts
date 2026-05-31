@@ -12,6 +12,8 @@ export interface ComparativoListaItem {
   titulo: string;
   created_at: string;
   qtd_propostas: number;
+  vencedor_ref: string | null;
+  fornecedores: string[];
 }
 
 export interface ComparativoDetalhe {
@@ -112,15 +114,47 @@ export async function criarComparativo(
 
 export async function listarComparativos(
   userId: string,
+  filtros: { busca?: string } = {},
 ): Promise<ComparativoListaItem[]> {
-  return withUser(userId, (sql) =>
-    sql<ComparativoListaItem[]>`
+  const busca = filtros.busca?.trim();
+  const linhas = await withUser(userId, (sql) =>
+    sql<
+      {
+        id: string;
+        titulo: string;
+        created_at: string;
+        qtd_propostas: number;
+        payload: unknown;
+      }[]
+    >`
       select id, titulo, created_at,
-        coalesce(array_length(proposta_ids, 1), 0) as qtd_propostas
+        coalesce(array_length(proposta_ids, 1), 0) as qtd_propostas,
+        payload
       from comparativos
+      ${
+        busca
+          ? sql`where (titulo ilike ${"%" + busca + "%"} or payload::text ilike ${"%" + busca + "%"})`
+          : sql``
+      }
       order by created_at desc
     `,
   );
+
+  return linhas.map((l) => {
+    const payload = (
+      typeof l.payload === "string" ? JSON.parse(l.payload) : l.payload
+    ) as Comparativo | null;
+    return {
+      id: l.id,
+      titulo: l.titulo,
+      created_at: l.created_at,
+      qtd_propostas: l.qtd_propostas,
+      vencedor_ref: payload?.vencedor_ref ?? null,
+      fornecedores: Array.isArray(payload?.propostas)
+        ? payload.propostas.map((p) => p.fornecedor || p.ref)
+        : [],
+    };
+  });
 }
 
 export async function buscarComparativo(
