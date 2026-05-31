@@ -56,7 +56,7 @@ export function ApresentacaoDeck({
         return (
           <header
             key={i}
-            className="relative overflow-hidden rounded-2xl text-paper p-10 sm:p-12 print:rounded-none break-inside-avoid flex flex-col min-h-[520px] print:h-[296mm] print:break-after-page"
+            className="relative overflow-hidden rounded-2xl text-paper p-10 sm:p-12 print:rounded-none break-inside-avoid flex flex-col min-h-[520px] print:min-h-[245mm] print:break-after-page"
             style={{ backgroundColor: corFundo }}
           >
             <span

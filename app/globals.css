@@ -64,10 +64,6 @@ html {
     size: A4 portrait;
     margin: 1.4cm;
   }
-  /* Capa ocupa a 1ª página inteira, de ponta a ponta (sem margem branca). */
-  @page :first {
-    margin: 0;
-  }
   body {
     background: #fff;
   }
