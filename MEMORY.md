@@ -116,8 +116,23 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 6. **Modelo de venda: assinatura vs. crédito** — assinatura por tier (recorrente) e/ou compra de créditos por análise. Recomendação inicial: assinatura como base (MRR previsível B2B) + pacotes de crédito como add-on/overflow e entrada p/ avulsos. Regra dos 50% de margem vale p/ ambos.
 7. **Canal de parceiros/afiliados** — afiliados revendem (links/cupons de indicação, comissão %, painel do parceiro). Relacionado a whitelabel (consultorias). Fase pós-PMF; depende de Stripe + atribuição de origem.
 
+### Fila de usabilidade (Bruno 2026-05-30) — em execução
+- ✅ **Completar contato do fornecedor** (opcional, após análise, quando a IA não achou) — card em /propostas/[id].
+- ✅ **Propostas: código + filtros** — coluna `Código` (curto, derivado do id via `codigoCurto`) + busca/status/categoria/ordenação.
+- ✅ **Comparativos: descoberta** — colunas Fornecedores + Recomendada (IA, do payload) + busca por título/fornecedor.
+- ⏳ **Fornecedores: menu "3 pontinhos"** por linha → editar / excluir / arquivar / inserir observações.
+- ⏳ **Aprovação**: marcar proposta como aprovada. ONDE aparece (decisão de UX): selo na proposta (detalhe) + coluna/filtro na lista + alimenta índice de aprovação no fornecedor + (opcional) contador no painel. DISTINÇÃO importante: "vencedora" = recomendação da IA no comparativo; "aprovada" = decisão do usuário. **Precisa de migration** (coluna em propostas) — Bruno roda no VPS (já faz SSH).
+- ⏳ **Análise em segundo plano** — tirar o usuário do spinner (status processing + poller). Schema já tem o status.
+
+### Ideias futuras (Bruno 2026-05-30) — pós-MVP / roadmap
+1. **Bot de atendimento + área de AJUDA (IA)** — pra economizar token, criar DOCUMENTAÇÃO de como o Get Vetly funciona; o bot consulta a doc (RAG) e, se não resolver, o usuário abre um chamado. (depende de doc pronta + decisão de custo)
+2. **Painel de gestão da conta** — perfil do usuário (foto, cadastro), financeiro (faturas e pagamentos). Liga com Stripe.
+3. **Versão dark** (tema escuro).
+4. **Exportar CSV** de todos os fornecedores e propostas cadastradas.
+5. **Tutorial passo a passo (onboarding)** no 1º acesso — guia em telas cadastrando uma proposta de amostra; depois fica na seção de Ajuda. Só no primeiro acesso.
+
 ## 🐞 Bug aberto (investigar ao retomar)
-- **Client-side exception ao subir 2 arquivos da MESMA proposta** em /propostas/nova (deploy a1abef9). Erro "Application error: a client-side exception has occurred". Falta o texto do console do Bruno p/ diagnosticar. Hipótese: renderização do relatório/serialização RSC com algum campo da análise. Verificar status da proposta no banco (Pronta/Falhou) e `pm2 logs getvetly`.
+- ✅ RESOLVIDO (2026-05-30): **Client-side exception em /propostas/nova** — era upload grande tomando **413 do Nginx** (limite estava só no server block, não no `http` global → não cobria o 443) + o `PropostaForm` quebrava lendo `estado.erro` num estado vazio. Corrigido: `client_max_body_size 30M` no `http` global do Nginx + guarda `estado?.erro` + validação de tamanho no cliente. Ver entradas detalhadas no histórico.
 
 - **Pendente futuro**: checkout Stripe (chaves já em mãos), conta Resend, publicar app Google, histórico/detalhe fornecedor (US-031), Mistral OCR (PDF escaneado)
 
