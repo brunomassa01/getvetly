@@ -8,6 +8,7 @@ import { ROTULO_CATEGORIA, type Categoria } from "@/lib/fornecedores/schema";
 import { formatarMoeda, formatarData, formatarTamanho } from "@/lib/format";
 import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
 import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
+import { CompletarContatoFornecedor } from "@/components/propostas/CompletarContatoFornecedor";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
 import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
@@ -34,6 +35,13 @@ export default async function PropostaDetalhePage({
   if (!proposta) notFound();
   const analise = await buscarAnalise(userId, params.id);
   const workspace = await buscarWorkspaceDoUsuario(userId);
+
+  // Há fornecedor vinculado mas faltam dados básicos de contato?
+  const contatoIncompleto =
+    !!proposta.fornecedor_id &&
+    (!proposta.fornecedor_cnpj ||
+      !proposta.fornecedor_email ||
+      !proposta.fornecedor_telefone);
 
   return (
     <div className="max-w-3xl mx-auto space-y-8">
@@ -145,7 +153,19 @@ export default async function PropostaDetalhePage({
         </div>
 
         {analise ? (
-          <RelatorioAnalise analise={analise} />
+          <div className="space-y-6">
+            {contatoIncompleto && proposta.fornecedor_id && (
+              <CompletarContatoFornecedor
+                propostaId={proposta.id}
+                fornecedorId={proposta.fornecedor_id}
+                fornecedorNome={proposta.fornecedor_nome}
+                cnpj={proposta.fornecedor_cnpj}
+                email={proposta.fornecedor_email}
+                telefone={proposta.fornecedor_telefone}
+              />
+            )}
+            <RelatorioAnalise analise={analise} />
+          </div>
         ) : (
           <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-6 text-center">
             {proposta.status === "failed" ? (

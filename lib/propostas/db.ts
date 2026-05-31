@@ -34,6 +34,10 @@ export interface PropostaDetalhe {
   status: string;
   status_message: string | null;
   fornecedor_nome: string | null;
+  fornecedor_id: string | null;
+  fornecedor_cnpj: string | null;
+  fornecedor_email: string | null;
+  fornecedor_telefone: string | null;
   created_at: string;
   arquivos: PropostaArquivo[];
 }
@@ -65,7 +69,9 @@ export async function buscarProposta(
       select
         p.id, p.titulo, p.categoria, p.escopo, p.aprovador_email,
         p.valor_tabela, p.valor_negociado, p.status, p.status_message,
-        p.created_at, f.nome as fornecedor_nome
+        p.created_at, f.nome as fornecedor_nome,
+        f.id as fornecedor_id, f.cnpj as fornecedor_cnpj,
+        f.email as fornecedor_email, f.telefone as fornecedor_telefone
       from propostas p
       left join fornecedores f on f.id = p.fornecedor_id
       where p.id = ${id}

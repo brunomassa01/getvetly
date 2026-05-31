@@ -207,6 +207,27 @@ export async function mesclarFornecedores(
   });
 }
 
+/**
+ * Completa os dados de contato de um fornecedor (CNPJ, e-mail, telefone).
+ * Usado quando a IA não extraiu esses dados e o usuário preenche depois.
+ * RLS garante que só atualiza fornecedor do workspace do usuário.
+ */
+export async function completarContatoFornecedor(
+  userId: string,
+  fornecedorId: string,
+  dados: { cnpj?: string | null; email?: string | null; telefone?: string | null },
+): Promise<void> {
+  await withUser(userId, (sql) =>
+    sql`
+      update fornecedores set
+        cnpj = ${dados.cnpj ?? null},
+        email = ${dados.email ?? null},
+        telefone = ${dados.telefone ?? null}
+      where id = ${fornecedorId}
+    `,
+  );
+}
+
 /** Arquiva (soft delete) um fornecedor — marca ativo = false. */
 export async function arquivarFornecedor(
   userId: string,

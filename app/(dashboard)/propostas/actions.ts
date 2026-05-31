@@ -5,7 +5,13 @@ import { revalidatePath } from "next/cache";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { criarPropostaComArquivos } from "@/lib/propostas/db";
 import { executarAnaliseProposta } from "@/lib/propostas/analise";
+import { completarContatoFornecedor } from "@/lib/fornecedores/db";
 import type { EstadoForm } from "@/lib/auth/tipos";
+
+function limpar(formData: FormData, campo: string): string | null {
+  const v = String(formData.get(campo) ?? "").trim();
+  return v ? v : null;
+}
 
 // Deriva um título a partir do nome do arquivo (sem extensão).
 function tituloDoArquivo(nome: string): string {
@@ -45,6 +51,27 @@ export async function criarEAnalisarPropostaAction(
   await executarAnaliseProposta(userId, id);
   revalidatePath("/propostas");
   redirect(`/propostas/${id}`);
+}
+
+/**
+ * Completa (opcional) os dados de contato do fornecedor após a análise,
+ * quando a IA não conseguiu extrair. Não exige nenhum campo — o usuário
+ * preenche o que quiser.
+ */
+export async function completarContatoFornecedorAction(
+  formData: FormData,
+): Promise<void> {
+  const userId = await usuarioAtual();
+  const fornecedorId = String(formData.get("fornecedorId") ?? "");
+  const propostaId = String(formData.get("propostaId") ?? "");
+  if (!fornecedorId) return;
+
+  await completarContatoFornecedor(userId, fornecedorId, {
+    cnpj: limpar(formData, "cnpj"),
+    email: limpar(formData, "email"),
+    telefone: limpar(formData, "telefone"),
+  });
+  if (propostaId) revalidatePath(`/propostas/${propostaId}`);
 }
 
 /** Reexecuta a análise de uma proposta existente (botão "Refazer análise"). */
