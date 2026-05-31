@@ -12,7 +12,6 @@ import { CompletarContatoFornecedor } from "@/components/propostas/CompletarCont
 import { SituacaoProposta } from "@/components/propostas/SituacaoProposta";
 import { PolerAnalise } from "@/components/propostas/PolerAnalise";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
-import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 
 export const metadata: Metadata = { title: "Proposta — Vetly" };
@@ -45,6 +44,8 @@ export default async function PropostaDetalhePage({
       !proposta.fornecedor_email ||
       !proposta.fornecedor_telefone);
 
+  const processando = proposta.status === "processing";
+
   return (
     <div className="max-w-3xl mx-auto space-y-8">
       <WhitelabelHeader workspace={workspace} />
@@ -65,19 +66,44 @@ export default async function PropostaDetalhePage({
             </span>
           </div>
           {analise && (
-            <div className="print:hidden flex gap-2 shrink-0">
-              <BotaoBaixarPpt url={`/propostas/${params.id}/pptx`} />
+            <div className="print:hidden shrink-0">
               <Link
                 href={`/propostas/${params.id}/apresentacao`}
                 className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
               >
-                Apresentação / PDF
+                Gerar apresentação
               </Link>
             </div>
           )}
         </div>
       </div>
 
+      {/* Em processamento: loading em destaque no topo + o resto esmaecido */}
+      {processando && (
+        <div className="bg-paper-warm border border-[color:var(--border-default)] rounded-xl p-8 text-center">
+          <span
+            className="mx-auto block h-8 w-8 rounded-full border-2 border-ink/20 border-t-ink animate-spin"
+            aria-hidden
+          />
+          <p className="font-display font-bold text-ink mt-4">
+            Analisando sua proposta…
+          </p>
+          <p className="text-sm text-texto-2 mt-1 max-w-md mx-auto">
+            A IA está lendo os arquivos e montando o relatório. Pode levar 1-2
+            minutos — esta página atualiza sozinha quando ficar pronta. Não
+            precisa fazer nada.
+          </p>
+          <PolerAnalise />
+        </div>
+      )}
+
+      <div
+        className={
+          processando
+            ? "space-y-8 opacity-50 pointer-events-none select-none"
+            : "space-y-8"
+        }
+      >
       {/* Situação comercial (ciclo de aprovação) */}
       {proposta.status === "ready" && (
         <SituacaoProposta
@@ -179,19 +205,10 @@ export default async function PropostaDetalhePage({
             <RelatorioAnalise analise={analise} />
           </div>
         ) : proposta.status === "processing" ? (
-          <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-10 text-center">
-            <span
-              className="mx-auto block h-8 w-8 rounded-full border-2 border-ink/20 border-t-ink animate-spin"
-              aria-hidden
-            />
-            <p className="font-display font-bold text-ink mt-4">
-              Analisando sua proposta…
+          <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-6 text-center">
+            <p className="text-sm text-texto-3">
+              O relatório aparece aqui assim que a análise terminar.
             </p>
-            <p className="text-sm text-texto-2 mt-1">
-              A IA está lendo os arquivos e montando o relatório. Pode levar 1-2
-              minutos — esta página atualiza sozinha quando ficar pronta.
-            </p>
-            <PolerAnalise />
           </div>
         ) : (
           <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-6 text-center">
@@ -219,6 +236,7 @@ export default async function PropostaDetalhePage({
             )}
           </div>
         )}
+      </div>
       </div>
     </div>
   );

@@ -5,7 +5,6 @@ import { usuarioAtual } from "@/lib/auth/sessao";
 import { buscarComparativo } from "@/lib/comparativos/db";
 import { formatarData } from "@/lib/format";
 import { RelatorioComparativo } from "@/components/comparativos/RelatorioComparativo";
-import { BotaoBaixarPpt } from "@/components/comparativos/BotaoBaixarPpt";
 import { SituacaoComparativo } from "@/components/comparativos/SituacaoComparativo";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
@@ -42,13 +41,12 @@ export default async function ComparativoDetalhePage({
               Criado em {formatarData(comparativo.created_at)}
             </p>
           </div>
-          <div className="flex gap-2 shrink-0">
-            <BotaoBaixarPpt url={`/comparativos/${params.id}/pptx`} />
+          <div className="shrink-0">
             <Link
               href={`/comparativos/${params.id}/apresentacao`}
               className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
             >
-              Apresentação / PDF
+              Gerar apresentação
             </Link>
           </div>
         </div>
