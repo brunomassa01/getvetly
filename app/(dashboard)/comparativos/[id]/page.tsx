@@ -6,6 +6,7 @@ import { buscarComparativo } from "@/lib/comparativos/db";
 import { formatarData } from "@/lib/format";
 import { RelatorioComparativo } from "@/components/comparativos/RelatorioComparativo";
 import { SituacaoComparativo } from "@/components/comparativos/SituacaoComparativo";
+import { BotaoGerarApresentacao } from "@/components/BotaoGerarApresentacao";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 
@@ -42,12 +43,9 @@ export default async function ComparativoDetalhePage({
             </p>
           </div>
           <div className="shrink-0">
-            <Link
+            <BotaoGerarApresentacao
               href={`/comparativos/${params.id}/apresentacao`}
-              className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
-            >
-              Gerar apresentação
-            </Link>
+            />
           </div>
         </div>
       </div>

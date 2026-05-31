@@ -9,6 +9,7 @@ import { formatarMoeda, formatarData, formatarTamanho } from "@/lib/format";
 import { BotaoAnalisar } from "@/components/propostas/BotaoAnalisar";
 import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
 import { CompletarContatoFornecedor } from "@/components/propostas/CompletarContatoFornecedor";
+import { BotaoGerarApresentacao } from "@/components/BotaoGerarApresentacao";
 import { SituacaoProposta } from "@/components/propostas/SituacaoProposta";
 import { PolerAnalise } from "@/components/propostas/PolerAnalise";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
@@ -67,12 +68,9 @@ export default async function PropostaDetalhePage({
           </div>
           {analise && (
             <div className="print:hidden shrink-0">
-              <Link
+              <BotaoGerarApresentacao
                 href={`/propostas/${params.id}/apresentacao`}
-                className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
-              >
-                Gerar apresentação
-              </Link>
+              />
             </div>
           )}
         </div>
