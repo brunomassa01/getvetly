@@ -56,7 +56,7 @@ export function ApresentacaoDeck({
         return (
           <header
             key={i}
-            className="relative overflow-hidden rounded-2xl text-paper p-10 sm:p-12 print:rounded-none break-inside-avoid flex flex-col min-h-[520px]"
+            className="relative overflow-hidden rounded-2xl text-paper p-10 sm:p-12 print:rounded-none break-inside-avoid flex flex-col min-h-[520px] print:min-h-screen print:justify-center"
             style={{ backgroundColor: corFundo }}
           >
             <span
@@ -350,18 +350,31 @@ export function ApresentacaoDeck({
     }
   }
 
-  return (
-    <div className="mx-auto max-w-3xl bg-white text-ink">
-      {deck.slides.map((s, i) => renderSlide(s, i))}
+  const capaSlide = deck.slides.find((s) => s.tipo === "capa");
+  const conteudo = deck.slides.filter((s) => s.tipo !== "capa");
 
-      <footer className="mt-14 pt-4 border-t border-[color:var(--border-subtle)] flex items-center justify-between break-inside-avoid">
-        <span className="font-mono text-[10px] tracking-wide2 uppercase text-texto-3">
-          {nomeEmpresa ?? "Vetly"} · análise de propostas
-        </span>
-        <span className="font-mono text-[10px] tracking-wide2 uppercase text-texto-3">
-          gerado por getvetly.com
-        </span>
-      </footer>
+  return (
+    <div className="text-ink">
+      {/* Capa: card estreito na tela; full-bleed (página inteira) no PDF */}
+      {capaSlide && (
+        <div className="mx-auto max-w-3xl print:max-w-none">
+          {renderSlide(capaSlide, 0)}
+        </div>
+      )}
+
+      {/* Conteúdo: sempre numa coluna estreita e legível */}
+      <div className="mx-auto max-w-3xl bg-white">
+        {conteudo.map((s, i) => renderSlide(s, i + 1))}
+
+        <footer className="mt-14 pt-4 border-t border-[color:var(--border-subtle)] flex items-center justify-between break-inside-avoid">
+          <span className="font-mono text-[10px] tracking-wide2 uppercase text-texto-3">
+            {nomeEmpresa ?? "Vetly"} · análise de propostas
+          </span>
+          <span className="font-mono text-[10px] tracking-wide2 uppercase text-texto-3">
+            gerado por getvetly.com
+          </span>
+        </footer>
+      </div>
     </div>
   );
 }
