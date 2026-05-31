@@ -3,10 +3,23 @@
 import { redirect } from "next/navigation";
 import { revalidatePath } from "next/cache";
 import { usuarioAtual } from "@/lib/auth/sessao";
-import { criarComparativo } from "@/lib/comparativos/db";
+import {
+  criarComparativo,
+  apresentarComparativo,
+  decidirComparativo,
+  reabrirComparativo,
+} from "@/lib/comparativos/db";
 import { criarPropostaComArquivos } from "@/lib/propostas/db";
 import { executarAnaliseProposta } from "@/lib/propostas/analise";
 import type { EstadoForm } from "@/lib/auth/tipos";
+
+// Revalida todas as telas afetadas por uma decisão de comparação.
+function revalidarTudo(id: string) {
+  revalidatePath(`/comparativos/${id}`);
+  revalidatePath("/comparativos");
+  revalidatePath("/propostas");
+  revalidatePath("/painel");
+}
 
 function tituloDoArquivo(nome: string): string {
   return nome.replace(/\.[^.]+$/, "").replace(/[_-]+/g, " ").trim() || "Proposta";
@@ -44,6 +57,40 @@ export async function gerarComparativoAction(
 
   revalidatePath("/comparativos");
   redirect(`/comparativos/${id}`);
+}
+
+/** Marca a comparação como apresentada (cascata pras propostas em aberto). */
+export async function apresentarComparativoAction(
+  formData: FormData,
+): Promise<void> {
+  const userId = await usuarioAtual();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await apresentarComparativo(userId, id);
+  revalidarTudo(id);
+}
+
+/** Registra a proposta escolhida da comparação (aprova ela, recusa as demais). */
+export async function decidirComparativoAction(
+  formData: FormData,
+): Promise<void> {
+  const userId = await usuarioAtual();
+  const id = String(formData.get("id") ?? "");
+  const propostaEscolhidaId = String(formData.get("proposta_escolhida_id") ?? "");
+  if (!id || !propostaEscolhidaId) return;
+  await decidirComparativo(userId, id, propostaEscolhidaId);
+  revalidarTudo(id);
+}
+
+/** Reabre a comparação (desfaz a decisão). */
+export async function reabrirComparativoAction(
+  formData: FormData,
+): Promise<void> {
+  const userId = await usuarioAtual();
+  const id = String(formData.get("id") ?? "");
+  if (!id) return;
+  await reabrirComparativo(userId, id);
+  revalidarTudo(id);
 }
 
 /**

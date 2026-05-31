@@ -8,6 +8,17 @@ import { BuscaComparativos } from "@/components/comparativos/BuscaComparativos";
 export const metadata: Metadata = { title: "Comparativos — Vetly" };
 export const dynamic = "force-dynamic";
 
+const ROTULO_COMP: Record<string, string> = {
+  em_aberto: "Em aberto",
+  apresentada: "Apresentada",
+  decidida: "Decidida",
+};
+const COR_COMP: Record<string, string> = {
+  em_aberto: "bg-[#E8E6DC] text-texto-2",
+  apresentada: "bg-[#E0EFF5] text-[#1E5468]",
+  decidida: "bg-lime-faint text-[#5C7A0E]",
+};
+
 export default async function ComparativosPage({
   searchParams,
 }: {
@@ -73,7 +84,8 @@ export default async function ComparativosPage({
                 <th className="px-4 py-3 font-semibold">Comparação</th>
                 <th className="px-4 py-3 font-semibold">Fornecedores</th>
                 <th className="px-4 py-3 font-semibold">Recomendada (IA)</th>
-                <th className="px-4 py-3 font-semibold">Propostas</th>
+                <th className="px-4 py-3 font-semibold">Escolhida (você)</th>
+                <th className="px-4 py-3 font-semibold">Situação</th>
                 <th className="px-4 py-3 font-semibold">Criada</th>
               </tr>
             </thead>
@@ -103,7 +115,22 @@ export default async function ComparativosPage({
                       <span className="text-texto-3">—</span>
                     )}
                   </td>
-                  <td className="px-4 py-3 text-texto-2">{c.qtd_propostas}</td>
+                  <td className="px-4 py-3">
+                    {c.escolhida ? (
+                      <span className="inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold bg-lime-faint text-[#5C7A0E]">
+                        ✓ {c.escolhida}
+                      </span>
+                    ) : (
+                      <span className="text-texto-3">—</span>
+                    )}
+                  </td>
+                  <td className="px-4 py-3">
+                    <span
+                      className={`inline-block rounded-full px-2.5 py-0.5 text-xs font-semibold ${COR_COMP[c.situacao] ?? COR_COMP.em_aberto}`}
+                    >
+                      {ROTULO_COMP[c.situacao] ?? "Em aberto"}
+                    </span>
+                  </td>
                   <td className="px-4 py-3 text-texto-3">
                     {formatarData(c.created_at)}
                   </td>

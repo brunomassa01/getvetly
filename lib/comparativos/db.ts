@@ -14,6 +14,14 @@ export interface ComparativoListaItem {
   qtd_propostas: number;
   vencedor_ref: string | null;
   fornecedores: string[];
+  situacao: string;
+  escolhida: string | null; // título da proposta escolhida (decisão do usuário)
+}
+
+export interface ComparativoPropostaItem {
+  id: string;
+  titulo: string;
+  situacao: string;
 }
 
 export interface ComparativoDetalhe {
@@ -22,6 +30,11 @@ export interface ComparativoDetalhe {
   recomendacao: string | null;
   created_at: string;
   payload: Comparativo;
+  situacao: string;
+  apresentado_em: string | null;
+  decidido_em: string | null;
+  proposta_escolhida_id: string | null;
+  propostas: ComparativoPropostaItem[];
 }
 
 export interface PropostaPronta {
@@ -124,19 +137,23 @@ export async function listarComparativos(
         titulo: string;
         created_at: string;
         qtd_propostas: number;
+        situacao: string;
+        escolhida: string | null;
         payload: unknown;
       }[]
     >`
-      select id, titulo, created_at,
-        coalesce(array_length(proposta_ids, 1), 0) as qtd_propostas,
-        payload
-      from comparativos
+      select c.id, c.titulo, c.created_at,
+        coalesce(array_length(c.proposta_ids, 1), 0) as qtd_propostas,
+        c.situacao,
+        (select pe.titulo from propostas pe where pe.id = c.proposta_escolhida_id) as escolhida,
+        c.payload
+      from comparativos c
       ${
         busca
-          ? sql`where (titulo ilike ${"%" + busca + "%"} or payload::text ilike ${"%" + busca + "%"})`
+          ? sql`where (c.titulo ilike ${"%" + busca + "%"} or c.payload::text ilike ${"%" + busca + "%"})`
           : sql``
       }
-      order by created_at desc
+      order by c.created_at desc
     `,
   );
 
@@ -149,6 +166,8 @@ export async function listarComparativos(
       titulo: l.titulo,
       created_at: l.created_at,
       qtd_propostas: l.qtd_propostas,
+      situacao: l.situacao,
+      escolhida: l.escolhida,
       vencedor_ref: payload?.vencedor_ref ?? null,
       fornecedores: Array.isArray(payload?.propostas)
         ? payload.propostas.map((p) => p.fornecedor || p.ref)
@@ -169,9 +188,15 @@ export async function buscarComparativo(
         recomendacao: string | null;
         created_at: string;
         payload: unknown;
+        situacao: string;
+        apresentado_em: string | null;
+        decidido_em: string | null;
+        proposta_escolhida_id: string | null;
+        proposta_ids: string[];
       }[]
     >`
-      select id, titulo, recomendacao, created_at, payload
+      select id, titulo, recomendacao, created_at, payload,
+        situacao, apresentado_em, decidido_em, proposta_escolhida_id, proposta_ids
       from comparativos where id = ${id}
     `;
     if (!linha) return null;
@@ -179,7 +204,97 @@ export async function buscarComparativo(
       typeof linha.payload === "string"
         ? (JSON.parse(linha.payload) as Comparativo)
         : (linha.payload as Comparativo);
-    return { ...linha, payload };
+
+    const propostas = await sql<ComparativoPropostaItem[]>`
+      select id, titulo, situacao from propostas
+      where id = any(${linha.proposta_ids}::uuid[])
+      order by titulo asc
+    `;
+
+    return { ...linha, payload, propostas: [...propostas] };
+  });
+}
+
+/**
+ * Marca a comparação como apresentada e leva as propostas dela que estão
+ * "em aberto" para "apresentada" (não rebaixa as já decididas).
+ */
+export async function apresentarComparativo(
+  userId: string,
+  id: string,
+): Promise<void> {
+  await withUser(userId, async (sql) => {
+    const [c] = await sql<{ proposta_ids: string[] }[]>`
+      select proposta_ids from comparativos where id = ${id}
+    `;
+    if (!c) return;
+    await sql`
+      update comparativos set
+        situacao = 'apresentada',
+        apresentado_em = coalesce(apresentado_em, now())
+      where id = ${id}`;
+    await sql`
+      update propostas set
+        situacao = 'apresentada',
+        apresentada_em = coalesce(apresentada_em, now())
+      where id = any(${c.proposta_ids}::uuid[]) and situacao = 'em_aberto'`;
+  });
+}
+
+/**
+ * Registra a proposta escolhida da comparação: ela vira "aprovada" e as
+ * demais DESTA comparação viram "recusada". Cada comparação é independente.
+ */
+export async function decidirComparativo(
+  userId: string,
+  id: string,
+  propostaEscolhidaId: string,
+): Promise<void> {
+  await withUser(userId, async (sql) => {
+    const [c] = await sql<{ proposta_ids: string[] }[]>`
+      select proposta_ids from comparativos where id = ${id}
+    `;
+    if (!c || !c.proposta_ids.includes(propostaEscolhidaId)) return;
+
+    await sql`
+      update comparativos set
+        situacao = 'decidida',
+        apresentado_em = coalesce(apresentado_em, now()),
+        decidido_em = now(),
+        proposta_escolhida_id = ${propostaEscolhidaId}
+      where id = ${id}`;
+    await sql`
+      update propostas set
+        situacao = 'aprovada',
+        apresentada_em = coalesce(apresentada_em, now()),
+        decidida_em = now()
+      where id = ${propostaEscolhidaId}`;
+    await sql`
+      update propostas set
+        situacao = 'recusada',
+        apresentada_em = coalesce(apresentada_em, now()),
+        decidida_em = now()
+      where id = any(${c.proposta_ids}::uuid[]) and id <> ${propostaEscolhidaId}`;
+  });
+}
+
+/** Reabre a comparação (desfaz a decisão) e volta as propostas dela para "apresentada". */
+export async function reabrirComparativo(
+  userId: string,
+  id: string,
+): Promise<void> {
+  await withUser(userId, async (sql) => {
+    const [c] = await sql<{ proposta_ids: string[] }[]>`
+      select proposta_ids from comparativos where id = ${id}
+    `;
+    if (!c) return;
+    await sql`
+      update comparativos set
+        situacao = 'apresentada', decidido_em = null, proposta_escolhida_id = null
+      where id = ${id}`;
+    await sql`
+      update propostas set situacao = 'apresentada', decidida_em = null
+      where id = any(${c.proposta_ids}::uuid[]) and situacao in ('aprovada', 'recusada')`;
   });
 }
 
