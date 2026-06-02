@@ -105,6 +105,25 @@ export async function caminhoLogoWorkspace(
   return ws?.whitelabel_logo_url ?? null;
 }
 
+/**
+ * Workspace por id, via SERVICE (ignora RLS). Use APENAS em rotas públicas
+ * já validadas por token (ex: /r/[token]) — para aplicar o whitelabel
+ * (logo + cores) no relatório compartilhado, sem usuário logado.
+ */
+export async function buscarWorkspacePorId(
+  workspaceId: string,
+): Promise<Workspace | null> {
+  const sql = getSqlService();
+  const [w] = await sql<Workspace[]>`
+    select w.id, w.nome, w.cnpj, w.segmento, w.tamanho, w.tier,
+      w.whitelabel_empresa_nome, w.whitelabel_cor_primaria,
+      w.whitelabel_cor_secundaria, w.whitelabel_logo_url
+    from workspaces w
+    where w.id = ${workspaceId}
+  `;
+  return w ?? null;
+}
+
 /** Atualiza os dados da empresa (somente admin — RLS aplica). */
 export async function atualizarWorkspace(
   userId: string,

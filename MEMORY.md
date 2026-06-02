@@ -77,7 +77,8 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 ## ⚠️ Ambiente de desenvolvimento — Google Drive
 - O projeto vive em `G:\Meu Drive\...` (Google Drive), que **não suporta symlinks** → `.npmrc` com `node-linker=hoisted` é obrigatório para o pnpm funcionar.
 - **`pnpm build` NÃO funciona de forma confiável localmente** (Google Drive rejeita escritas do cache `.next` com EINVAL; e a busca de fontes do `next/font/google` depende de rede). 
-- **Validação local**: rodar só `pnpm lint` e `pnpm type-check` (não dependem de rede/escrita pesada).
+- **Validação local**: rodar só `pnpm lint` e `pnpm type-check` (não dependem de rede/escrita pesada). `pnpm test` (Vitest) também roda local, mas é LENTO no Drive (import demora ~min).
+- ⚠️ **Neste PC o `pnpm` não está no PATH do shell não-interativo** (só `node`/`npm`/`npx`/`corepack`). Workaround pra rodar as validações: `npx --no-install tsc --noEmit`, `npx --no-install vitest run`, `npx --no-install next lint` (usa o que já está em `node_modules`, sem baixar). No outro PC do Bruno pode estar diferente.
 - **O build de produção real roda no VPS** (Linux, FS normal, rede estável) via a esteira de deploy. Lá funciona perfeitamente.
 
 ## Estado atual
@@ -89,7 +90,7 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 - ✅ App conectado ao banco com helper de RLS (`lib/db/client.ts`: `getSqlApp`, `getSqlService`, `withUser`); validado em /api/health/db
 - ✅ **Autenticação completa** (Auth.js v5): cadastro/login e-mail+senha, **login Google OAuth ATIVO**, recuperação de senha, painel protegido, middleware. Cadastro cria usuário + workspace + admin.
 - ✅ Google OAuth ativo: credenciais no `.env` do VPS; projeto "GetVetly" no Google Cloud (modo teste — publicar antes de abrir ao público geral). Verificar em https://app.getvetly.com/api/auth/providers
-- **Pendente p/ ativar**: conta Resend (e-mail de recuperação — hoje cai no log do servidor via `pm2 logs getvetly`)
+- ✅ **Resend ATIVO (2026-06-01)**: conta criada, domínio `getvetly.com` **verificado** (Domain verified no painel do Resend), `RESEND_API_KEY` no `.env` do VPS (aplicada com `pm2 restart getvetly --update-env` como usuário `deploy`). O e-mail de recuperação de senha agora **ENVIA de verdade** (remetente padrão `nao-responda@getvetly.com`; lib `lib/email/enviar.ts` já existia com fallback p/ log). Testado: e-mail chegou na caixa com logo + cor lime. PM2 roda sob o usuário `deploy` (não root) — `pm2 list` como root vem vazio.
 - ✅ **CRUD de fornecedores** (US-030): /fornecedores (lista + busca debounce + filtro categoria), /novo, /[id] (editar + arquivar). Isolado por workspace via `withUser`. Padrão de telas estabelecido.
 - ✅ **Vitest configurado** + passo de testes no CI (lint → type-check → testes → build). 8 testes (schemas de fornecedor e proposta).
 - ✅ **Propostas — fluxo UPLOAD-FIRST** (feedback do Bruno, "subir e pronto estilo Claude"): /propostas/nova é só upload + título opcional → cria proposta → roda análise → relatório pronto. A IA preenche fornecedor/categoria/valores/escopo. **Fornecedor é cadastrado/vinculado automaticamente** (com contato) → constrói histórico. `criarPropostaComArquivos` + `aplicarAnaliseNaProposta` + `executarAnaliseProposta` (orquestrador reusado). Arquivos no disco do VPS.
@@ -137,12 +138,33 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 ### Aprovação por e-mail / compartilhar (avaliado 2026-05-30)
 - Mandar a análise por e-mail: complexidade MÉDIA; gargalo é infra (Resend não configurado: conta + verificação de domínio via DNS). Com Resend pronto, versão fácil = anexar o PPT (já gerado no servidor) + resumo. Versão "linda" = link compartilhável + aprovar online (liga com a situação "Apresentada"). Recomendação: juntar num pacote só — **Resend + compartilhar por link/e-mail + aprovar online** — próximo passo natural depois do Dashboard.
 
+### 🚧 EM ANDAMENTO — Compartilhar + aprovar online (Item A, iniciado 2026-06-01)
+**Objetivo**: link compartilhável da proposta/comparativo para a diretoria **aprovar/recusar SEM login**, + envio por e-mail. Infra **Resend já ATIVA** (ver "Estado atual").
+- **Banco**: NADA a criar — tabelas `compartilhamentos`, `aprovacoes`, `anotacoes` **já existem desde a migration 0001** (token base64url auto, `expira_em` 15 dias, `permite_aprovar`, `revogado_em`, métricas de visualização; enum `aprovacao_decisao` = `aprovado`/`aprovado_com_ressalvas`/`recusado`). O próprio schema já previa a rota pública `/r/[token]` (service role, valida token). Middleware (`auth.config.ts`) já libera `/r/`.
+- ✅ **Commit 1 — feito, AINDA NÃO commitado/deployado** (gerar link + página pública + aprovar online):
+  - `lib/compartilhamentos/schema.ts` (Zod `aprovacaoSchema`) + `schema.test.ts` (4 testes; corrigido o transform de `justificativa` vazia → undefined).
+  - `lib/compartilhamentos/db.ts`: `criarOuReusarCompartilhamento` (RLS, reusa link ativo), `buscarCompartilhamentoPorToken` (SERVICE: valida validade/revogação, conta visualização, monta deck+whitelabel reusando `garantirDeck`/`garantirDeckProposta`), `registrarAprovacao` (grava em `aprovacoes` + atualiza situação).
+  - `lib/workspace/db.ts`: + `buscarWorkspacePorId` (service, p/ aplicar whitelabel sem login).
+  - `app/(dashboard)/compartilhar/actions.ts`: `criarLinkCompartilhamentoAction(tipo, refId)` → `/r/<token>`.
+  - `components/compartilhamentos/BotaoCompartilhar.tsx`: card "Compartilhar para aprovação" (gera + copia link; URL montada no client via `window.location.origin`).
+  - `app/r/[token]/{page,actions,FormAprovacao}.tsx`: página PÚBLICA (fora do `(dashboard)`, usa só o layout raiz) renderiza `ApresentacaoDeck` + form Aprovar/Recusar (nome obrigatório, e-mail/comentário opcionais).
+  - **Regra de situação ao aprovar online**: proposta → `aprovado`(+ressalvas)=**aprovada**, `recusado`=**recusada**; comparativo → marca **apresentada** (a escolha da vencedora segue manual no app). Link vale 15 dias.
+  - Validação: **type-check ✅**. Tests: rodando (1 falha corrigida, re-rodando). Falta: commit + deploy + teste real ponta a ponta.
+- ⏳ **Commit 2 — A FAZER** (botão "Enviar por e-mail"): campo destinatário + mensagem → dispara `enviarEmail` (lib `lib/email/enviar.ts` já existe) com o link + marca como "Apresentada". Atenção: no server NÃO tem `window` — montar a URL base por env (`AUTH_URL`/origin) ou `NEXT_PUBLIC_APP_URL`.
+
 ### Ideias futuras (Bruno 2026-05-30) — pós-MVP / roadmap
 1. **Bot de atendimento + área de AJUDA (IA)** — pra economizar token, criar DOCUMENTAÇÃO de como o Get Vetly funciona; o bot consulta a doc (RAG) e, se não resolver, o usuário abre um chamado. (depende de doc pronta + decisão de custo)
 2. **Painel de gestão da conta** — perfil do usuário (foto, cadastro), financeiro (faturas e pagamentos). Liga com Stripe.
 3. **Versão dark** (tema escuro).
 4. **Exportar CSV** de todos os fornecedores e propostas cadastradas.
 5. **Tutorial passo a passo (onboarding)** no 1º acesso — guia em telas cadastrando uma proposta de amostra; depois fica na seção de Ajuda. Só no primeiro acesso.
+
+### Roadmap de lançamento / comercial (Bruno 2026-06-01)
+Itens de go-to-market (fora do produto em si), a fazer no momento certo:
+1. **Documentação técnica completa** — doc de como o GetVetly funciona ponta a ponta. Também alimenta o bot de Ajuda/RAG (ver "Ideias futuras" #1).
+2. **Página de vendas** — landing de conversão (pricing + benefícios). Planos já definidos: Starter R$297 / Pro R$897 / Business R$2.490 / Enterprise R$7.900+ (regra de margem ≥ custo×1,5).
+3. **Home (LP institucional)** — página inicial/marca do GetVetly (hoje a `/` é a landing de preview da Vetly).
+4. **Hotmart — criar afiliados** — usar a Hotmart para programa de afiliados (revenda/indicação por links/cupons, comissão %). Liga com a ideia #7 "Canal de parceiros/afiliados" e com o whitelabel (consultorias). ⚠️ **Decisão a confirmar**: pagamento hoje está mapeado p/ **Stripe** no MEMORY — Hotmart como checkout/afiliados pode conviver com Stripe ou substituí-lo nesse fluxo. Avaliar trade-off antes de construir.
 
 ## 🐞 Bug aberto (investigar ao retomar)
 - ✅ RESOLVIDO (2026-05-30): **Client-side exception em /propostas/nova** — era upload grande tomando **413 do Nginx** (limite estava só no server block, não no `http` global → não cobria o 443) + o `PropostaForm` quebrava lendo `estado.erro` num estado vazio. Corrigido: `client_max_body_size 30M` no `http` global do Nginx + guarda `estado?.erro` + validação de tamanho no cliente. Ver entradas detalhadas no histórico.

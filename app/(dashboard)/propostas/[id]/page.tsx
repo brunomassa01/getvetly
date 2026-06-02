@@ -11,6 +11,7 @@ import { RelatorioAnalise } from "@/components/propostas/RelatorioAnalise";
 import { CompletarContatoFornecedor } from "@/components/propostas/CompletarContatoFornecedor";
 import { BotaoGerarApresentacao } from "@/components/BotaoGerarApresentacao";
 import { SituacaoProposta } from "@/components/propostas/SituacaoProposta";
+import { BotaoCompartilhar } from "@/components/compartilhamentos/BotaoCompartilhar";
 import { PolerAnalise } from "@/components/propostas/PolerAnalise";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
@@ -110,6 +111,10 @@ export default async function PropostaDetalhePage({
           apresentadaEm={proposta.apresentada_em}
           decididaEm={proposta.decidida_em}
         />
+      )}
+
+      {proposta.status === "ready" && analise && (
+        <BotaoCompartilhar tipo="proposta" refId={proposta.id} />
       )}
 
       {/* Dados da proposta */}

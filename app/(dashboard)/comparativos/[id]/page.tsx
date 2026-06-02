@@ -6,6 +6,7 @@ import { buscarComparativo } from "@/lib/comparativos/db";
 import { formatarData } from "@/lib/format";
 import { RelatorioComparativo } from "@/components/comparativos/RelatorioComparativo";
 import { SituacaoComparativo } from "@/components/comparativos/SituacaoComparativo";
+import { BotaoCompartilhar } from "@/components/compartilhamentos/BotaoCompartilhar";
 import { BotaoGerarApresentacao } from "@/components/BotaoGerarApresentacao";
 import { WhitelabelHeader } from "@/components/WhitelabelHeader";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
@@ -58,6 +59,8 @@ export default async function ComparativoDetalhePage({
         propostaEscolhidaId={comparativo.proposta_escolhida_id}
         propostas={comparativo.propostas}
       />
+
+      <BotaoCompartilhar tipo="comparativo" refId={comparativo.id} />
 
       <RelatorioComparativo comparativo={comparativo.payload} />
     </div>
