@@ -44,6 +44,15 @@ export const ASSENTOS_POR_PLANO: Record<Plano, number> = {
 // Antes de assinar (trial), só o dono do workspace.
 export const ASSENTOS_TRIAL = 1;
 
+// Preço mensal (R$) por plano — usado para calcular MRR no painel admin.
+// Enterprise = 0 aqui (preço sob consulta; contabilizado à parte).
+export const PRECO_MENSAL_BRL: Record<Plano, number> = {
+  starter: 297,
+  pro: 897,
+  business: 2490,
+  enterprise: 0,
+};
+
 /**
  * Quantos usuários o workspace pode ter, conforme status/plano.
  * `vitalicio` (admin interno / demo) = ilimitado.

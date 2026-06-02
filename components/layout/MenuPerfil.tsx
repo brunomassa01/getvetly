@@ -17,11 +17,13 @@ export function MenuPerfil({
   email,
   temAvatar = false,
   admin = false,
+  interno = false,
 }: {
   nome: string | null;
   email: string | null;
   temAvatar?: boolean;
   admin?: boolean;
+  interno?: boolean;
 }) {
   const [aberto, setAberto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -76,6 +78,15 @@ export function MenuPerfil({
               {item.rotulo}
             </Link>
           ))}
+          {interno && (
+            <Link
+              href="/admin"
+              onClick={() => setAberto(false)}
+              className="block px-4 py-2 text-sm text-[#5C7A0E] font-medium hover:bg-paper-warm transition-colors"
+            >
+              Admin (interno)
+            </Link>
+          )}
           <div className="border-t border-[color:var(--border-subtle)] mt-1 pt-1">
             <form action={sairAction}>
               <button

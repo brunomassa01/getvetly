@@ -3,6 +3,7 @@ import { Logo } from "@/components/Logo";
 import { auth } from "@/auth";
 import { buscarPerfil } from "@/lib/auth/usuarios";
 import { ehAdmin } from "@/lib/workspace/membros";
+import { ehEmailInterno } from "@/lib/auth/interno";
 import { MenuPerfil } from "@/components/layout/MenuPerfil";
 
 export default async function DashboardLayout({
@@ -16,6 +17,7 @@ export default async function DashboardLayout({
   const userId = session?.user?.id;
   const perfil = userId ? await buscarPerfil(userId) : null;
   const admin = userId ? await ehAdmin(userId) : false;
+  const interno = ehEmailInterno(email);
 
   return (
     <div className="min-h-screen flex flex-col">
@@ -54,6 +56,7 @@ export default async function DashboardLayout({
             email={email}
             temAvatar={!!perfil?.avatar_url}
             admin={admin}
+            interno={interno}
           />
         </div>
       </header>
