@@ -161,6 +161,14 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
   - ✅ Commitado (`e74a3b6`), deployado e **TESTADO em prod** (após hotfix do token, ver abaixo).
 - ✅ **Commit 2 — FEITO** (`21a6e2f`): botão "Enviar por e-mail" → dispara `enviarEmail` (`emailCompartilhamento`) com mensagem opcional + marca "apresentada" (só se em aberto). URL via `NEXT_PUBLIC_APP_URL`. Testado em prod (e-mail chega).
 
+### Lote "pode fazer tudo" (2026-06-02) — pós Stripe Live
+- ✅ **Exportar CSV** — rotas `/fornecedores/export` e `/propostas/export` (helper `lib/csv.ts`: separador `;` + BOM UTF-8 p/ Excel pt-BR). Botões "Exportar CSV" nas listas. (Rota estática `export` tem precedência sobre `[id]` dinâmico — sem conflito.)
+- ✅ **Ajuda / FAQ** — `/ajuda` virou FAQ real (accordion `<details>` nativo, 9 perguntas) + "Falar com o suporte" (mailto contato@). Bot/IA + chamados = futuro.
+- ✅ **Onboarding 1º acesso** — `components/painel/OnboardingNovo.tsx`: card "Como funciona" (4 passos) no painel, aparece só quando a conta está vazia (0 propostas/comparativos/fornecedores) e some sozinho. (Tutorial interativo + proposta de amostra = futuro.)
+- ✅ **Painel admin interno** — `/admin` (gated por `ehEmailInterno` → redirect se não for interno): MRR (soma planos ativos × `PRECO_MENSAL_BRL`), assinantes ativos por plano, empresas/usuários/análises/custo IA acumulado, empresas recentes. `lib/admin/db.ts` (queries de serviço, todos os workspaces). Atalho "Admin (interno)" no menu de perfil só p/ interno.
+- ⏸️ **Dark mode — DIFERIDO (decisão honesta)**: as cores são hardcoded no `tailwind.config` e `ink`/`paper` são usados tanto SEMÂNTICO quanto LITERAL (ex.: `bg-ink` na capa/faixa do vencedor que SÃO escuras de propósito). Um flip global de variável inverteria essas superfícies → regressão visual no app inteiro (que agora é vendável). Fazer certo exige refator dos tokens (separar surface/text que vira vs brand/superfícies-escuras literais) + toggle + persistência + manter print claro + **review visual** — não dá pra validar só com type-check/lint. Fica como passe dedicado.
+- ⏸️ **Mistral OCR** (PDF escaneado): precisa de chave Mistral + custo por página — decisão/chave do Bruno. **getvetly.com raiz**: DNS (ação do Bruno na Hostinger). **i18n EN/ES** e **Hotmart afiliados**: pós-PMF (Bruno marcou "mais à frente").
+
 ### Ideias futuras (Bruno 2026-05-30) — pós-MVP / roadmap
 1. **Bot de atendimento + área de AJUDA (IA)** — pra economizar token, criar DOCUMENTAÇÃO de como o Get Vetly funciona; o bot consulta a doc (RAG) e, se não resolver, o usuário abre um chamado. (depende de doc pronta + decisão de custo)
 2. **Painel de gestão da conta** — perfil do usuário (foto, cadastro), financeiro (faturas e pagamentos). Liga com Stripe.
