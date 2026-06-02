@@ -8,8 +8,14 @@
 ## O Projeto
 **Nome**: getvetly  
 **Domínio**: getvetly.com (comprado na Hostinger)  
-**Versão atual**: 0.1.0 — landing page no ar em https://app.getvetly.com  
+**Versão atual**: produto completo e VENDÁVEL no ar — `getvetly.com` → `app.getvetly.com`  
 **Dono**: Bruno Romualdo Marinho — brunobrm@gmail.com
+
+## 🏁 MARCO — Build técnico CONSIDERADO FINALIZADO (Bruno, 2026-06-02)
+Bruno declarou: **"a parte técnica, até ter usuários criticando, pode considerar finalizado."** Próxima fase = **marketing + lançamento** (não-código). Só retomar trabalho técnico quando houver **feedback de usuários reais** (bugs/críticas/pedidos) — aí iterar com base nisso.
+- **No ar e funcionando**: análise por IA, comparação, apresentação (tela/PDF/PPT) com white-label, compartilhar+aprovar online por link/e-mail, situação comercial + painel, fornecedores (CRUD/dedup/desempenho), **Stripe LIVE** (assinatura/paywall/webhook/portal), **multiusuário** (assentos por plano + vitalício), Conta/perfil, **painel admin interno** (MRR), Ajuda/FAQ + guia, **tour guiado de 1º acesso**, exportar CSV, domínio raiz redirecionando.
+- **Diferidos (com motivo, NÃO bloqueiam venda)**: dark mode (refator de tokens + review visual), Mistral OCR (chave+custo), i18n EN/ES (pós-PMF), Hotmart afiliados (pós-PMF), monitoramento/alerta por e-mail, botão "refazer tour" na Ajuda, retry no workflow de deploy.
+- **Próximo (quando o Bruno quiser)**: marketing, página de vendas/conversão, primeiros clientes/piloto (usar `demo@getvetly.com` vitalício pras demos).
 
 **O que é**: SaaS B2B para gestores de compras/supply chain analisarem propostas comerciais de fornecedores com IA, gerar relatórios padronizados, compartilhar link com diretoria para aprovação e manter histórico de fornecedores.
 
