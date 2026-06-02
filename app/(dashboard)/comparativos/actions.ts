@@ -11,6 +11,8 @@ import {
 } from "@/lib/comparativos/db";
 import { criarPropostaComArquivos } from "@/lib/propostas/db";
 import { executarAnaliseProposta } from "@/lib/propostas/analise";
+import { verificarAcessoAnalise } from "@/lib/stripe/assinatura";
+import { ANALISES_GRATIS } from "@/lib/stripe/config";
 import type { EstadoForm } from "@/lib/auth/tipos";
 
 // Revalida todas as telas afetadas por uma decisão de comparação.
@@ -111,6 +113,13 @@ export async function compararNovosArquivosAction(
   if (arquivos.length < 2) {
     return {
       erro: "Suba ao menos 2 propostas (1 arquivo por fornecedor).",
+    };
+  }
+
+  const acesso = await verificarAcessoAnalise(userId);
+  if (!acesso.permitido) {
+    return {
+      erro: `Você usou suas ${ANALISES_GRATIS} análises grátis. Assine um plano na aba Financeiro para continuar.`,
     };
   }
 

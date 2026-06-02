@@ -10,7 +10,11 @@ import {
 } from "@/lib/propostas/db";
 import { dispararAnaliseEmSegundoPlano } from "@/lib/propostas/analise";
 import { completarContatoFornecedor } from "@/lib/fornecedores/db";
+import { verificarAcessoAnalise } from "@/lib/stripe/assinatura";
+import { ANALISES_GRATIS } from "@/lib/stripe/config";
 import type { EstadoForm } from "@/lib/auth/tipos";
+
+const MSG_LIMITE = `Você usou suas ${ANALISES_GRATIS} análises grátis. Assine um plano na aba Financeiro (menu do seu perfil) para continuar analisando.`;
 
 function limpar(formData: FormData, campo: string): string | null {
   const v = String(formData.get(campo) ?? "").trim();
@@ -39,6 +43,9 @@ export async function criarEAnalisarPropostaAction(
   if (arquivos.length === 0) {
     return { erro: "Anexe ao menos um arquivo (PDF com texto)." };
   }
+
+  const acesso = await verificarAcessoAnalise(userId);
+  if (!acesso.permitido) return { erro: MSG_LIMITE };
 
   const tituloInput = String(formData.get("titulo") ?? "").trim();
   const titulo =
@@ -97,6 +104,8 @@ export async function analisarPropostaAction(formData: FormData): Promise<void> 
   const userId = await usuarioAtual();
   const id = String(formData.get("id") ?? "");
   if (!id) return;
+  const acesso = await verificarAcessoAnalise(userId);
+  if (!acesso.permitido) redirect("/financeiro?erro=limite");
   await dispararAnaliseEmSegundoPlano(userId, id);
   revalidatePath(`/propostas/${id}`);
 }
