@@ -1,4 +1,5 @@
 import "server-only";
+import { randomBytes } from "node:crypto";
 import type { Sql } from "postgres";
 import { withUser, getSqlService } from "@/lib/db/client";
 import { garantirDeck } from "@/lib/comparativos/db";
@@ -73,10 +74,12 @@ export async function criarOuReusarCompartilhamento(
       return { token: ativo.token };
     }
 
+    // Gera o token no Node (Postgres não tem o encoding 'base64url' do default).
+    const token = randomBytes(24).toString("base64url");
     const [novo] = await sql<{ token: string }[]>`
       insert into compartilhamentos
-        (workspace_id, criado_por, ${sql(coluna)}, destinatario_email)
-      values (${membro.workspace_id}, ${userId}, ${alvo.refId}, ${email})
+        (workspace_id, criado_por, ${sql(coluna)}, destinatario_email, token)
+      values (${membro.workspace_id}, ${userId}, ${alvo.refId}, ${email}, ${token})
       returning token
     `;
     return { token: novo.token };
