@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 
 export const metadata: Metadata = { title: "Ajuda — Vetly" };
 
@@ -51,6 +52,24 @@ export default function AjudaPage() {
         Dúvidas frequentes sobre como usar o Get Vetly.
       </p>
 
+      <Link
+        href="/ajuda/guia"
+        className="block rounded-xl border border-[color:var(--border-default)] bg-ink text-paper p-5 mb-8 hover:bg-black transition-colors"
+      >
+        <span className="font-mono text-[11px] tracking-wide2 uppercase text-lime">
+          Comece por aqui
+        </span>
+        <p className="font-display font-extrabold text-lg tracking-tighter mt-1">
+          Guia passo a passo →
+        </p>
+        <p className="text-sm text-paper/70 mt-1">
+          Do arquivo do fornecedor até a aprovação da diretoria, em 10 passos.
+        </p>
+      </Link>
+
+      <h2 className="font-display font-bold text-ink text-lg mb-3">
+        Perguntas frequentes
+      </h2>
       <div className="space-y-2">
         {FAQ.map((item) => (
           <details
