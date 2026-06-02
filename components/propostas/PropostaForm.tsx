@@ -79,6 +79,7 @@ export function PropostaForm() {
       <div
         role="button"
         tabIndex={0}
+        data-tour="dropzone-upload"
         onClick={() => inputRef.current?.click()}
         onKeyDown={(e) => {
           if (e.key === "Enter" || e.key === " ") {
@@ -136,6 +137,7 @@ export function PropostaForm() {
         </Link>
         <button
           type="submit"
+          data-tour="btn-analisar"
           className="flex-[2] font-body font-semibold text-sm bg-lime text-ink px-5 py-3 rounded-md hover:bg-lime-deep transition-colors"
         >
           Analisar proposta

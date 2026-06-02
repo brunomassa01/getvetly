@@ -81,6 +81,7 @@ export default async function PropostasPage({
           </a>
           <Link
             href="/propostas/nova"
+            data-tour="btn-nova-proposta"
             className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
           >
             Nova proposta

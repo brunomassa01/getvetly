@@ -5,6 +5,7 @@ import { buscarPerfil } from "@/lib/auth/usuarios";
 import { ehAdmin } from "@/lib/workspace/membros";
 import { ehEmailInterno } from "@/lib/auth/interno";
 import { MenuPerfil } from "@/components/layout/MenuPerfil";
+import { TourGuia } from "@/components/onboarding/TourGuia";
 
 export default async function DashboardLayout({
   children,
@@ -33,6 +34,7 @@ export default async function DashboardLayout({
               </Link>
               <Link
                 href="/propostas"
+                data-tour="nav-propostas"
                 className="text-texto-2 hover:text-ink transition-colors"
               >
                 Propostas
@@ -63,6 +65,7 @@ export default async function DashboardLayout({
       <main className="flex-1 w-full max-w-6xl mx-auto px-6 py-10">
         {children}
       </main>
+      <TourGuia />
     </div>
   );
 }
