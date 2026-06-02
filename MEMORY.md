@@ -293,7 +293,8 @@ Itens de go-to-market (fora do produto em si), a fazer no momento certo:
 - **2026-06-02 — Stripe (assinatura + paywall) no ar** ✅ (migration 0007 aplicada no VPS)
   - **Teste grátis = 3 análises** por workspace → depois exige assinatura (paywall nas ações de análise). Planos via **Stripe Checkout hosted**, **webhook** ativa, **portal** pra gerenciar/cancelar. **Admin interno** (`INTERNAL_ADMIN_EMAILS`) não passa pela cobrança.
   - Integração **via REST/fetch + node:crypto (sem SDK)**. Arquivos: `lib/stripe/{config,client,assinatura}.ts`, `/financeiro` (page+actions), `/api/webhooks/stripe`, gating em `propostas/actions.ts` + `comparativos/actions.ts`. **Paywall amigável (2026-06-02)**: `components/Paywall.tsx` — `/propostas/nova` e `/comparativos/subir` checam acesso e mostram card "Ver planos e assinar" (em vez de erro vermelho) quando o grátis acaba; aviso "X de 3 restantes" durante o trial.
-  - ⚠️ **Pendente Bruno no Stripe** (modo TEST): (1) criar webhook → `STRIPE_WEBHOOK_SECRET` no `.env`; (2) ativar Customer Portal; (3) testar com cartão `4242 4242 4242 4242`.
+  - ✅ **Bruno fez (2026-06-02)**: webhook criado (`STRIPE_WEBHOOK_SECRET` no `.env`) + Customer Portal ativo + **TESTADO em prod**: paywall → assinar com `4242` → status virou **Ativo** via webhook. Fluxo de cobrança validado em **modo TEST**.
+  - 🚧 **Próximo: flipar pra LIVE**. Test e Live são ambientes SEPARADOS no Stripe → refazer setup em Live (ativar conta/CNPJ/banco, recriar 4 produtos/preços → novos `price_`, `sk_live_`, recriar webhook → novo `whsec_`, ativar portal) e trocar esses valores no `.env` do VPS. **ZERO mudança de código** (tudo vem do `.env`).
   - CI disparado; confirmar Actions/site (gh não instalado neste PC).
 
 ## Decisões de produto / monetização (para a fase do Stripe — NÃO construído ainda)
