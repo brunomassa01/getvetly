@@ -1,21 +1,21 @@
 const PASSOS = [
   {
     n: "1",
-    titulo: "Suba a proposta",
+    titulo: "Suba uma ou várias propostas",
     texto:
-      "Arraste o PDF, Excel ou Word do fornecedor. Não precisa preencher formulário — é só subir.",
+      "Arraste PDF, Excel ou Word — sem formulário. Subiu uma? Vira análise. Subiu várias (uma por fornecedor)? A IA já monta o comparativo lado a lado.",
   },
   {
     n: "2",
-    titulo: "A IA analisa",
+    titulo: "A IA analisa e compara",
     texto:
-      "Em minutos, ela extrai valores, escopo e condições, e aponta os riscos e os pontos que você precisa questionar.",
+      "Em minutos, extrai valores, escopo e condições, aponta os riscos e o que questionar — e, quando são várias, recomenda o melhor fornecedor com justificativa.",
   },
   {
     n: "3",
-    titulo: "Decida e apresente",
+    titulo: "Apresente e aprove",
     texto:
-      "Relatório padronizado, comparação entre fornecedores e apresentação (PDF/PPT) com a sua marca, prontos para a diretoria.",
+      "A IA já monta a apresentação (PDF ou PPT editável) pronta pra diretoria, com a sua marca. Gere um link e eles aprovam ou recusam online — sem precisar de conta.",
   },
 ];
 
