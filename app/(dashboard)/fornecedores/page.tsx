@@ -49,12 +49,20 @@ export default async function FornecedoresPage({
             Cadastro central dos fornecedores do seu workspace.
           </p>
         </div>
-        <Link
-          href="/fornecedores/novo"
-          className="shrink-0 font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
-        >
-          Novo fornecedor
-        </Link>
+        <div className="flex gap-2 shrink-0">
+          <a
+            href="/fornecedores/export"
+            className="font-body font-semibold text-sm bg-transparent text-ink px-4 py-2.5 rounded-md border border-[color:var(--border-strong)] hover:bg-paper-warm transition-colors"
+          >
+            Exportar CSV
+          </a>
+          <Link
+            href="/fornecedores/novo"
+            className="font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep transition-colors"
+          >
+            Novo fornecedor
+          </Link>
+        </div>
       </div>
 
       <DuplicadosFornecedores grupos={grupos} />

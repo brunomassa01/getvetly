@@ -6,6 +6,7 @@ import { contagensPainel } from "@/lib/workspace/db";
 import { ehAdmin } from "@/lib/workspace/membros";
 import { resumoSituacao, listarAguardandoRetorno } from "@/lib/propostas/db";
 import { marcarSituacaoAction } from "@/app/(dashboard)/propostas/actions";
+import { OnboardingNovo } from "@/components/painel/OnboardingNovo";
 
 export const metadata: Metadata = { title: "Painel — Vetly" };
 export const dynamic = "force-dynamic";
@@ -45,6 +46,10 @@ export default async function PainelPage() {
   const nome = session?.user?.name ?? session?.user?.email ?? "você";
   const admin = await ehAdmin(userId);
   const contagens = await contagensPainel(userId);
+  const contaVazia =
+    contagens.propostas === 0 &&
+    contagens.comparativos === 0 &&
+    contagens.fornecedores === 0;
   const resumo = await resumoSituacao(userId);
   const aguardando = await listarAguardandoRetorno(userId);
   const apresentadasTotal = resumo.apresentada + resumo.aprovada + resumo.recusada;
@@ -67,6 +72,9 @@ export default async function PainelPage() {
           Analise propostas comerciais com leitura crítica por IA.
         </p>
       </div>
+
+      {/* Guia de primeiro acesso — só quando a conta ainda está vazia */}
+      {contaVazia && <OnboardingNovo />}
 
       {/* Ação principal — propósito do Vetly */}
       <Link
