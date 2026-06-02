@@ -3,6 +3,7 @@
 import { useState, useTransition } from "react";
 import { criarLinkCompartilhamentoAction } from "@/app/(dashboard)/compartilhar/actions";
 import type { TipoAlvo } from "@/lib/compartilhamentos/schema";
+import { FormEnviarEmail } from "./FormEnviarEmail";
 
 /**
  * Gera um link público de aprovação e mostra a URL com um botão de copiar.
@@ -12,9 +13,11 @@ import type { TipoAlvo } from "@/lib/compartilhamentos/schema";
 export function BotaoCompartilhar({
   tipo,
   refId,
+  titulo,
 }: {
   tipo: TipoAlvo;
   refId: string;
+  titulo: string;
 }) {
   const [pending, startTransition] = useTransition();
   const [url, setUrl] = useState<string | null>(null);
@@ -85,6 +88,13 @@ export function BotaoCompartilhar({
       )}
 
       {erro && <p className="mt-3 text-sm text-danger">{erro}</p>}
+
+      <div className="mt-5 pt-5 border-t border-[color:var(--border-subtle)]">
+        <p className="text-sm text-ink font-medium mb-2">
+          Ou envie direto por e-mail
+        </p>
+        <FormEnviarEmail tipo={tipo} refId={refId} titulo={titulo} />
+      </div>
     </section>
   );
 }

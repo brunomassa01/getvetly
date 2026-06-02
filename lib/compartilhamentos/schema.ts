@@ -33,3 +33,16 @@ export const aprovacaoSchema = z.object({
 });
 
 export type AprovacaoInput = z.infer<typeof aprovacaoSchema>;
+
+// Validação do envio do link por e-mail (feito pelo dono da conta).
+export const envioEmailSchema = z.object({
+  destinatario: z.string().trim().email("E-mail do destinatário inválido."),
+  mensagem: z
+    .string()
+    .trim()
+    .max(1000, "Mensagem muito longa (máx. 1000 caracteres).")
+    .optional()
+    .transform((v) => (v ? v : undefined)),
+});
+
+export type EnvioEmailInput = z.infer<typeof envioEmailSchema>;

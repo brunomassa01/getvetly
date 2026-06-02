@@ -114,7 +114,11 @@ export default async function PropostaDetalhePage({
       )}
 
       {proposta.status === "ready" && analise && (
-        <BotaoCompartilhar tipo="proposta" refId={proposta.id} />
+        <BotaoCompartilhar
+          tipo="proposta"
+          refId={proposta.id}
+          titulo={proposta.titulo}
+        />
       )}
 
       {/* Dados da proposta */}

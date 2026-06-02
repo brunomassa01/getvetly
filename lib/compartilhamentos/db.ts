@@ -47,9 +47,10 @@ export interface CompartilhamentoResolvido {
  */
 export async function criarOuReusarCompartilhamento(
   userId: string,
-  alvo: { tipo: TipoAlvo; refId: string },
+  alvo: { tipo: TipoAlvo; refId: string; destinatarioEmail?: string },
 ): Promise<{ token: string }> {
   const coluna = alvo.tipo === "proposta" ? "proposta_id" : "comparativo_id";
+  const email = alvo.destinatarioEmail ?? null;
   return withUser(userId, async (sql) => {
     const [membro] = await sql<{ workspace_id: string }[]>`
       select workspace_id from workspace_members
@@ -63,15 +64,46 @@ export async function criarOuReusarCompartilhamento(
         and revogado_em is null and expira_em > now()
       order by created_at desc limit 1
     `;
-    if (ativo) return { token: ativo.token };
+    if (ativo) {
+      if (email) {
+        await sql`
+          update compartilhamentos set destinatario_email = ${email}
+          where token = ${ativo.token}`;
+      }
+      return { token: ativo.token };
+    }
 
     const [novo] = await sql<{ token: string }[]>`
-      insert into compartilhamentos (workspace_id, criado_por, ${sql(coluna)})
-      values (${membro.workspace_id}, ${userId}, ${alvo.refId})
+      insert into compartilhamentos
+        (workspace_id, criado_por, ${sql(coluna)}, destinatario_email)
+      values (${membro.workspace_id}, ${userId}, ${alvo.refId}, ${email})
       returning token
     `;
     return { token: novo.token };
   });
+}
+
+/**
+ * Marca o conteúdo como "apresentada" — mas SÓ se ainda estiver "em aberto"
+ * (não rebaixa algo já apresentado/decidido). Usado ao enviar o link.
+ */
+export async function marcarComoApresentado(
+  userId: string,
+  alvo: { tipo: TipoAlvo; refId: string },
+): Promise<void> {
+  await withUser(userId, (sql) =>
+    alvo.tipo === "proposta"
+      ? sql`
+          update propostas set
+            situacao = 'apresentada',
+            apresentada_em = coalesce(apresentada_em, now())
+          where id = ${alvo.refId} and situacao = 'em_aberto'`
+      : sql`
+          update comparativos set
+            situacao = 'apresentada',
+            apresentado_em = coalesce(apresentado_em, now())
+          where id = ${alvo.refId} and situacao = 'em_aberto'`,
+  );
 }
 
 // Monta o deck + as props de apresentação de uma PROPOSTA (via service).

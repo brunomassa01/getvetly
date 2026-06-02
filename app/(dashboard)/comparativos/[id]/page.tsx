@@ -60,7 +60,11 @@ export default async function ComparativoDetalhePage({
         propostas={comparativo.propostas}
       />
 
-      <BotaoCompartilhar tipo="comparativo" refId={comparativo.id} />
+      <BotaoCompartilhar
+        tipo="comparativo"
+        refId={comparativo.id}
+        titulo={comparativo.titulo}
+      />
 
       <RelatorioComparativo comparativo={comparativo.payload} />
     </div>
