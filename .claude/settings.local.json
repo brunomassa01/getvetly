@@ -1,0 +1,21 @@
+{
+  "permissions": {
+    "allow": [
+      "PowerShell(Get-ChildItem -Path \"g:\\\\Meu Drive\\\\PROJETOS-CLAUDE\\\\Saas-propostas\\\\.github\" -Recurse -File | Select-Object FullName; \"---PACKAGE SCRIPTS---\"; \\(Get-Content \"g:\\\\Meu Drive\\\\PROJETOS-CLAUDE\\\\Saas-propostas\\\\package.json\" -Raw\\))",
+      "PowerShell(Get-ChildItem -Path \"g:\\\\Meu Drive\\\\PROJETOS-CLAUDE\\\\Saas-propostas\\\\app\" -Recurse -Filter \"page.tsx\" | Where-Object { $_.FullName -match \"apresentacao|propostas|comparativos\" } | Select-Object FullName)",
+      "PowerShell(\"---LAYOUTS---\")",
+      "PowerShell(pnpm type-check)",
+      "PowerShell(\"node: \" + \\(Get-Command node -ErrorAction SilentlyContinue\\).Source; \"npm: \" + \\(Get-Command npm -ErrorAction SilentlyContinue\\).Source; \"pnpm: \" + \\(Get-Command pnpm -ErrorAction SilentlyContinue\\).Source; \"npx: \" + \\(Get-Command npx -ErrorAction SilentlyContinue\\).Source; \"corepack: \" + \\(Get-Command corepack -ErrorAction SilentlyContinue\\).Source)",
+      "PowerShell(npx --no-install tsc --noEmit)",
+      "PowerShell(npx --no-install vitest run)",
+      "PowerShell(npx --no-install next lint)",
+      "PowerShell(npx --no-install vitest run lib/compartilhamentos/schema.test.ts)",
+      "PowerShell(npx --no-install eslint lib/compartilhamentos components/compartilhamentos lib/workspace app/r --ext .ts,.tsx)",
+      "PowerShell(npx --no-install eslint lib/compartilhamentos lib/email components/compartilhamentos \"app/\\(dashboard\\)/compartilhar/actions.ts\" --ext .ts,.tsx)",
+      "PowerShell($gh = \\(Get-Command gh -ErrorAction SilentlyContinue\\).Source; if \\($gh\\) { \"gh: $gh\"; gh run list --branch main --limit 3 } else { \"gh nao encontrado\" })",
+      "PowerShell(npx --no-install eslint lib/compartilhamentos --ext .ts,.tsx)",
+      "PowerShell(npx --no-install eslint app/page.tsx components/landing --ext .ts,.tsx)",
+      "PowerShell(npx --no-install eslint lib/stripe components/landing/ComoFunciona.tsx --ext .ts,.tsx)"
+    ]
+  }
+}

@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth } from "@/auth";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { contagensPainel } from "@/lib/workspace/db";
+import { ehAdmin } from "@/lib/workspace/membros";
 import { resumoSituacao, listarAguardandoRetorno } from "@/lib/propostas/db";
 import { marcarSituacaoAction } from "@/app/(dashboard)/propostas/actions";
 
@@ -42,6 +43,7 @@ export default async function PainelPage() {
   const userId = await usuarioAtual();
   const session = await auth();
   const nome = session?.user?.name ?? session?.user?.email ?? "você";
+  const admin = await ehAdmin(userId);
   const contagens = await contagensPainel(userId);
   const resumo = await resumoSituacao(userId);
   const aguardando = await listarAguardandoRetorno(userId);
@@ -83,8 +85,9 @@ export default async function PainelPage() {
         </p>
       </Link>
 
-      {/* Índice de propostas (ciclo comercial) */}
-      <section className="bg-white border border-[color:var(--border-subtle)] rounded-xl p-6">
+      {/* Índice de propostas (ciclo comercial) — visão gerencial (admin) */}
+      {admin && (
+        <section className="bg-white border border-[color:var(--border-subtle)] rounded-xl p-6">
         <p className="text-base text-ink">
           Você apresentou{" "}
           <strong className="font-display font-extrabold">
@@ -124,10 +127,11 @@ export default async function PainelPage() {
             </div>
           ))}
         </div>
-      </section>
+        </section>
+      )}
 
-      {/* Aguardando retorno (lembrete) */}
-      {aguardando.length > 0 && (
+      {/* Aguardando retorno (lembrete) — admin */}
+      {admin && aguardando.length > 0 && (
         <section className="bg-white border border-[color:var(--border-subtle)] rounded-xl p-6">
           <h2 className="font-display font-bold text-ink text-lg">
             Aguardando retorno ({aguardando.length})

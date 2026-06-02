@@ -100,6 +100,41 @@ export async function criarUsuarioComWorkspace(input: {
 }
 
 /**
+ * Cria um usuário que ACEITA um convite: entra no workspace existente (não cria
+ * empresa nova) com o papel do convite, e marca o convite como aceito. Tudo em
+ * transação. Lança se o e-mail já existir (constraint unique).
+ */
+export async function criarUsuarioNoWorkspace(input: {
+  nome: string;
+  email: string;
+  senhaHash: string;
+  workspaceId: string;
+  role: string;
+  conviteId: string;
+}): Promise<{ id: string; email: string }> {
+  const sql = getSqlService();
+  const email = normalizarEmail(input.email);
+
+  const resultado = await sql.begin(async (tx) => {
+    const [usuario] = await tx<{ id: string; email: string }[]>`
+      insert into auth.users (email, senha_hash, nome)
+      values (${email}, ${input.senhaHash}, ${input.nome})
+      returning id, email
+    `;
+    await tx`
+      insert into workspace_members (workspace_id, user_id, role, nome, email)
+      values (${input.workspaceId}, ${usuario.id}, ${input.role}, ${input.nome}, ${email})
+    `;
+    await tx`
+      update workspace_convites set aceito_em = now() where id = ${input.conviteId}
+    `;
+    return usuario;
+  });
+
+  return resultado as unknown as { id: string; email: string };
+}
+
+/**
  * Para login OAuth (Google): encontra o usuário pelo e-mail ou cria um novo
  * (com workspace) na primeira vez. E-mails do Google já vêm verificados.
  */

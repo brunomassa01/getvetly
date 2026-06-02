@@ -32,3 +32,28 @@ export function planoDoPriceId(priceId: string): Plano | null {
 
 // Análises grátis no teste (sem cartão) antes de exigir assinatura.
 export const ANALISES_GRATIS = 3;
+
+// Assentos (usuários) incluídos por plano. Enterprise = "ilimitado" (na prática).
+export const ASSENTOS_POR_PLANO: Record<Plano, number> = {
+  starter: 2,
+  pro: 5,
+  business: 15,
+  enterprise: 9999,
+};
+
+// Antes de assinar (trial), só o dono do workspace.
+export const ASSENTOS_TRIAL = 1;
+
+/**
+ * Quantos usuários o workspace pode ter, conforme status/plano.
+ * `vitalicio` (admin interno / demo) = ilimitado.
+ */
+export function limiteAssentos(
+  status: string,
+  plano: Plano | null,
+  vitalicio = false,
+): number {
+  if (vitalicio) return Infinity;
+  if (status === "active" && plano) return ASSENTOS_POR_PLANO[plano];
+  return ASSENTOS_TRIAL;
+}

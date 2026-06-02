@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/sessao";
+import { ehAdmin } from "@/lib/workspace/membros";
 import { buscarWorkspaceDoUsuario } from "@/lib/workspace/db";
 import { ConfiguracoesForm } from "@/components/configuracoes/ConfiguracoesForm";
 
@@ -8,6 +10,7 @@ export const dynamic = "force-dynamic";
 
 export default async function ConfiguracoesPage() {
   const userId = await usuarioAtual();
+  if (!(await ehAdmin(userId))) redirect("/painel");
   const workspace = await buscarWorkspaceDoUsuario(userId);
 
   return (

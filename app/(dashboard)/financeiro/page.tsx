@@ -1,5 +1,7 @@
 import type { Metadata } from "next";
+import { redirect } from "next/navigation";
 import { usuarioAtual } from "@/lib/auth/sessao";
+import { ehAdmin } from "@/lib/workspace/membros";
 import { buscarAssinatura } from "@/lib/stripe/assinatura";
 import { PLANOS, PLANOS_STRIPE, ANALISES_GRATIS, type Plano } from "@/lib/stripe/config";
 import { assinarAction, gerenciarAssinaturaAction } from "./actions";
@@ -27,6 +29,7 @@ export default async function FinanceiroPage({
   searchParams: { sucesso?: string; erro?: string };
 }) {
   const userId = await usuarioAtual();
+  if (!(await ehAdmin(userId))) redirect("/painel");
   const assinatura = await buscarAssinatura(userId);
   const ativo = assinatura?.status === "active";
   const planoAtual = (assinatura?.plano ?? null) as Plano | null;

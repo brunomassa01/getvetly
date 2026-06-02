@@ -89,6 +89,35 @@ export function emailCompartilhamento({
   };
 }
 
+/** Monta o e-mail de convite para entrar no workspace de uma empresa. */
+export function emailConvite({
+  link,
+  empresa,
+  convidadoPor,
+}: {
+  link: string;
+  empresa: string;
+  convidadoPor: string | null;
+}): { assunto: string; html: string } {
+  const de = escaparHtml(empresa);
+  const quem = convidadoPor ? escaparHtml(convidadoPor) : null;
+  return {
+    assunto: `Você foi convidado para ${de} na Vetly`,
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #1E1E1E;">
+        <h2 style="color: #1E1E1E;">Convite para a equipe</h2>
+        <p>${quem ? `<strong>${quem}</strong> convidou você` : "Você foi convidado"} para usar a Vetly na conta de <strong>${de}</strong> — analisar propostas comerciais com IA.</p>
+        <p style="margin: 28px 0;">
+          <a href="${link}" style="background: #C8FF02; color: #1E1E1E; text-decoration: none; font-weight: 600; padding: 12px 24px; border-radius: 8px; display: inline-block;">
+            Aceitar convite
+          </a>
+        </p>
+        <p style="color: #85827A; font-size: 13px;">O convite expira em 7 dias.</p>
+      </div>
+    `,
+  };
+}
+
 /** Monta o e-mail de recuperação de senha. */
 export function emailRecuperacaoSenha(link: string): {
   assunto: string;

@@ -5,21 +5,23 @@ import Link from "next/link";
 import { sairAction } from "@/app/(auth)/actions";
 
 const ITENS = [
-  { href: "/conta", rotulo: "Conta" },
-  { href: "/financeiro", rotulo: "Financeiro" },
-  { href: "/usuarios", rotulo: "Gestão de Usuários" },
-  { href: "/configuracoes", rotulo: "Configurações da Empresa" },
-  { href: "/ajuda", rotulo: "Ajuda" },
+  { href: "/conta", rotulo: "Conta", adminOnly: false },
+  { href: "/financeiro", rotulo: "Financeiro", adminOnly: true },
+  { href: "/usuarios", rotulo: "Gestão de Usuários", adminOnly: true },
+  { href: "/configuracoes", rotulo: "Configurações da Empresa", adminOnly: true },
+  { href: "/ajuda", rotulo: "Ajuda", adminOnly: false },
 ];
 
 export function MenuPerfil({
   nome,
   email,
   temAvatar = false,
+  admin = false,
 }: {
   nome: string | null;
   email: string | null;
   temAvatar?: boolean;
+  admin?: boolean;
 }) {
   const [aberto, setAberto] = useState(false);
   const ref = useRef<HTMLDivElement>(null);
@@ -64,7 +66,7 @@ export function MenuPerfil({
               <p className="text-xs text-texto-3 truncate">{email}</p>
             )}
           </div>
-          {ITENS.map((item) => (
+          {ITENS.filter((item) => admin || !item.adminOnly).map((item) => (
             <Link
               key={item.href}
               href={item.href}

@@ -24,6 +24,7 @@ export const authConfig = {
       const ehPublica =
         rotasPublicas.includes(path) ||
         path.startsWith("/r/") || // páginas públicas de revisão (link compartilhável)
+        path.startsWith("/convite/") || // aceite de convite (cria conta entrando no workspace)
         path.startsWith("/api"); // APIs cuidam da própria autenticação
 
       if (ehPublica) return true;
