@@ -138,7 +138,7 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
 ### Aprovação por e-mail / compartilhar (avaliado 2026-05-30)
 - Mandar a análise por e-mail: complexidade MÉDIA; gargalo é infra (Resend não configurado: conta + verificação de domínio via DNS). Com Resend pronto, versão fácil = anexar o PPT (já gerado no servidor) + resumo. Versão "linda" = link compartilhável + aprovar online (liga com a situação "Apresentada"). Recomendação: juntar num pacote só — **Resend + compartilhar por link/e-mail + aprovar online** — próximo passo natural depois do Dashboard.
 
-### 🚧 EM ANDAMENTO — Compartilhar + aprovar online (Item A, iniciado 2026-06-01)
+### ✅ CONCLUÍDO — Compartilhar + aprovar online (Item A, 2026-06-01, testado em prod)
 **Objetivo**: link compartilhável da proposta/comparativo para a diretoria **aprovar/recusar SEM login**, + envio por e-mail. Infra **Resend já ATIVA** (ver "Estado atual").
 - **Banco**: NADA a criar — tabelas `compartilhamentos`, `aprovacoes`, `anotacoes` **já existem desde a migration 0001** (token base64url auto, `expira_em` 15 dias, `permite_aprovar`, `revogado_em`, métricas de visualização; enum `aprovacao_decisao` = `aprovado`/`aprovado_com_ressalvas`/`recusado`). O próprio schema já previa a rota pública `/r/[token]` (service role, valida token). Middleware (`auth.config.ts`) já libera `/r/`.
 - ✅ **Commit 1 — feito, AINDA NÃO commitado/deployado** (gerar link + página pública + aprovar online):
@@ -149,8 +149,8 @@ Cálculo completo em `docs/01-product/unit-economics.md`.
   - `components/compartilhamentos/BotaoCompartilhar.tsx`: card "Compartilhar para aprovação" (gera + copia link; URL montada no client via `window.location.origin`).
   - `app/r/[token]/{page,actions,FormAprovacao}.tsx`: página PÚBLICA (fora do `(dashboard)`, usa só o layout raiz) renderiza `ApresentacaoDeck` + form Aprovar/Recusar (nome obrigatório, e-mail/comentário opcionais).
   - **Regra de situação ao aprovar online**: proposta → `aprovado`(+ressalvas)=**aprovada**, `recusado`=**recusada**; comparativo → marca **apresentada** (a escolha da vencedora segue manual no app). Link vale 15 dias.
-  - Validação: **type-check ✅**. Tests: rodando (1 falha corrigida, re-rodando). Falta: commit + deploy + teste real ponta a ponta.
-- ⏳ **Commit 2 — A FAZER** (botão "Enviar por e-mail"): campo destinatário + mensagem → dispara `enviarEmail` (lib `lib/email/enviar.ts` já existe) com o link + marca como "Apresentada". Atenção: no server NÃO tem `window` — montar a URL base por env (`AUTH_URL`/origin) ou `NEXT_PUBLIC_APP_URL`.
+  - ✅ Commitado (`e74a3b6`), deployado e **TESTADO em prod** (após hotfix do token, ver abaixo).
+- ✅ **Commit 2 — FEITO** (`21a6e2f`): botão "Enviar por e-mail" → dispara `enviarEmail` (`emailCompartilhamento`) com mensagem opcional + marca "apresentada" (só se em aberto). URL via `NEXT_PUBLIC_APP_URL`. Testado em prod (e-mail chega).
 
 ### Ideias futuras (Bruno 2026-05-30) — pós-MVP / roadmap
 1. **Bot de atendimento + área de AJUDA (IA)** — pra economizar token, criar DOCUMENTAÇÃO de como o Get Vetly funciona; o bot consulta a doc (RAG) e, se não resolver, o usuário abre um chamado. (depende de doc pronta + decisão de custo)
@@ -273,7 +273,7 @@ Itens de go-to-market (fora do produto em si), a fazer no momento certo:
   - **Resend ATIVADO** (domínio `getvetly.com` verificado, `RESEND_API_KEY` no VPS) — recuperação de senha agora ENVIA de verdade. Testado: e-mail chegou.
   - **Commit 1**: link público `/r/[token]` (sem login) mostra o relatório com whitelabel + form Aprovar/Recusar; card "Compartilhar para aprovação" na proposta e no comparativo. Reusa tabelas `compartilhamentos`/`aprovacoes` (já existiam no schema 0001) → **ZERO migration**. Aprovar online atualiza a situação (proposta → aprovada/recusada; comparativo → apresentada).
   - **Commit 2**: botão "Enviar por e-mail" (Resend, `emailCompartilhamento`) com mensagem opcional; marca como "apresentada" (só se estava em aberto). URL via `NEXT_PUBLIC_APP_URL`.
-  - Validado local: **type-check + lint + 6 testes** verdes. ⚠️ **CI disparado pelo push, mas NÃO acompanhei daqui** (`gh` não instalado neste PC). **A confirmar**: GitHub Actions verde + **teste em produção** (gerar link → abrir em aba anônima → aprovar; e enviar e-mail de teste). Se o passo SSH falhar com `dial tcp :22 i/o timeout`, usar "Re-run failed jobs" no GitHub (ou `gh run rerun <id> --failed` no outro PC).
+  - Validado local: **type-check + lint + 6 testes** verdes. ✅ **TESTADO EM PROD (Bruno, 2026-06-01)**: gerar link → abrir em aba anônima → aprovar funcionou; envio por e-mail OK. (Precisou do hotfix do token abaixo.) Obs: `gh` não está instalado neste PC, então não dá pra acompanhar o CI daqui — confirmar pela aba Actions ou testando o site. SSH flaky (`dial tcp :22 i/o timeout`) → "Re-run failed jobs".
   - 🐞 **HOTFIX (2026-06-01)**: 1º teste em prod deu `unrecognized encoding: "base64url"` ao gerar/enviar link. Causa: o DEFAULT da coluna `compartilhamentos.token` (migration 0001) é `encode(gen_random_bytes(24),'base64url')`, mas o **Postgres NÃO suporta `base64url`** no `encode()` (só `base64`/`hex`/`escape`) — o erro só estoura no INSERT, não no `create table`. Correção: token gerado no **Node** (`randomBytes(24).toString('base64url')`) e inserido explícito; o default quebrado nunca é usado. **LIÇÃO**: `encode(...,'base64url')` no Postgres é armadilha — gerar tokens no app. (Cleanup opcional futuro: migration pra corrigir/remover o default.)
 
 ## Decisões de produto / monetização (para a fase do Stripe — NÃO construído ainda)
