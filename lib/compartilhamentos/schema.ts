@@ -30,6 +30,13 @@ export const aprovacaoSchema = z.object({
     .max(2000, "Comentário muito longo (máx. 2000 caracteres).")
     .optional()
     .transform((v) => (v ? v : undefined)),
+  // Só para comparativo: qual proposta o aprovador decidiu aprovar. Pode
+  // diferir da recomendada pelo comprador — quem decide é quem aprova.
+  proposta_aprovada_id: z
+    .string()
+    .uuid()
+    .optional()
+    .or(z.literal("").transform(() => undefined)),
 });
 
 export type AprovacaoInput = z.infer<typeof aprovacaoSchema>;

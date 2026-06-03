@@ -57,7 +57,11 @@ export default async function PaginaRevisao({
             )}
           </div>
         ) : dados.permiteAprovar && !dados.jaDecidido ? (
-          <FormAprovacao token={dados.token} />
+          <FormAprovacao
+            token={dados.token}
+            opcoes={dados.opcoes}
+            recomendadaId={dados.recomendadaId}
+          />
         ) : dados.jaDecidido ? (
           <div className="bg-paper-warm border border-[color:var(--border-subtle)] rounded-lg p-5 text-center">
             <p className="text-sm text-texto-2">

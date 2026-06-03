@@ -38,6 +38,10 @@ export interface CompartilhamentoResolvido {
   jaDecidido: boolean;
   apresentacao: ApresentacaoProps;
   decisao: DecisaoRegistrada | null;
+  // Só para comparativo: as propostas em concorrência (o aprovador escolhe
+  // qual aprovar) e qual foi a recomendada pelo comprador (pré-seleção).
+  opcoes?: { id: string; titulo: string }[];
+  recomendadaId?: string | null;
 }
 
 /**
@@ -245,6 +249,27 @@ export async function buscarCompartilhamentoPorToken(
     order by created_at desc limit 1
   `;
 
+  // Para comparativo: as propostas em concorrência (o aprovador escolhe qual
+  // aprovar) e a recomendada pelo comprador (pré-seleção no formulário).
+  let opcoes: { id: string; titulo: string }[] | undefined;
+  let recomendadaId: string | null | undefined;
+  if (share.comparativo_id) {
+    const [c] = await sql<
+      { proposta_ids: string[]; proposta_escolhida_id: string | null }[]
+    >`
+      select proposta_ids, proposta_escolhida_id
+      from comparativos where id = ${share.comparativo_id}
+    `;
+    if (c) {
+      opcoes = await sql<{ id: string; titulo: string }[]>`
+        select id, titulo from propostas
+        where id = any(${c.proposta_ids}::uuid[])
+        order by titulo
+      `;
+      recomendadaId = c.proposta_escolhida_id;
+    }
+  }
+
   return {
     token,
     tipo: share.proposta_id ? "proposta" : "comparativo",
@@ -253,6 +278,8 @@ export async function buscarCompartilhamentoPorToken(
     jaDecidido: resolvido.jaDecidido,
     apresentacao: { workspace, ...resolvido.apresentacao },
     decisao: dec ?? null,
+    opcoes,
+    recomendadaId,
   };
 }
 
@@ -260,8 +287,9 @@ export async function buscarCompartilhamentoPorToken(
  * Registra a decisão de quem recebeu o link (sem login). Grava em `aprovacoes`
  * e atualiza a situação do conteúdo:
  * - proposta: aprovado(+ressalvas) → "aprovada"; recusado → "recusada".
- * - comparativo: marca como "apresentada" (a escolha da vencedora segue sendo
- *   uma decisão do dono da conta, dentro do app).
+ * - comparativo: aprovado → a proposta que o aprovador escolheu (ou, na falta,
+ *   a recomendada pelo comprador) vira "aprovada" e as demais "recusada";
+ *   recusado / sem escolha → só "apresentada".
  */
 export async function registrarAprovacao(
   token: string,
@@ -279,7 +307,8 @@ export async function registrarAprovacao(
   }
 
   const sql = getSqlService();
-  const { revisor_nome, revisor_email, decisao, justificativa } = dados.data;
+  const { revisor_nome, revisor_email, decisao, justificativa, proposta_aprovada_id } =
+    dados.data;
   await sql`
     insert into aprovacoes
       (compartilhamento_id, workspace_id, revisor_nome, revisor_email,
@@ -304,14 +333,22 @@ export async function registrarAprovacao(
       select proposta_ids, proposta_escolhida_id
       from comparativos where id = ${share.comparativo_id}
     `;
-    const escolhida = c?.proposta_escolhida_id ?? null;
+    // Quem decide é o aprovador: vale a proposta que ELE escolheu (se for uma
+    // das propostas da concorrência). Se ele não escolheu, cai na recomendada
+    // pelo comprador.
+    const escolhaAprovador =
+      proposta_aprovada_id && c?.proposta_ids.includes(proposta_aprovada_id)
+        ? proposta_aprovada_id
+        : null;
+    const vencedora = escolhaAprovador ?? c?.proposta_escolhida_id ?? null;
 
-    if (decisao !== "recusado" && escolhida) {
-      // Aprovado COM uma proposta recomendada: fecha a concorrência. A
-      // recomendada vira "aprovada"; as demais desta comparação, "recusada".
+    if (decisao !== "recusado" && vencedora) {
+      // Aprovado: fecha a concorrência. A vencedora vira "aprovada"; as demais
+      // desta comparação, "recusada". Guarda a vencedora como a escolhida.
       await sql`
         update comparativos set
           situacao = 'decidida',
+          proposta_escolhida_id = ${vencedora},
           apresentado_em = coalesce(apresentado_em, now()),
           decidido_em = now()
         where id = ${share.comparativo_id}`;
@@ -320,13 +357,13 @@ export async function registrarAprovacao(
           situacao = 'aprovada',
           apresentada_em = coalesce(apresentada_em, now()),
           decidida_em = now()
-        where id = ${escolhida}`;
+        where id = ${vencedora}`;
       await sql`
         update propostas set
           situacao = 'recusada',
           apresentada_em = coalesce(apresentada_em, now()),
           decidida_em = now()
-        where id = any(${c.proposta_ids}::uuid[]) and id <> ${escolhida}`;
+        where id = any(${c.proposta_ids}::uuid[]) and id <> ${vencedora}`;
     } else {
       // Sem recomendada definida (ou decisão = recusado): só registra que foi
       // apresentada, sem mexer nas propostas.

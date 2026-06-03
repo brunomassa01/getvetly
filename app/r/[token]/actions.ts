@@ -21,6 +21,7 @@ export async function registrarAprovacaoAction(
     revisor_email: String(formData.get("revisor_email") ?? ""),
     decisao: String(formData.get("decisao") ?? ""),
     justificativa: String(formData.get("justificativa") ?? ""),
+    proposta_aprovada_id: String(formData.get("proposta_aprovada_id") ?? ""),
   });
   if (!parsed.success) {
     return { erro: parsed.error.issues[0]?.message ?? "Confira os campos." };

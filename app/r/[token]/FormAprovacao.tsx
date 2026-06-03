@@ -24,8 +24,22 @@ function BotaoEnviar() {
   );
 }
 
-/** Formulário de aprovação exibido na página pública /r/[token]. */
-export function FormAprovacao({ token }: { token: string }) {
+/**
+ * Formulário de aprovação exibido na página pública /r/[token].
+ *
+ * Para um comparativo (concorrência), o aprovador escolhe qual proposta
+ * aprovar — vem com a recomendada pelo comprador já marcada, mas ele pode
+ * trocar. Quem decide é quem aprova.
+ */
+export function FormAprovacao({
+  token,
+  opcoes = [],
+  recomendadaId = null,
+}: {
+  token: string;
+  opcoes?: { id: string; titulo: string }[];
+  recomendadaId?: string | null;
+}) {
   const [estado, action] = useFormState(registrarAprovacaoAction, ESTADO_INICIAL);
 
   if (estado?.sucesso) {
@@ -39,6 +53,13 @@ export function FormAprovacao({ token }: { token: string }) {
     );
   }
 
+  const ehConcorrencia = opcoes.length > 0;
+  // Pré-seleção: a recomendada pelo comprador (ou a primeira, se não houver).
+  const recomendadaValida =
+    recomendadaId && opcoes.some((o) => o.id === recomendadaId)
+      ? recomendadaId
+      : opcoes[0]?.id ?? null;
+
   return (
     <form
       action={action}
@@ -46,16 +67,48 @@ export function FormAprovacao({ token }: { token: string }) {
     >
       <input type="hidden" name="token" value={token} />
 
-      <div>
-        <h2 className="font-display font-bold text-lg text-ink">
-          Sua decisão
-        </h2>
-        <p className="text-sm text-texto-3 mt-1">
-          Avalie a proposta acima e registre seu parecer.
-        </p>
-      </div>
+      {/* Concorrência: escolher qual proposta aprovar (recomendada pré-marcada) */}
+      {ehConcorrencia && (
+        <fieldset className="space-y-2">
+          <legend className="font-display font-bold text-lg text-ink">
+            Qual proposta você aprova?
+          </legend>
+          <p className="text-sm text-texto-3 mb-1">
+            A recomendada pelo comprador já vem marcada — você pode manter ou
+            escolher outra.
+          </p>
+          {opcoes.map((o) => (
+            <label
+              key={o.id}
+              className="flex items-center gap-3 border border-[color:var(--border-subtle)] rounded-md px-4 py-3 cursor-pointer hover:bg-paper-warm transition-colors"
+            >
+              <input
+                type="radio"
+                name="proposta_aprovada_id"
+                value={o.id}
+                defaultChecked={o.id === recomendadaValida}
+                className="accent-lime-deep"
+              />
+              <span className="text-sm text-ink font-medium">{o.titulo}</span>
+              {o.id === recomendadaValida && (
+                <span className="ml-auto text-[11px] font-mono uppercase tracking-wide2 text-[#5C7A0E] bg-lime-faint border border-lime-soft rounded-full px-2 py-0.5">
+                  Recomendada
+                </span>
+              )}
+            </label>
+          ))}
+        </fieldset>
+      )}
 
       <fieldset className="space-y-2">
+        <legend className="font-display font-bold text-lg text-ink">
+          Sua decisão
+        </legend>
+        <p className="text-sm text-texto-3 mb-1">
+          {ehConcorrencia
+            ? "Aprovar fecha a concorrência: a escolhida acima vira aprovada e as demais, recusadas."
+            : "Avalie a proposta acima e registre seu parecer."}
+        </p>
         {DECISOES.map((d) => (
           <label
             key={d}

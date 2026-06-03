@@ -23,7 +23,7 @@ select w.id as workspace_id, w.nome as empresa,
 from workspaces w
 join workspace_members m on m.workspace_id = w.id
 join auth.users u        on u.id = m.user_id
-where w.nome = :'empresa'
+where lower(btrim(w.nome)) = lower(btrim(:'empresa'))
 order by (m.role = 'admin') desc, m.created_at asc;
 
 -- 2) Propostas da empresa e suas situações comerciais.
@@ -32,7 +32,7 @@ order by (m.role = 'admin') desc, m.created_at asc;
 select p.id, p.titulo, p.situacao, p.created_at
 from propostas p
 join workspaces w on w.id = p.workspace_id
-where w.nome = :'empresa'
+where lower(btrim(w.nome)) = lower(btrim(:'empresa'))
 order by p.created_at desc;
 
 -- 3) Comparativos (concorrências) da empresa, e qual a proposta escolhida.
@@ -41,7 +41,7 @@ order by p.created_at desc;
 select c.id, c.titulo, c.situacao, c.proposta_escolhida_id, c.created_at
 from comparativos c
 join workspaces w on w.id = c.workspace_id
-where w.nome = :'empresa'
+where lower(btrim(w.nome)) = lower(btrim(:'empresa'))
 order by c.created_at desc;
 
 -- 4) Links de compartilhamento criados (proposta vs comparativo).
@@ -50,14 +50,14 @@ select s.id,
        s.permite_aprovar, s.revogado_em, s.created_at
 from compartilhamentos s
 join workspaces w on w.id = s.workspace_id
-where w.nome = :'empresa'
+where lower(btrim(w.nome)) = lower(btrim(:'empresa'))
 order by s.created_at desc;
 
 -- 5) Aprovações registradas (a decisão chegou a gravar? qual foi?).
 select a.decisao, a.revisor_nome, a.created_at
 from aprovacoes a
 join workspaces w on w.id = a.workspace_id
-where w.nome = :'empresa'
+where lower(btrim(w.nome)) = lower(btrim(:'empresa'))
 order by a.created_at desc;
 
 -- =====================================================================
@@ -76,7 +76,8 @@ begin;
 
 -- Descobre o workspace do cliente uma vez (pelo nome).
 create temporary table _ws on commit drop as
-select id from workspaces where nome = :'empresa' limit 1;
+select id from workspaces
+where lower(btrim(nome)) = lower(btrim(:'empresa')) limit 1;
 
 -- Contagem ANTES (pra você conferir o que será apagado).
 select 'propostas'        as tabela, count(*) from propostas        where workspace_id in (select id from _ws)
