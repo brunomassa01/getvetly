@@ -17,6 +17,7 @@ export interface MetricasAdmin {
   comparativos: number;
   recentes: {
     nome: string;
+    email: string | null;
     status: string;
     plano: string | null;
     created_at: string;
@@ -54,10 +55,24 @@ export async function metricasAdmin(): Promise<MetricasAdmin> {
   const [ws] = await sql<{ n: number }[]>`select count(*)::int as n from workspaces`;
 
   const recentes = await sql<
-    { nome: string; status: string; plano: string | null; created_at: string }[]
+    {
+      nome: string;
+      email: string | null;
+      status: string;
+      plano: string | null;
+      created_at: string;
+    }[]
   >`
-    select nome, assinatura_status as status, plano, created_at
-    from workspaces order by created_at desc limit 8
+    select
+      w.nome,
+      (select m.email from workspace_members m
+        where m.workspace_id = w.id and m.ativo = true
+        order by (m.role = 'admin') desc, m.created_at asc
+        limit 1) as email,
+      w.assinatura_status as status,
+      w.plano,
+      w.created_at
+    from workspaces w order by w.created_at desc limit 8
   `;
 
   return {

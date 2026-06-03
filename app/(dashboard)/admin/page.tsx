@@ -115,6 +115,7 @@ export default async function AdminPage() {
           <thead className="bg-paper-warm">
             <tr className="text-left text-texto-3 text-xs uppercase tracking-wide">
               <th className="px-6 py-2 font-semibold">Empresa</th>
+              <th className="px-6 py-2 font-semibold">E-mail</th>
               <th className="px-6 py-2 font-semibold">Status</th>
               <th className="px-6 py-2 font-semibold">Plano</th>
               <th className="px-6 py-2 font-semibold">Criada</th>
@@ -124,6 +125,7 @@ export default async function AdminPage() {
             {m.recentes.map((r, i) => (
               <tr key={i} className="border-t border-[color:var(--border-subtle)]">
                 <td className="px-6 py-3 text-ink font-medium">{r.nome}</td>
+                <td className="px-6 py-3 text-texto-2">{r.email ?? "—"}</td>
                 <td className="px-6 py-3 text-texto-2">
                   {STATUS_ROTULO[r.status] ?? r.status}
                 </td>
