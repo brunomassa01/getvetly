@@ -37,7 +37,7 @@ export function CadastroForm() {
           minLength={8}
           required
         />
-        <Aviso erro={estado.erro} />
+        <Aviso erro={estado?.erro} />
         <BotaoEnviar>Criar conta</BotaoEnviar>
       </form>
       <p className="text-sm text-texto-2 text-center">

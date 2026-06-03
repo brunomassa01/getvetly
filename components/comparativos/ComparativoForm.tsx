@@ -26,7 +26,7 @@ export function ComparativoForm({
   const [comparando, setComparando] = useState(false);
 
   useEffect(() => {
-    if (estado.erro) setComparando(false);
+    if (estado?.erro) setComparando(false);
   }, [estado]);
 
   return (
@@ -70,7 +70,7 @@ export function ComparativoForm({
 
       <Campo label="Título da comparação (opcional)" name="titulo" />
 
-      <Aviso erro={estado.erro} />
+      <Aviso erro={estado?.erro} />
 
       <div className="flex gap-3 pt-1">
         <Link

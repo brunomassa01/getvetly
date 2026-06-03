@@ -10,10 +10,10 @@ export function RedefinirSenhaForm({ token }: { token: string }) {
   const [estado, action] = useFormState(redefinirSenhaAction, ESTADO_INICIAL);
 
   // Após sucesso, mostra o caminho para o login em vez do formulário.
-  if (estado.sucesso) {
+  if (estado?.sucesso) {
     return (
       <div className="space-y-5">
-        <Aviso sucesso={estado.sucesso} />
+        <Aviso sucesso={estado?.sucesso} />
         <Link
           href="/login"
           className="block text-center w-full font-body font-semibold text-sm bg-lime text-ink px-5 py-2.5 rounded-md hover:bg-lime-deep"
@@ -35,7 +35,7 @@ export function RedefinirSenhaForm({ token }: { token: string }) {
         minLength={8}
         required
       />
-      <Aviso erro={estado.erro} />
+      <Aviso erro={estado?.erro} />
       <BotaoEnviar>Redefinir senha</BotaoEnviar>
     </form>
   );

@@ -140,7 +140,7 @@ export function ConfiguracoesForm({ workspace }: { workspace: Workspace }) {
         </div>
       </div>
 
-      <Aviso erro={estado.erro} sucesso={estado.sucesso} />
+      <Aviso erro={estado?.erro} sucesso={estado?.sucesso} />
 
       <div className="max-w-xs">
         <BotaoEnviar>Salvar alterações</BotaoEnviar>

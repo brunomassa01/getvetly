@@ -28,10 +28,10 @@ function BotaoEnviar() {
 export function FormAprovacao({ token }: { token: string }) {
   const [estado, action] = useFormState(registrarAprovacaoAction, ESTADO_INICIAL);
 
-  if (estado.sucesso) {
+  if (estado?.sucesso) {
     return (
       <div className="bg-lime-faint border border-lime-deep/30 rounded-lg p-5 text-center">
-        <p className="font-display font-bold text-ink">{estado.sucesso}</p>
+        <p className="font-display font-bold text-ink">{estado?.sucesso}</p>
         <p className="text-sm text-texto-2 mt-1">
           Você pode fechar esta página.
         </p>
@@ -114,7 +114,7 @@ export function FormAprovacao({ token }: { token: string }) {
         />
       </div>
 
-      {estado.erro && <p className="text-sm text-danger">{estado.erro}</p>}
+      {estado?.erro && <p className="text-sm text-danger">{estado?.erro}</p>}
 
       <BotaoEnviar />
     </form>

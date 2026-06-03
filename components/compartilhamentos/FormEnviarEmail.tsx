@@ -59,9 +59,9 @@ export function FormEnviarEmail({
         className="mt-2 w-full text-sm border border-[color:var(--border-subtle)] rounded-md px-3 py-2"
       />
 
-      {estado.erro && <p className="mt-2 text-sm text-danger">{estado.erro}</p>}
-      {estado.sucesso && (
-        <p className="mt-2 text-sm font-medium text-[#5C7A0E]">{estado.sucesso}</p>
+      {estado?.erro && <p className="mt-2 text-sm text-danger">{estado?.erro}</p>}
+      {estado?.sucesso && (
+        <p className="mt-2 text-sm font-medium text-[#5C7A0E]">{estado?.sucesso}</p>
       )}
     </form>
   );

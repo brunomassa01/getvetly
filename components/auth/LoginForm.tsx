@@ -29,7 +29,7 @@ export function LoginForm() {
           autoComplete="current-password"
           required
         />
-        <Aviso erro={estado.erro} />
+        <Aviso erro={estado?.erro} />
         <BotaoEnviar>Entrar</BotaoEnviar>
       </form>
       <div className="flex justify-between text-sm">

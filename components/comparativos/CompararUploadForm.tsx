@@ -21,7 +21,7 @@ export function CompararUploadForm() {
   const inputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (estado.erro) setComparando(false);
+    if (estado?.erro) setComparando(false);
   }, [estado]);
 
   function atualizar(files: FileList | null) {
@@ -97,7 +97,7 @@ export function CompararUploadForm() {
         placeholder="Ex.: menor preço com bom alcance; prazo de pagamento mais longo; menor risco"
       />
 
-      <Aviso erro={estado.erro} />
+      <Aviso erro={estado?.erro} />
 
       <div className="flex gap-3 pt-1">
         <Link

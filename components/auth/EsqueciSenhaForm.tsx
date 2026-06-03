@@ -19,7 +19,7 @@ export function EsqueciSenhaForm() {
           autoComplete="email"
           required
         />
-        <Aviso erro={estado.erro} sucesso={estado.sucesso} />
+        <Aviso erro={estado?.erro} sucesso={estado?.sucesso} />
         <BotaoEnviar>Enviar link de recuperação</BotaoEnviar>
       </form>
       <p className="text-sm text-texto-2 text-center">

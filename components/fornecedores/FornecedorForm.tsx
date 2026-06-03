@@ -69,7 +69,7 @@ export function FornecedorForm({
         defaultValue={fornecedor?.observacoes ?? ""}
       />
 
-      <Aviso erro={estado.erro} />
+      <Aviso erro={estado?.erro} />
 
       <div className="flex gap-3 pt-2">
         <Link
