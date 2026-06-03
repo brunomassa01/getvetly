@@ -28,7 +28,9 @@ Primeiro cliente potencial (construtora, testou proposta de esquadrias). **Amou*
 
 **Ferramentas novas**:
 - `db/ops/diagnostico-e-reset-cliente.sql` — roda no psql do VPS, escopado pelo **nome da empresa** (visível no /admin). Parte 1 = diagnóstico (papel, propostas/situações, comparativos+escolhida, shares, aprovações). Parte 2 = reset dos dados de teste (apaga conteúdo, mantém conta/workspace/papel; dry-run com `rollback`, trocar p/ `commit`).
-- **Painel /admin agora mostra o e-mail** de cada empresa (coluna E-mail em "Empresas recentes") — antes só tinha o nome, dificultava suporte. Cliente da construtora = empresa **"Tiago Massa"** (criada 03/06/2026, em teste).
+- **Painel /admin agora mostra o e-mail** de cada empresa (coluna E-mail em "Empresas recentes") — antes só tinha o nome, dificultava suporte. Cliente da construtora = empresa **"Tiago Massa"** (criada 03/06/2026, trial). Em 03/06 os testes dele foram **zerados** a pedido do Bruno (tinha 4 propostas + 1 comparativo + 1 aprovação que confirmaram o BUG 2 — aprovação em concorrência que não cascateava). Conta/login/workspace mantidos.
+
+**⚠️ GOTCHA OPERACIONAL (descoberto 03/06):** o deploy **NÃO atualiza a pasta `db/ops/` no VPS** — o arquivo de reset lá fica desatualizado. Para rodar reset/diagnóstico no servidor, **NÃO confie no arquivo do repo no VPS**; use psql inline (heredoc em `/tmp`) ou edite na hora. Conexão de serviço (ignora RLS) = variável **`DATABASE_URL_SERVICE`** no `.env` (role `getvetly_service`, BYPASSRLS). PM2 roda como usuário **deploy** (não root): `sudo -u deploy pm2 ...`. App em **/var/www/getvetly**.
 
 **O que é**: SaaS B2B para gestores de compras/supply chain analisarem propostas comerciais de fornecedores com IA, gerar relatórios padronizados, compartilhar link com diretoria para aprovação e manter histórico de fornecedores.
 
