@@ -242,6 +242,31 @@ export async function apresentarComparativo(
 }
 
 /**
+ * Marca qual proposta o comprador RECOMENDA, sem decidir ainda. Usado quando
+ * ele vai enviar a concorrência para aprovação externa (link/e-mail): a
+ * recomendada fica guardada e a comparação vai para "apresentada". Só quando o
+ * aprovador aprova é que ela vira "aprovada" (ver registrarAprovacao).
+ */
+export async function recomendarProposta(
+  userId: string,
+  id: string,
+  propostaRecomendadaId: string,
+): Promise<void> {
+  await withUser(userId, async (sql) => {
+    const [c] = await sql<{ proposta_ids: string[] }[]>`
+      select proposta_ids from comparativos where id = ${id}
+    `;
+    if (!c || !c.proposta_ids.includes(propostaRecomendadaId)) return;
+    await sql`
+      update comparativos set
+        proposta_escolhida_id = ${propostaRecomendadaId},
+        situacao = case when situacao = 'em_aberto' then 'apresentada' else situacao end,
+        apresentado_em = coalesce(apresentado_em, now())
+      where id = ${id} and situacao <> 'decidida'`;
+  });
+}
+
+/**
  * Registra a proposta escolhida da comparação: ela vira "aprovada" e as
  * demais DESTA comparação viram "recusada". Cada comparação é independente.
  */

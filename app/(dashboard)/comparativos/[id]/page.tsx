@@ -64,6 +64,11 @@ export default async function ComparativoDetalhePage({
         tipo="comparativo"
         refId={comparativo.id}
         titulo={comparativo.titulo}
+        propostas={comparativo.propostas.map((p) => ({
+          id: p.id,
+          titulo: p.titulo,
+        }))}
+        recomendadaInicial={comparativo.proposta_escolhida_id}
       />
 
       <RelatorioComparativo comparativo={comparativo.payload} />

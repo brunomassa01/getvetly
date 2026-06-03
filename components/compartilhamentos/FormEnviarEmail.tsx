@@ -29,10 +29,12 @@ export function FormEnviarEmail({
   tipo,
   refId,
   titulo,
+  propostaRecomendadaId,
 }: {
   tipo: TipoAlvo;
   refId: string;
   titulo: string;
+  propostaRecomendadaId?: string;
 }) {
   const [estado, action] = useFormState(enviarLinkPorEmailAction, ESTADO_INICIAL);
 
@@ -41,6 +43,11 @@ export function FormEnviarEmail({
       <input type="hidden" name="tipo" value={tipo} />
       <input type="hidden" name="refId" value={refId} />
       <input type="hidden" name="titulo" value={titulo} />
+      <input
+        type="hidden"
+        name="propostaRecomendadaId"
+        value={propostaRecomendadaId ?? ""}
+      />
 
       <div className="flex flex-col sm:flex-row gap-2">
         <input

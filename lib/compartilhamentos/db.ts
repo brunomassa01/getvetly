@@ -146,15 +146,31 @@ async function resolverProposta(sql: Sql, propostaId: string, empresa: string | 
 // Monta o deck + as props de apresentação de um COMPARATIVO (via service).
 async function resolverComparativo(sql: Sql, comparativoId: string, empresa: string | null) {
   const [c] = await sql<
-    { titulo: string; payload: unknown; created_at: string; situacao: string }[]
+    {
+      titulo: string;
+      payload: unknown;
+      created_at: string;
+      situacao: string;
+      proposta_escolhida_id: string | null;
+    }[]
   >`
-    select titulo, payload, created_at, situacao
+    select titulo, payload, created_at, situacao, proposta_escolhida_id
     from comparativos where id = ${comparativoId}
   `;
   if (!c) return null;
   const payload = (
     typeof c.payload === "string" ? JSON.parse(c.payload) : c.payload
   ) as Comparativo;
+
+  // Se o comprador já indicou qual recomenda, o banner mostra a escolha DELE
+  // (é o que será aprovado). Senão, cai na recomendação da IA.
+  let recomendada = payload.vencedor_ref;
+  if (c.proposta_escolhida_id) {
+    const [pe] = await sql<{ titulo: string }[]>`
+      select titulo from propostas where id = ${c.proposta_escolhida_id}
+    `;
+    if (pe?.titulo) recomendada = pe.titulo;
+  }
 
   const deck = await garantirDeck(comparativoId, payload, empresa);
   return {
@@ -166,7 +182,7 @@ async function resolverComparativo(sql: Sql, comparativoId: string, empresa: str
       eyebrow: "Comparativo de propostas",
       subinfo: `${payload.propostas.length} propostas`,
       chips: payload.propostas.map((p) => p.ref),
-      banda: { rotulo: "Recomendação", valor: payload.vencedor_ref },
+      banda: { rotulo: "Recomendação", valor: recomendada },
     },
   };
 }
@@ -282,12 +298,44 @@ export async function registrarAprovacao(
       where id = ${share.proposta_id}
     `;
   } else if (share.comparativo_id) {
-    await sql`
-      update comparativos set
-        situacao = case when situacao = 'em_aberto' then 'apresentada' else situacao end,
-        apresentado_em = coalesce(apresentado_em, now())
-      where id = ${share.comparativo_id}
+    const [c] = await sql<
+      { proposta_ids: string[]; proposta_escolhida_id: string | null }[]
+    >`
+      select proposta_ids, proposta_escolhida_id
+      from comparativos where id = ${share.comparativo_id}
     `;
+    const escolhida = c?.proposta_escolhida_id ?? null;
+
+    if (decisao !== "recusado" && escolhida) {
+      // Aprovado COM uma proposta recomendada: fecha a concorrência. A
+      // recomendada vira "aprovada"; as demais desta comparação, "recusada".
+      await sql`
+        update comparativos set
+          situacao = 'decidida',
+          apresentado_em = coalesce(apresentado_em, now()),
+          decidido_em = now()
+        where id = ${share.comparativo_id}`;
+      await sql`
+        update propostas set
+          situacao = 'aprovada',
+          apresentada_em = coalesce(apresentada_em, now()),
+          decidida_em = now()
+        where id = ${escolhida}`;
+      await sql`
+        update propostas set
+          situacao = 'recusada',
+          apresentada_em = coalesce(apresentada_em, now()),
+          decidida_em = now()
+        where id = any(${c.proposta_ids}::uuid[]) and id <> ${escolhida}`;
+    } else {
+      // Sem recomendada definida (ou decisão = recusado): só registra que foi
+      // apresentada, sem mexer nas propostas.
+      await sql`
+        update comparativos set
+          situacao = case when situacao = 'em_aberto' then 'apresentada' else situacao end,
+          apresentado_em = coalesce(apresentado_em, now())
+        where id = ${share.comparativo_id}`;
+    }
   }
 
   return { ok: true };

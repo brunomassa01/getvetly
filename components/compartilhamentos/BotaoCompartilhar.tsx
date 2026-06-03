@@ -9,25 +9,45 @@ import { FormEnviarEmail } from "./FormEnviarEmail";
  * Gera um link público de aprovação e mostra a URL com um botão de copiar.
  * O link é criado sob demanda (só quando o usuário clica), reaproveitando
  * um link ativo se já existir para o mesmo conteúdo.
+ *
+ * Para comparativos (concorrência), o usuário escolhe ANTES qual proposta ele
+ * recomenda. Se o aprovador aprovar o link, essa proposta vira "aprovada".
  */
 export function BotaoCompartilhar({
   tipo,
   refId,
   titulo,
+  propostas = [],
+  recomendadaInicial = null,
 }: {
   tipo: TipoAlvo;
   refId: string;
   titulo: string;
+  propostas?: { id: string; titulo: string }[];
+  recomendadaInicial?: string | null;
 }) {
   const [pending, startTransition] = useTransition();
   const [url, setUrl] = useState<string | null>(null);
   const [copiado, setCopiado] = useState(false);
   const [erro, setErro] = useState<string | null>(null);
+  const [recomendada, setRecomendada] = useState<string>(
+    recomendadaInicial ?? "",
+  );
+
+  const ehComparativo = tipo === "comparativo";
 
   function gerar() {
     setErro(null);
+    if (ehComparativo && !recomendada) {
+      setErro("Escolha qual proposta você recomenda antes de gerar o link.");
+      return;
+    }
     startTransition(async () => {
-      const r = await criarLinkCompartilhamentoAction(tipo, refId);
+      const r = await criarLinkCompartilhamentoAction(
+        tipo,
+        refId,
+        ehComparativo ? recomendada : undefined,
+      );
       if (r.ok) setUrl(`${window.location.origin}${r.path}`);
       else setErro(r.erro);
     });
@@ -53,6 +73,31 @@ export function BotaoCompartilhar({
         Gere um link para enviar à diretoria. Quem abrir vê o relatório e pode
         aprovar ou recusar — sem precisar de conta. O link vale por 15 dias.
       </p>
+
+      {/* Comparativo: escolher a proposta recomendada antes de compartilhar */}
+      {ehComparativo && (
+        <div className="mt-4">
+          <label className="block text-sm text-ink font-medium mb-1">
+            Qual proposta você recomenda? <span className="text-danger">*</span>
+          </label>
+          <select
+            value={recomendada}
+            onChange={(e) => setRecomendada(e.target.value)}
+            className="w-full sm:w-auto text-sm bg-paper border border-[color:var(--border-default)] rounded-md px-3 py-2 text-ink outline-none focus:border-lime-deep focus:shadow-ring"
+          >
+            <option value="">Selecione a proposta…</option>
+            {propostas.map((p) => (
+              <option key={p.id} value={p.id}>
+                {p.titulo}
+              </option>
+            ))}
+          </select>
+          <p className="text-xs text-texto-3 mt-1">
+            Se o aprovador aprovar, esta vira <strong>Aprovada</strong> e as
+            demais desta concorrência viram <strong>Recusada</strong>.
+          </p>
+        </div>
+      )}
 
       {!url ? (
         <button
@@ -93,7 +138,12 @@ export function BotaoCompartilhar({
         <p className="text-sm text-ink font-medium mb-2">
           Ou envie direto por e-mail
         </p>
-        <FormEnviarEmail tipo={tipo} refId={refId} titulo={titulo} />
+        <FormEnviarEmail
+          tipo={tipo}
+          refId={refId}
+          titulo={titulo}
+          propostaRecomendadaId={ehComparativo ? recomendada : undefined}
+        />
       </div>
     </section>
   );

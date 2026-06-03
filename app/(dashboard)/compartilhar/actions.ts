@@ -6,6 +6,7 @@ import {
   criarOuReusarCompartilhamento,
   marcarComoApresentado,
 } from "@/lib/compartilhamentos/db";
+import { recomendarProposta } from "@/lib/comparativos/db";
 import {
   TIPOS_ALVO,
   envioEmailSchema,
@@ -22,12 +23,19 @@ import type { EstadoForm } from "@/lib/auth/tipos";
 export async function criarLinkCompartilhamentoAction(
   tipo: TipoAlvo,
   refId: string,
+  propostaRecomendadaId?: string,
 ): Promise<{ ok: true; path: string } | { ok: false; erro: string }> {
   const userId = await usuarioAtual();
   if (!TIPOS_ALVO.includes(tipo) || !refId) {
     return { ok: false, erro: "Conteúdo inválido para compartilhar." };
   }
+  if (tipo === "comparativo" && !propostaRecomendadaId) {
+    return { ok: false, erro: "Escolha qual proposta você recomenda antes de gerar o link." };
+  }
   try {
+    if (tipo === "comparativo" && propostaRecomendadaId) {
+      await recomendarProposta(userId, refId, propostaRecomendadaId);
+    }
     const { token } = await criarOuReusarCompartilhamento(userId, { tipo, refId });
     return { ok: true, path: `/r/${token}` };
   } catch (erro) {
@@ -50,8 +58,12 @@ export async function enviarLinkPorEmailAction(
   const tipo = String(formData.get("tipo") ?? "") as TipoAlvo;
   const refId = String(formData.get("refId") ?? "");
   const titulo = String(formData.get("titulo") ?? "").trim() || "Análise";
+  const recomendadaId = String(formData.get("propostaRecomendadaId") ?? "");
   if (!TIPOS_ALVO.includes(tipo) || !refId) {
     return { erro: "Conteúdo inválido para compartilhar." };
+  }
+  if (tipo === "comparativo" && !recomendadaId) {
+    return { erro: "Escolha qual proposta você recomenda antes de enviar." };
   }
 
   const parsed = envioEmailSchema.safeParse({
@@ -63,6 +75,9 @@ export async function enviarLinkPorEmailAction(
   }
 
   try {
+    if (tipo === "comparativo" && recomendadaId) {
+      await recomendarProposta(userId, refId, recomendadaId);
+    }
     const { token } = await criarOuReusarCompartilhamento(userId, {
       tipo,
       refId,
