@@ -36,6 +36,13 @@ create trigger trg_leads_updated before update on leads
 -- RLS: tabela interna, sem política pública. Só o service role acessa.
 alter table leads enable row level security;
 
+-- Permissões (self-hosted, ADR-007): a tabela é criada por getvetly_owner.
+-- As default privileges do grants-selfhosted.sql cobrem tabelas criadas pelo
+-- postgres, não pelo owner — então concedemos acesso explicitamente aqui.
+-- O CRM acessa via getvetly_service (BYPASSRLS); getvetly_app fica sujeito ao
+-- RLS (sem política = sem linhas), seguindo o mesmo padrão das demais tabelas.
+grant select, insert, update, delete on leads to getvetly_app, getvetly_service;
+
 -- =====================================================
 -- FIM da migration 0008
 -- =====================================================
