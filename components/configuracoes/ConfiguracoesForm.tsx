@@ -117,24 +117,23 @@ export function ConfiguracoesForm({ workspace }: { workspace: Workspace }) {
         {/* Design system (opcional) */}
         <div className="pt-2 border-t border-[color:var(--border-subtle)]">
           <span className="block text-sm font-medium text-texto-2 mb-1.5">
-            Design system da sua empresa (opcional)
+            Cores da sua marca (opcional)
           </span>
           <p className="text-xs text-texto-3 mb-2">
-            Suba o arquivo que tem as <strong>cores</strong> da sua marca —
-            Markdown (.md), CSS (.css) ou JSON de tokens (.json). A IA lê e
-            aplica na apresentação. Dica: arquivos com os códigos hex (ex.:
-            <code> colors.css</code>) dão o resultado mais fiel. Sem isso,
-            usamos as cores acima.
+            Tem um <strong>manual de marca</strong> ou guia de cores? Suba aqui
+            (PDF ou arquivo de texto .md/.css/.json) que a IA acha as cores e
+            aplica nos relatórios. <strong>Não tem?</strong> Sem problema — é só
+            usar os seletores de cor acima.
             {workspace.tem_design_system && (
               <span className="block mt-1 text-[#5C7A0E] font-medium">
-                ✓ Design system aplicado. Suba outro para atualizar.
+                ✓ Arquivo de marca aplicado. Suba outro para atualizar.
               </span>
             )}
           </p>
           <input
             type="file"
             name="design_md"
-            accept=".md,.markdown,.css,.scss,.json,.txt,text/markdown,text/css,application/json,text/plain"
+            accept=".pdf,.md,.markdown,.css,.scss,.json,.txt,application/pdf,text/markdown,text/css,application/json,text/plain"
             className="w-full bg-paper border border-[color:var(--border-default)] rounded-md px-3.5 py-2.5 text-sm text-ink outline-none file:mr-3 file:rounded file:border-0 file:bg-ink file:text-paper file:px-3 file:py-1.5 file:text-xs file:font-medium"
           />
         </div>

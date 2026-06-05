@@ -1,8 +1,7 @@
 import "server-only";
 import { withUser, getSqlService } from "@/lib/db/client";
 import { salvarLogo } from "./logo";
-import { salvarDesignMd, temDesignMd } from "./design";
-import { extrairTokensDesign } from "@/lib/ai/design-tokens";
+import { temDesignMd } from "./design";
 import type { WorkspaceInput } from "./schema";
 
 export interface Workspace {
@@ -38,38 +37,6 @@ export async function buscarWorkspaceDoUsuario(
   if (!ws) return null;
   ws.tem_design_system = await temDesignMd(ws.id);
   return ws;
-}
-
-/**
- * Processa o upload do design system (markdown): salva o arquivo, extrai as
- * cores com IA e atualiza as cores do whitelabel (só as encontradas).
- */
-export async function salvarDesignSystemWorkspace(
-  userId: string,
-  arquivo: File,
-): Promise<void> {
-  const workspaceId = await withUser(userId, async (sql) => {
-    const [membro] = await sql<{ workspace_id: string }[]>`
-      select workspace_id from workspace_members
-      where user_id = ${userId} and role = 'admin' and ativo = true
-      limit 1
-    `;
-    if (!membro) throw new Error("Sem permissão para editar a empresa.");
-    return membro.workspace_id;
-  });
-
-  const conteudo = await arquivo.text();
-  await salvarDesignMd(workspaceId, conteudo);
-
-  const tokens = await extrairTokensDesign(conteudo);
-  await withUser(userId, (sql) =>
-    sql`
-      update workspaces set
-        whitelabel_cor_primaria = coalesce(${tokens.cor_primaria}, whitelabel_cor_primaria),
-        whitelabel_cor_secundaria = coalesce(${tokens.cor_secundaria}, whitelabel_cor_secundaria)
-      where id = ${workspaceId}
-    `,
-  );
 }
 
 /** Salva o logo do whitelabel e grava o caminho no workspace (somente admin). */
