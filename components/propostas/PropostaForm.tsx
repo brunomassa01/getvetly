@@ -11,6 +11,11 @@ import { OverlayAnalisando } from "./OverlayAnalisando";
 const ACEITA = ".pdf,.docx,.xlsx,.xls,.csv,.ppt,.pptx,.png,.jpg,.jpeg";
 const TAMANHO_MAX = 25 * 1024 * 1024; // 25 MB no total (limite do servidor)
 
+// Identidade de um arquivo, pra não duplicar ao somar várias seleções.
+function chaveArquivo(f: File): string {
+  return `${f.name}-${f.size}-${f.lastModified}`;
+}
+
 export function PropostaForm() {
   const [estado, action] = useFormState(
     criarEAnalisarPropostaAction,
@@ -18,20 +23,42 @@ export function PropostaForm() {
   );
   const [analisando, setAnalisando] = useState(false);
   const [erroLocal, setErroLocal] = useState<string | null>(null);
-  const [nomes, setNomes] = useState<string[]>([]);
+  const [arquivos, setArquivos] = useState<File[]>([]);
   const [arrastando, setArrastando] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
 
   // Se a ação voltar com erro, esconde o overlay (em sucesso, navega e desmonta).
-  // estado pode vir indefinido se o envio falhar no servidor — por isso o "?.".
   useEffect(() => {
     if (estado?.erro) setAnalisando(false);
   }, [estado]);
 
+  // Mantém o <input> em sincronia com a lista acumulada, pra o formulário
+  // enviar TODOS os arquivos — inclusive os escolhidos em pastas/cliques
+  // diferentes (o seletor do navegador só multi-seleciona dentro de uma pasta).
+  useEffect(() => {
+    if (!inputRef.current) return;
+    const dt = new DataTransfer();
+    arquivos.forEach((f) => dt.items.add(f));
+    inputRef.current.files = dt.files;
+  }, [arquivos]);
+
+  // Soma novos arquivos à lista, sem repetir.
+  function adicionar(novos: FileList | null) {
+    const lista = Array.from(novos ?? []);
+    if (lista.length === 0) return;
+    setArquivos((atual) => {
+      const vistos = new Set(atual.map(chaveArquivo));
+      return [...atual, ...lista.filter((f) => !vistos.has(chaveArquivo(f)))];
+    });
+  }
+
+  function remover(chave: string) {
+    setArquivos((atual) => atual.filter((f) => chaveArquivo(f) !== chave));
+  }
+
   // Valida no cliente antes de enviar: evita o 413 do servidor e dá mensagem clara.
   function aoEnviar(e: React.FormEvent<HTMLFormElement>) {
     setErroLocal(null);
-    const arquivos = Array.from(inputRef.current?.files ?? []);
     if (arquivos.length === 0) {
       e.preventDefault();
       setErroLocal("Anexe ao menos um arquivo.");
@@ -48,18 +75,10 @@ export function PropostaForm() {
     setAnalisando(true);
   }
 
-  function atualizarNomes(files: FileList | null) {
-    setNomes(Array.from(files ?? []).map((f) => f.name));
-  }
-
   function aoSoltar(e: React.DragEvent<HTMLDivElement>) {
     e.preventDefault();
     setArrastando(false);
-    const files = e.dataTransfer.files;
-    if (files?.length && inputRef.current) {
-      inputRef.current.files = files;
-      atualizarNomes(files);
-    }
+    adicionar(e.dataTransfer.files);
   }
 
   return (
@@ -73,7 +92,11 @@ export function PropostaForm() {
         multiple
         accept={ACEITA}
         className="sr-only"
-        onChange={(e) => atualizarNomes(e.target.files)}
+        onChange={(e) => {
+          adicionar(e.target.files);
+          // limpa o valor pra permitir re-selecionar o mesmo arquivo depois
+          e.target.value = "";
+        }}
       />
 
       <div
@@ -103,19 +126,37 @@ export function PropostaForm() {
           {arrastando ? "Solte os arquivos aqui" : "Suba a proposta"}
         </p>
         <p className="text-sm text-texto-2 mt-1">
-          Arraste os arquivos ou clique para escolher. Pode ser mais de um da
-          mesma proposta: PDF, Excel, Word ou PowerPoint. A IA lê tudo junto.
+          Arraste ou clique para escolher. Pode somar vários — inclusive de{" "}
+          <strong>pastas diferentes</strong>: é só clicar de novo que acumula.
+          PDF, Excel, Word ou PowerPoint. A IA lê tudo junto.
         </p>
         <p className="text-xs text-texto-3 mt-2">
           Até 25 MB no total por proposta.
         </p>
-        {nomes.length > 0 && (
+        {arquivos.length > 0 && (
           <ul className="mt-4 inline-block text-left space-y-1">
-            {nomes.map((n) => (
-              <li key={n} className="text-sm text-ink">
-                📄 {n}
-              </li>
-            ))}
+            {arquivos.map((f) => {
+              const chave = chaveArquivo(f);
+              return (
+                <li
+                  key={chave}
+                  className="flex items-center gap-2 text-sm text-ink"
+                >
+                  <span className="truncate max-w-[260px]">📄 {f.name}</span>
+                  <button
+                    type="button"
+                    onClick={(e) => {
+                      e.stopPropagation();
+                      remover(chave);
+                    }}
+                    aria-label={`Remover ${f.name}`}
+                    className="text-texto-3 hover:text-danger transition-colors"
+                  >
+                    ✕
+                  </button>
+                </li>
+              );
+            })}
           </ul>
         )}
       </div>
