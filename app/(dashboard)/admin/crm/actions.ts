@@ -49,13 +49,14 @@ export async function criarLeadAction(
 }
 
 /** Envia o convite de teste por e-mail e marca o lead como convidado. */
-export async function enviarConviteEmailAction(formData: FormData): Promise<void> {
+export async function enviarConviteEmailAction(
+  id: string,
+): Promise<{ ok: boolean; mensagem: string }> {
   await exigirInterno();
-  const id = String(formData.get("id") ?? "");
-  if (!id) return;
+  if (!id) return { ok: false, mensagem: "Lead inválido." };
 
   const lead = await buscarLead(id);
-  if (!lead) return;
+  if (!lead) return { ok: false, mensagem: "Lead não encontrado." };
 
   const link = montarLinkTeste(lead.email, lead.nome);
   const { assunto, html } = emailConviteTeste({
@@ -63,10 +64,17 @@ export async function enviarConviteEmailAction(formData: FormData): Promise<void
     link,
     analisesGratis: ANALISES_GRATIS,
   });
-  await enviarEmail({ para: lead.email, assunto, html });
+
+  try {
+    await enviarEmail({ para: lead.email, assunto, html });
+  } catch (erro) {
+    console.error("[crm] falha ao enviar convite por e-mail:", erro);
+    return { ok: false, mensagem: "Não consegui enviar o e-mail. Tente de novo." };
+  }
 
   await marcarConvidado(id);
   revalidatePath("/admin/crm");
+  return { ok: true, mensagem: `E-mail enviado para ${lead.email}.` };
 }
 
 /** Marca o lead como convidado (usado quando o WhatsApp é aberto). */

@@ -12,7 +12,8 @@ import { linkWhatsapp } from "@/lib/whatsapp";
 import { formatarData } from "@/lib/format";
 import { CrmNovoLeadForm } from "./CrmNovoLeadForm";
 import { BotaoWhatsapp } from "./BotaoWhatsapp";
-import { enviarConviteEmailAction, removerLeadAction } from "./actions";
+import { BotaoEnviarEmail } from "./BotaoEnviarEmail";
+import { removerLeadAction } from "./actions";
 
 export const metadata: Metadata = { title: "CRM — Vetly" };
 export const dynamic = "force-dynamic";
@@ -108,15 +109,7 @@ export default async function CrmPage() {
                   </td>
                   <td className="px-6 py-3 text-right whitespace-nowrap">
                     <div className="inline-flex items-center gap-3">
-                      <form action={enviarConviteEmailAction}>
-                        <input type="hidden" name="id" value={l.id} />
-                        <button
-                          type="submit"
-                          className="text-sm font-medium text-[#5C7A0E] hover:underline"
-                        >
-                          Enviar e-mail
-                        </button>
-                      </form>
+                      <BotaoEnviarEmail id={l.id} />
                       {l.linkWa && <BotaoWhatsapp href={l.linkWa} id={l.id} />}
                       <form action={removerLeadAction}>
                         <input type="hidden" name="id" value={l.id} />
