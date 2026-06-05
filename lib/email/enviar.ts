@@ -4,10 +4,33 @@ interface EmailInput {
   para: string;
   assunto: string;
   html: string;
+  texto?: string; // versão em texto puro (multipart). Se omitida, geramos do HTML.
 }
 
 /**
- * Envia um e-mail transacional via Resend.
+ * Gera uma versão em texto puro a partir do HTML (fallback simples).
+ * E-mails sem parte de texto contam ponto contra a entrega (caem mais em spam),
+ * então sempre enviamos texto + HTML.
+ */
+function htmlParaTexto(html: string): string {
+  return html
+    // mantém o endereço dos links: <a href="x">y</a> → "y (x)"
+    .replace(/<a\b[^>]*href="([^"]*)"[^>]*>(.*?)<\/a>/gi, "$2 ($1)")
+    .replace(/<\/(p|div|h\d|li|tr)>/gi, "\n")
+    .replace(/<br\s*\/?>/gi, "\n")
+    .replace(/<[^>]+>/g, "") // remove o resto das tags
+    .replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&")
+    .replace(/&lt;/g, "<")
+    .replace(/&gt;/g, ">")
+    .replace(/&quot;/g, '"')
+    .replace(/\n{3,}/g, "\n\n") // colapsa linhas em branco demais
+    .replace(/[ \t]{2,}/g, " ")
+    .trim();
+}
+
+/**
+ * Envia um e-mail transacional via Resend (sempre multipart: texto + HTML).
  * Se RESEND_API_KEY não estiver configurada (ex: antes de criar a conta),
  * cai num fallback de desenvolvimento que apenas registra o conteúdo no log
  * do servidor — útil para testar o fluxo de recuperação de senha sem e-mail.
@@ -16,9 +39,12 @@ export async function enviarEmail({
   para,
   assunto,
   html,
+  texto,
 }: EmailInput): Promise<void> {
   const apiKey = process.env.RESEND_API_KEY;
   const remetente = process.env.RESEND_FROM_EMAIL ?? "nao-responda@getvetly.com";
+  const responderPara = process.env.RESEND_REPLY_TO;
+  const textoFinal = texto ?? htmlParaTexto(html);
 
   if (!apiKey) {
     console.warn(
@@ -33,7 +59,14 @@ export async function enviarEmail({
       Authorization: `Bearer ${apiKey}`,
       "Content-Type": "application/json",
     },
-    body: JSON.stringify({ from: remetente, to: para, subject: assunto, html }),
+    body: JSON.stringify({
+      from: remetente,
+      to: para,
+      subject: assunto,
+      html,
+      text: textoFinal,
+      ...(responderPara ? { reply_to: responderPara } : {}),
+    }),
   });
 
   if (!resposta.ok) {
