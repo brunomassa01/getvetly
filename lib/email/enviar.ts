@@ -118,6 +118,38 @@ export function emailConvite({
   };
 }
 
+/**
+ * Monta o e-mail de convite para um lead testar a ferramenta (mini-CRM).
+ * Leva ao cadastro, onde a pessoa cria a conta e ganha o teste grátis.
+ */
+export function emailConviteTeste({
+  nome,
+  link,
+  analisesGratis,
+}: {
+  nome: string;
+  link: string;
+  analisesGratis: number;
+}): { assunto: string; html: string } {
+  const oi = escaparHtml(nome.split(" ")[0] || nome);
+  return {
+    assunto: "Seu convite para testar a Vetly",
+    html: `
+      <div style="font-family: Arial, sans-serif; max-width: 480px; margin: 0 auto; color: #1E1E1E;">
+        <h2 style="color: #1E1E1E;">Olá, ${oi}! 👋</h2>
+        <p>Quero te mostrar a <strong>Vetly</strong> — uma ferramenta que analisa propostas comerciais com inteligência artificial em segundos, apontando preços, riscos e o melhor fornecedor pra você.</p>
+        <p>Preparei um acesso de teste com <strong>${analisesGratis} análises grátis</strong>, sem cartão. É só criar sua conta pelo botão abaixo:</p>
+        <p style="margin: 28px 0;">
+          <a href="${link}" style="background: #C8FF02; color: #1E1E1E; text-decoration: none; font-weight: 600; padding: 12px 24px; border-radius: 8px; display: inline-block;">
+            Começar meu teste grátis
+          </a>
+        </p>
+        <p style="color: #85827A; font-size: 13px;">Qualquer dúvida, é só responder este e-mail.</p>
+      </div>
+    `,
+  };
+}
+
 /** Monta o e-mail de recuperação de senha. */
 export function emailRecuperacaoSenha(link: string): {
   assunto: string;

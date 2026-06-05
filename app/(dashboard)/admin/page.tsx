@@ -1,4 +1,5 @@
 import type { Metadata } from "next";
+import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ehEmailInterno } from "@/lib/auth/interno";
@@ -55,6 +56,12 @@ export default async function AdminPage() {
         <p className="text-sm text-texto-2 mt-1">
           Visão de negócio do Get Vetly (todos os clientes).
         </p>
+        <Link
+          href="/admin/crm"
+          className="inline-block mt-3 text-sm font-medium text-[#5C7A0E] hover:underline"
+        >
+          CRM de testes →
+        </Link>
       </div>
 
       {/* Receita / assinaturas */}
