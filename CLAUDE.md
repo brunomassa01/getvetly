@@ -23,19 +23,25 @@ Está documentada em detalhe em `docs/02-architecture/`. Resumo:
 | Frontend | Next.js (App Router) + TypeScript | 14.2+ |
 | Estilo | Tailwind CSS + shadcn/ui | latest |
 | Backend | Next.js API Routes / Server Actions | 14.2+ |
-| Banco de dados | Supabase (PostgreSQL gerenciado) | 15+ |
-| Auth | Supabase Auth | latest |
-| Storage | Supabase Storage | latest |
+| Banco de dados | **PostgreSQL 16 self-hosted no VPS** (ADR-007) | 16 |
+| Auth | **Auth.js / NextAuth v5** — sessões no Postgres (ADR-007) | latest |
+| Storage | **Disco do VPS** → Cloudflare R2 quando crescer (ADR-007) | — |
 | Pagamento | Stripe (Brasil) | 2023-10-16+ |
 | IA | Claude API (Anthropic) | claude-sonnet-4-6 |
-| Parsing PDF/OCR | Mistral OCR API (PT-BR forte) | latest |
+| Parsing PDF/texto | unpdf (PDF), xlsx (Excel), mammoth (Word) | latest |
 | E-mail transacional | Resend | latest |
-| Hosting | Vercel | — |
+| Hosting | **VPS Hostinger** — app + banco no mesmo servidor (ADR-006/007) | — |
 | Analytics | Posthog (self-host ou cloud) | latest |
 | Error tracking | Sentry | latest |
 | DNS / CDN | Cloudflare | — |
 
 **Não adicione bibliotecas sem justificar em um ADR novo.** Cada dependência extra é custo de manutenção.
+
+> ⚠️ **Os ADRs em `docs/02-architecture/` são a FONTE DA VERDADE.** Se este
+> arquivo divergir de um ADR, **o ADR manda** — e atualize este `CLAUDE.md` na
+> mesma hora (junto com a memória). Manter docs e memória em dia é parte do
+> trabalho, não um extra. Ex.: o ADR-007 trocou Supabase por Postgres
+> self-hosted; quem mexer na infra atualiza esta tabela e as seções abaixo.
 
 ## Convenções de código
 
@@ -79,8 +85,10 @@ components/
   domain/                  ← componentes de domínio (PropostaCard, FornecedorList)
   layout/
 lib/
-  supabase/                ← clients (server, browser, admin)
-  ai/                      ← integração com Claude e Mistral
+  db/                      ← client postgres.js (getSqlApp respeita RLS, getSqlService BYPASSRLS)
+  auth/                    ← Auth.js / NextAuth (sessão, hash de senha, usuários)
+  workspace/               ← multi-tenant (membros, configurações da empresa)
+  ai/                      ← integração com Claude (análise, comparação)
   stripe/
   email/
   utils.ts
@@ -94,9 +102,10 @@ types/                     ← tipos compartilhados
 
 - Toda tabela tem `id uuid primary key default gen_random_uuid()`, `created_at`, `updated_at`.
 - Toda tabela com dados de cliente tem `workspace_id uuid not null references workspaces(id)`.
-- **Row-Level Security (RLS) é obrigatório em TODAS as tabelas.** Sem exceção. Veja `docs/03-backend/rls-policies.sql`.
+- **Row-Level Security (RLS) é obrigatório em TODAS as tabelas.** Sem exceção. Políticas em `db/migrations/0002_rls_policies.sql`; o adaptador self-hosted (schema `auth`, `auth.uid()`, roles) está em `db/bootstrap-selfhosted.sql` e `db/grants-selfhosted.sql` (ADR-007).
 - Migrations versionadas em `db/migrations/NNNN_descricao.sql`, números sequenciais.
 - Nunca crie tabela sem migration. Nunca edite migration já aplicada — crie nova.
+- **Aplicação é manual no VPS** (não há `supabase db push` nem deploy automático de banco): rodar o `.sql` via `psql` como `getvetly_owner`. Tabela nova precisa de `grant select, insert, update, delete on <tabela> to getvetly_app, getvetly_service` na própria migration (as default privileges só cobrem tabelas criadas pelo `postgres`, não pelo owner).
 
 ### Segurança
 
@@ -140,7 +149,7 @@ types/                     ← tipos compartilhados
 
 ## O que NÃO fazer
 
-- ❌ Não use ORMs pesados (Prisma, Drizzle) sem ADR. Supabase client tipado é suficiente no início.
+- ❌ Não use ORMs pesados (Prisma, Drizzle) sem ADR. O client `postgres.js` tipado (via `lib/db`) é suficiente no início.
 - ❌ Não crie estados globais (Zustand, Redux) sem ADR. Server state via React Query/SWR só se necessário.
 - ❌ Não invente bibliotecas. Se precisar de uma nova, justifique em ADR.
 - ❌ Não pule testes pra "ir mais rápido". Sempre tem teste de happy path.
@@ -162,10 +171,14 @@ Sempre rode antes de commitar:
 pnpm lint          # ESLint
 pnpm type-check    # tsc --noEmit
 pnpm test          # Vitest
-pnpm build         # garante que builda
 ```
 
 Se algum falhar, conserte antes de seguir. Não commit "WIP" com erros.
+
+> ⚠️ **Não rode `pnpm build` localmente.** O projeto vive numa pasta do Google
+> Drive (`G:\Meu Drive\...`); o I/O pesado do build trava com `EINVAL` e já
+> chegou a derrubar a unidade inteira. `type-check` + `lint` + `test` já pegam
+> erro de código; o build de verdade roda em produção (no VPS), em disco normal.
 
 ## Mensagens de commit
 
