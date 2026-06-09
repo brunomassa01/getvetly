@@ -96,8 +96,12 @@ export async function reabrirComparativoAction(
 }
 
 /**
- * Sobe vários arquivos (1 por fornecedor), cria uma proposta para cada,
- * analisa todas e já gera a comparação. Fluxo "subir e comparar".
+ * Sobe propostas agrupadas POR FORNECEDOR (cada fornecedor pode ter vários
+ * arquivos), cria uma proposta para cada fornecedor, analisa todas e já gera a
+ * comparação. Fluxo "subir e comparar".
+ *
+ * O formulário manda `fornecedores` = lista de ids; para cada id, os campos
+ * `nome_<id>` (opcional) e `arquivos_<id>` (vários).
  */
 export async function compararNovosArquivosAction(
   _prev: EstadoForm,
@@ -105,14 +109,28 @@ export async function compararNovosArquivosAction(
 ): Promise<EstadoForm> {
   const userId = await usuarioAtual();
 
-  const arquivos = formData
-    .getAll("arquivos")
-    .filter((a): a is File => a instanceof File && a.size > 0);
+  const ids = String(formData.get("fornecedores") ?? "")
+    .split(",")
+    .map((s) => s.trim())
+    .filter(Boolean);
   const criterios = String(formData.get("criterios") ?? "");
 
-  if (arquivos.length < 2) {
+  // Agrupa os arquivos por fornecedor (ignora blocos vazios).
+  const grupos: { nome: string; arquivos: File[] }[] = [];
+  for (const id of ids) {
+    const arquivos = formData
+      .getAll(`arquivos_${id}`)
+      .filter((a): a is File => a instanceof File && a.size > 0);
+    if (arquivos.length === 0) continue;
+    grupos.push({
+      nome: String(formData.get(`nome_${id}`) ?? "").trim(),
+      arquivos,
+    });
+  }
+
+  if (grupos.length < 2) {
     return {
-      erro: "Suba ao menos 2 propostas (1 arquivo por fornecedor).",
+      erro: "Adicione ao menos 2 fornecedores, com pelo menos um arquivo em cada.",
     };
   }
 
@@ -123,31 +141,33 @@ export async function compararNovosArquivosAction(
     };
   }
 
+  // Uma proposta por fornecedor (com TODOS os arquivos dele), analisada.
   const idsProntos: string[] = [];
-  for (const arquivo of arquivos) {
+  for (const grupo of grupos) {
     try {
+      const titulo = grupo.nome || tituloDoArquivo(grupo.arquivos[0].name);
       const { id } = await criarPropostaComArquivos(
         userId,
-        tituloDoArquivo(arquivo.name),
-        [arquivo],
+        titulo,
+        grupo.arquivos,
       );
       const r = await executarAnaliseProposta(userId, id);
       if (r.ok) idsProntos.push(id);
     } catch {
-      // ignora um arquivo que falhe; segue com os demais
+      // ignora um fornecedor que falhe; segue com os demais
     }
   }
 
   if (idsProntos.length < 2) {
     return {
-      erro: "Não consegui analisar ao menos 2 propostas. Verifique se os PDFs têm texto.",
+      erro: "Não consegui analisar ao menos 2 propostas. Verifique se os arquivos têm texto.",
     };
   }
 
   let compId: string;
   try {
     const c = await criarComparativo(userId, {
-      titulo: `Comparativo de ${idsProntos.length} propostas`,
+      titulo: `Comparativo de ${idsProntos.length} fornecedores`,
       propostaIds: idsProntos,
       criterios,
     });

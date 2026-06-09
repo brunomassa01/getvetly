@@ -24,8 +24,9 @@ export default async function CompararSubirPage() {
       {acesso.permitido ? (
         <>
           <p className="text-sm text-texto-2 mb-6">
-            Suba as propostas de fornecedores diferentes — a IA analisa cada uma
-            e já entrega a comparação com recomendação.
+            Monte a concorrência: um bloco por fornecedor (cada um pode ter
+            vários arquivos). A IA analisa cada proposta e já entrega a
+            comparação com recomendação.
           </p>
           <CompararUploadForm />
         </>
