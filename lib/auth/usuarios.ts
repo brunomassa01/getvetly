@@ -75,6 +75,9 @@ export async function criarUsuarioComWorkspace(input: {
   email: string;
   senhaHash: string;
   empresa: string;
+  utmSource?: string | null;
+  utmMedium?: string | null;
+  utmCampaign?: string | null;
 }): Promise<{ id: string; email: string }> {
   const sql = getSqlService();
   const email = normalizarEmail(input.email);
@@ -86,7 +89,13 @@ export async function criarUsuarioComWorkspace(input: {
       returning id, email
     `;
     const [workspace] = await tx<{ id: string }[]>`
-      insert into workspaces (nome) values (${input.empresa})
+      insert into workspaces (nome, utm_source, utm_medium, utm_campaign)
+      values (
+        ${input.empresa},
+        ${input.utmSource ?? null},
+        ${input.utmMedium ?? null},
+        ${input.utmCampaign ?? null}
+      )
       returning id
     `;
     await tx`

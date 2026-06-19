@@ -22,6 +22,7 @@ export interface MetricasAdmin {
     plano: string | null;
     created_at: string;
   }[];
+  origens: { origem: string; n: number }[];
 }
 
 /** Métricas globais do negócio (todos os workspaces). Service = ignora RLS. */
@@ -75,6 +76,22 @@ export async function metricasAdmin(): Promise<MetricasAdmin> {
     from workspaces w order by w.created_at desc limit 8
   `;
 
+  // Cadastros agrupados por origem (UTM da campanha). null = veio direto.
+  const origensRaw = await sql<
+    { utm_source: string | null; utm_campaign: string | null; n: number }[]
+  >`
+    select utm_source, utm_campaign, count(*)::int as n
+    from workspaces
+    group by utm_source, utm_campaign
+    order by n desc
+  `;
+  const origens = origensRaw.map((o) => ({
+    origem: o.utm_source
+      ? o.utm_source + (o.utm_campaign ? ` · ${o.utm_campaign}` : "")
+      : "Direto / sem origem",
+    n: o.n,
+  }));
+
   return {
     workspaces: ws?.n ?? 0,
     ativos: porStatus("active"),
@@ -89,5 +106,6 @@ export async function metricasAdmin(): Promise<MetricasAdmin> {
     propostas: prop?.n ?? 0,
     comparativos: comp?.n ?? 0,
     recentes: [...recentes],
+    origens,
   };
 }

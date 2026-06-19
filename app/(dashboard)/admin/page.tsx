@@ -113,6 +113,28 @@ export default async function AdminPage() {
         />
       </div>
 
+      {/* Origem dos cadastros (UTM da campanha) */}
+      <section className="rounded-xl border border-[color:var(--border-subtle)] bg-white p-6">
+        <h2 className="font-display font-bold text-ink text-lg mb-3">
+          Origem dos cadastros
+        </h2>
+        {m.origens.length === 0 ? (
+          <p className="text-sm text-texto-3">Sem cadastros ainda.</p>
+        ) : (
+          <ul className="space-y-2">
+            {m.origens.map((o, i) => (
+              <li
+                key={i}
+                className="flex items-center justify-between text-sm"
+              >
+                <span className="text-ink">{o.origem}</span>
+                <span className="font-display font-bold text-ink">{o.n}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+      </section>
+
       {/* Empresas recentes */}
       <section className="rounded-xl border border-[color:var(--border-subtle)] bg-white overflow-hidden">
         <h2 className="font-display font-bold text-ink text-lg px-6 pt-6 pb-3">

@@ -7,7 +7,15 @@ import { ESTADO_INICIAL } from "@/lib/auth/tipos";
 import { Campo, BotaoEnviar, Aviso } from "./Campos";
 import { BotaoGoogle, Separador } from "./BotaoGoogle";
 
-export function CadastroForm() {
+export function CadastroForm({
+  utmSource,
+  utmMedium,
+  utmCampaign,
+}: {
+  utmSource?: string;
+  utmMedium?: string;
+  utmCampaign?: string;
+}) {
   const [estado, action] = useFormState(cadastrarAction, ESTADO_INICIAL);
 
   return (
@@ -15,6 +23,11 @@ export function CadastroForm() {
       <BotaoGoogle />
       <Separador />
       <form action={action} className="space-y-4">
+        {utmSource && <input type="hidden" name="utm_source" value={utmSource} />}
+        {utmMedium && <input type="hidden" name="utm_medium" value={utmMedium} />}
+        {utmCampaign && (
+          <input type="hidden" name="utm_campaign" value={utmCampaign} />
+        )}
         <Campo label="Seu nome" name="nome" autoComplete="name" required />
         <Campo
           label="Nome da empresa"

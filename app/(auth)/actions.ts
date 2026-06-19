@@ -56,6 +56,12 @@ export async function cadastrarAction(
     return { erro: "Já existe uma conta com este e-mail." };
   }
 
+  // Origem (UTM) da campanha — vem dos campos ocultos do formulário, se houver.
+  const lerUtm = (campo: string): string | null => {
+    const v = String(formData.get(campo) ?? "").trim();
+    return v ? v.slice(0, 120) : null;
+  };
+
   const senhaHash = await gerarHashSenha(parsed.data.senha);
   try {
     await criarUsuarioComWorkspace({
@@ -63,6 +69,9 @@ export async function cadastrarAction(
       email: parsed.data.email,
       senhaHash,
       empresa: parsed.data.empresa,
+      utmSource: lerUtm("utm_source"),
+      utmMedium: lerUtm("utm_medium"),
+      utmCampaign: lerUtm("utm_campaign"),
     });
   } catch {
     return { erro: "Não foi possível criar a conta. Tente novamente." };
