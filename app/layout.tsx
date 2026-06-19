@@ -1,6 +1,7 @@
 import type { Metadata } from "next";
 import { Manrope, JetBrains_Mono } from "next/font/google";
 import "./globals.css";
+import { GoogleAdsTag } from "@/components/GoogleAdsTag";
 
 const manrope = Manrope({
   subsets: ["latin"],
@@ -32,6 +33,7 @@ export default function RootLayout({
         className={`${manrope.variable} ${jetbrainsMono.variable} font-body antialiased bg-paper text-texto-1`}
       >
         {children}
+        <GoogleAdsTag />
       </body>
     </html>
   );
