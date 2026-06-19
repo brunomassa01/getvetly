@@ -7,6 +7,7 @@ import { ehAdmin } from "@/lib/workspace/membros";
 import { resumoSituacao, listarAguardandoRetorno } from "@/lib/propostas/db";
 import { marcarSituacaoAction } from "@/app/(dashboard)/propostas/actions";
 import { OnboardingNovo } from "@/components/painel/OnboardingNovo";
+import { ConversaoCadastro } from "@/components/ConversaoCadastro";
 
 export const metadata: Metadata = { title: "Painel — Vetly" };
 export const dynamic = "force-dynamic";
@@ -40,7 +41,11 @@ function CardLink({
   );
 }
 
-export default async function PainelPage() {
+export default async function PainelPage({
+  searchParams,
+}: {
+  searchParams: { cadastro?: string };
+}) {
   const userId = await usuarioAtual();
   const session = await auth();
   const nome = session?.user?.name ?? session?.user?.email ?? "você";
@@ -60,6 +65,7 @@ export default async function PainelPage() {
 
   return (
     <div className="space-y-8">
+      {searchParams?.cadastro === "ok" && <ConversaoCadastro />}
       <div>
         <span className="inline-flex items-center gap-2 font-mono text-[11px] tracking-wide2 uppercase text-[#5C7A0E] bg-lime-faint border border-lime-soft rounded-full px-3 py-1.5 mb-4">
           <span className="w-1.5 h-1.5 rounded-full bg-lime-deep" />

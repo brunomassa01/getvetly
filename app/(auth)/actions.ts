@@ -72,7 +72,9 @@ export async function cadastrarAction(
     await signIn("credentials", {
       email: parsed.data.email,
       senha: parsed.data.senha,
-      redirectTo: "/painel",
+      // ?cadastro=ok dispara a conversão do Google Ads no painel (só no
+      // cadastro novo — login normal não leva esse parâmetro).
+      redirectTo: "/painel?cadastro=ok",
     });
   } catch (erro) {
     if (erro instanceof AuthError) {
