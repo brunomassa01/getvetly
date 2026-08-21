@@ -33,6 +33,15 @@ export function planoDoPriceId(priceId: string): Plano | null {
 // Análises grátis no teste (sem cartão) antes de exigir assinatura.
 export const ANALISES_GRATIS = 3;
 
+/**
+ * Limite de análises grátis do workspace: base + bônus que o admin interno
+ * concedeu (coluna workspaces.analises_gratis_extra). Extra negativo é
+ * ignorado — nunca reduz o limite base.
+ */
+export function limiteAnalisesGratis(extra: number): number {
+  return ANALISES_GRATIS + Math.max(0, extra);
+}
+
 // Assentos (usuários) incluídos por plano. Enterprise = "ilimitado" (na prática).
 export const ASSENTOS_POR_PLANO: Record<Plano, number> = {
   starter: 2,

@@ -4,7 +4,6 @@ import { PropostaForm } from "@/components/propostas/PropostaForm";
 import { Paywall } from "@/components/Paywall";
 import { usuarioAtual } from "@/lib/auth/sessao";
 import { verificarAcessoAnalise } from "@/lib/stripe/assinatura";
-import { ANALISES_GRATIS } from "@/lib/stripe/config";
 
 export const metadata: Metadata = { title: "Nova proposta — Vetly" };
 export const dynamic = "force-dynamic";
@@ -31,7 +30,7 @@ export default async function NovaPropostaPage() {
           {emTrial && (
             <p className="mb-5 text-sm bg-lime-faint border border-lime-soft rounded-lg px-4 py-2.5 text-[#5C7A0E]">
               Teste grátis: você tem <strong>{acesso.restantes}</strong> de{" "}
-              {ANALISES_GRATIS} análises restantes.
+              {acesso.limite} análises restantes.
             </p>
           )}
           <PropostaForm />

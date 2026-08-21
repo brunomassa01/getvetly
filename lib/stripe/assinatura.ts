@@ -1,6 +1,6 @@
 import "server-only";
 import { withUser, getSqlService } from "@/lib/db/client";
-import { ANALISES_GRATIS, type Plano } from "./config";
+import { ANALISES_GRATIS, limiteAnalisesGratis, type Plano } from "./config";
 
 export interface Assinatura {
   workspace_id: string;
@@ -40,35 +40,46 @@ export interface AcessoAnalise {
   status: string;
   usadas: number;
   restantes: number; // -1 = ilimitado (assinante ou admin interno)
+  limite: number; // teto do teste grátis (base + extra); -1 = ilimitado
 }
 
 /**
  * Pode rodar uma análise? Admin interno e assinante ativo → sempre. Senão,
- * vale o teste grátis (ANALISES_GRATIS análises por workspace).
+ * vale o teste grátis (ANALISES_GRATIS + extra concedido pelo admin no
+ * painel interno, coluna workspaces.analises_gratis_extra).
  */
 export async function verificarAcessoAnalise(userId: string): Promise<AcessoAnalise> {
   return withUser(userId, async (sql) => {
-    const [w] = await sql<{ workspace_id: string; status: string; email: string }[]>`
-      select m.workspace_id, w.assinatura_status as status, u.email
+    const [w] = await sql<
+      { workspace_id: string; status: string; email: string; extra: number }[]
+    >`
+      select m.workspace_id, w.assinatura_status as status, u.email,
+        w.analises_gratis_extra as extra
       from workspace_members m
       join workspaces w on w.id = m.workspace_id
       join auth.users u on u.id = m.user_id
       where m.user_id = ${userId} and m.ativo = true
       limit 1
     `;
-    if (!w) return { permitido: false, status: "none", usadas: 0, restantes: 0 };
+    if (!w) {
+      return {
+        permitido: false, status: "none", usadas: 0, restantes: 0,
+        limite: ANALISES_GRATIS,
+      };
+    }
     if (ehAdminInterno(w.email)) {
-      return { permitido: true, status: "admin", usadas: 0, restantes: -1 };
+      return { permitido: true, status: "admin", usadas: 0, restantes: -1, limite: -1 };
     }
     if (w.status === "active") {
-      return { permitido: true, status: "active", usadas: 0, restantes: -1 };
+      return { permitido: true, status: "active", usadas: 0, restantes: -1, limite: -1 };
     }
     const [c] = await sql<{ n: number }[]>`
       select count(*)::int as n from analises where workspace_id = ${w.workspace_id}
     `;
     const usadas = c?.n ?? 0;
-    const restantes = Math.max(0, ANALISES_GRATIS - usadas);
-    return { permitido: restantes > 0, status: w.status, usadas, restantes };
+    const limite = limiteAnalisesGratis(w.extra ?? 0);
+    const restantes = Math.max(0, limite - usadas);
+    return { permitido: restantes > 0, status: w.status, usadas, restantes, limite };
   });
 }
 

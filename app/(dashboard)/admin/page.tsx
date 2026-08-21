@@ -4,7 +4,8 @@ import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { ehEmailInterno } from "@/lib/auth/interno";
 import { metricasAdmin } from "@/lib/admin/db";
-import { PLANOS_STRIPE, type Plano } from "@/lib/stripe/config";
+import { definirAnalisesExtrasAction } from "./actions";
+import { PLANOS_STRIPE, ANALISES_GRATIS, type Plano } from "@/lib/stripe/config";
 import { formatarMoeda, formatarData } from "@/lib/format";
 
 export const metadata: Metadata = { title: "Admin — Vetly" };
@@ -147,12 +148,13 @@ export default async function AdminPage() {
               <th className="px-6 py-2 font-semibold">E-mail</th>
               <th className="px-6 py-2 font-semibold">Status</th>
               <th className="px-6 py-2 font-semibold">Plano</th>
+              <th className="px-6 py-2 font-semibold">Teste grátis</th>
               <th className="px-6 py-2 font-semibold">Criada</th>
             </tr>
           </thead>
           <tbody>
-            {m.recentes.map((r, i) => (
-              <tr key={i} className="border-t border-[color:var(--border-subtle)]">
+            {m.recentes.map((r) => (
+              <tr key={r.id} className="border-t border-[color:var(--border-subtle)]">
                 <td className="px-6 py-3 text-ink font-medium">{r.nome}</td>
                 <td className="px-6 py-3 text-texto-2">{r.email ?? "—"}</td>
                 <td className="px-6 py-3 text-texto-2">
@@ -160,6 +162,39 @@ export default async function AdminPage() {
                 </td>
                 <td className="px-6 py-3 text-texto-2">
                   {r.plano ? (PLANOS_STRIPE[r.plano as Plano]?.nome ?? r.plano) : "—"}
+                </td>
+                <td className="px-6 py-3">
+                  {r.status === "active" ? (
+                    <span className="text-texto-3">—</span>
+                  ) : (
+                    <form
+                      action={definirAnalisesExtrasAction}
+                      className="flex items-center gap-1.5"
+                    >
+                      <input type="hidden" name="workspaceId" value={r.id} />
+                      <span
+                        className="text-xs text-texto-3 whitespace-nowrap"
+                        title={`${r.analises_usadas} análises usadas de ${ANALISES_GRATIS} + extra`}
+                      >
+                        {r.analises_usadas}/{ANALISES_GRATIS}+
+                      </span>
+                      <input
+                        type="number"
+                        name="extra"
+                        min={0}
+                        max={999}
+                        defaultValue={r.analises_gratis_extra}
+                        aria-label={`Análises extras de ${r.nome}`}
+                        className="w-16 rounded-md border border-[color:var(--border-default)] px-2 py-1 text-sm text-ink"
+                      />
+                      <button
+                        type="submit"
+                        className="text-xs font-semibold text-[#5C7A0E] hover:underline"
+                      >
+                        Salvar
+                      </button>
+                    </form>
+                  )}
                 </td>
                 <td className="px-6 py-3 text-texto-3">
                   {formatarData(r.created_at)}

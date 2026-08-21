@@ -16,13 +16,31 @@ export interface MetricasAdmin {
   propostas: number;
   comparativos: number;
   recentes: {
+    id: string;
     nome: string;
     email: string | null;
     status: string;
     plano: string | null;
     created_at: string;
+    analises_usadas: number;
+    analises_gratis_extra: number;
   }[];
   origens: { origem: string; n: number }[];
+}
+
+/**
+ * Define o bônus de análises grátis de um workspace (teste estendido para
+ * clientes estratégicos). Só chamar a partir de ação gated por admin interno.
+ */
+export async function definirAnalisesGratisExtra(
+  workspaceId: string,
+  extra: number,
+): Promise<void> {
+  const sql = getSqlService();
+  await sql`
+    update workspaces set analises_gratis_extra = ${extra}
+    where id = ${workspaceId}
+  `;
 }
 
 /** Métricas globais do negócio (todos os workspaces). Service = ignora RLS. */
@@ -57,14 +75,18 @@ export async function metricasAdmin(): Promise<MetricasAdmin> {
 
   const recentes = await sql<
     {
+      id: string;
       nome: string;
       email: string | null;
       status: string;
       plano: string | null;
       created_at: string;
+      analises_usadas: number;
+      analises_gratis_extra: number;
     }[]
   >`
     select
+      w.id,
       w.nome,
       (select m.email from workspace_members m
         where m.workspace_id = w.id and m.ativo = true
@@ -72,7 +94,10 @@ export async function metricasAdmin(): Promise<MetricasAdmin> {
         limit 1) as email,
       w.assinatura_status as status,
       w.plano,
-      w.created_at
+      w.created_at,
+      (select count(*)::int from analises a
+        where a.workspace_id = w.id) as analises_usadas,
+      w.analises_gratis_extra
     from workspaces w order by w.created_at desc limit 8
   `;
 
