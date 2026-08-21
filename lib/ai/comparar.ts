@@ -53,18 +53,22 @@ Propostas já analisadas (JSON de cada análise). Use os refs indicados:
 ${blocos}`;
 
   const inicio = Date.now();
-  const resposta = await client.messages.create({
-    model: MODELO,
-    max_tokens: 8192,
-    system: [
-      {
-        type: "text",
-        text: COMPARAR_PROMPT_SISTEMA,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    messages: [{ role: "user", content: mensagemUsuario }],
-  });
+  // Streaming + 32k tokens: comparações com muitas propostas estouravam o
+  // limite antigo de 8k e o JSON chegava cortado (stop_reason=max_tokens).
+  const resposta = await client.messages
+    .stream({
+      model: MODELO,
+      max_tokens: 32000,
+      system: [
+        {
+          type: "text",
+          text: COMPARAR_PROMPT_SISTEMA,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      messages: [{ role: "user", content: mensagemUsuario }],
+    })
+    .finalMessage();
   const latenciaMs = Date.now() - inicio;
 
   const texto = resposta.content

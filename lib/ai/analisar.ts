@@ -49,19 +49,24 @@ Conteúdo extraído dos arquivos da proposta:
 ${input.contexto}`;
 
   const inicio = Date.now();
-  const resposta = await client.messages.create({
-    model: MODELO,
-    max_tokens: 8192,
-    // O prompt de sistema é reaproveitado em toda análise → cacheado.
-    system: [
-      {
-        type: "text",
-        text: PROMPT_SISTEMA,
-        cache_control: { type: "ephemeral" },
-      },
-    ],
-    messages: [{ role: "user", content: mensagemUsuario }],
-  });
+  // Streaming é obrigatório para respostas longas (o SDK recusa pedidos
+  // grandes sem stream). 32k tokens cobre concorrências com vários
+  // fornecedores no mesmo upload — 8k cortava o JSON no meio.
+  const resposta = await client.messages
+    .stream({
+      model: MODELO,
+      max_tokens: 32000,
+      // O prompt de sistema é reaproveitado em toda análise → cacheado.
+      system: [
+        {
+          type: "text",
+          text: PROMPT_SISTEMA,
+          cache_control: { type: "ephemeral" },
+        },
+      ],
+      messages: [{ role: "user", content: mensagemUsuario }],
+    })
+    .finalMessage();
   const latenciaMs = Date.now() - inicio;
 
   const texto = resposta.content
