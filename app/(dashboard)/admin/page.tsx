@@ -174,9 +174,10 @@ export default async function AdminPage() {
                       <input type="hidden" name="workspaceId" value={r.id} />
                       <span
                         className="text-xs text-texto-3 whitespace-nowrap"
-                        title={`${r.analises_usadas} análises usadas de ${ANALISES_GRATIS} + extra`}
+                        title={`${r.analises_usadas} usadas de ${ANALISES_GRATIS} grátis + ${r.analises_gratis_extra} extras`}
                       >
-                        {r.analises_usadas}/{ANALISES_GRATIS}+
+                        {r.analises_usadas}/
+                        {ANALISES_GRATIS + r.analises_gratis_extra}
                       </span>
                       <input
                         type="number"
